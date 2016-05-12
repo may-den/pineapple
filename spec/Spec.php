@@ -4,7 +4,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager as DoctrineDriverManager;
 
 require_once 'vendor/autoload.php';
-
+require_once __DIR__ . '/../src/PEAR.php';
 
 function getConnection() {
     $configObject = new DoctrineConfiguration();
@@ -28,5 +28,10 @@ describe('pineapple', function() {
     it('can select user', function() {
         $user = selectUser();
         expect($user)->toBe(array("USER()" => "root@192.168.20.56"));
+    });
+
+    it('can oops', function() {
+        $error = PEAR::raiseError('oops!');
+        expect($error)->toBeAnInstanceOf(PEAR_Error::class);
     });
 });
