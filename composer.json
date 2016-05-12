@@ -1,0 +1,7 @@
+{
+    "name": "may-den/peardb-dbal",
+    "description": "A DBAL plugin for PEAR DB to use Doctrine's DBAL",
+    "require": {
+        "doctrine/dbal": "^2.5"
+    }
+}
