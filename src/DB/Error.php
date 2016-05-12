@@ -1,7 +1,7 @@
 <?php
 namespace Mayden\Pineapple\DB;
 
-// {{{ class DB_Error
+use Mayden\Pineapple\Error as PineappleError;
 
 /**
  * DB_Error implements a class for reporting portable database error
@@ -15,10 +15,8 @@ namespace Mayden\Pineapple\DB;
  * @version    Release: 1.8.2
  * @link       http://pear.php.net/package/DB
  */
-class Error extends PEAR_Error
+class Error extends PineappleError
 {
-    // {{{ constructor
-
     /**
      * DB_Error constructor
      *
@@ -30,17 +28,24 @@ class Error extends PEAR_Error
      *
      * @see PEAR_Error
      */
-    function DB_Error($code = DB_ERROR, $mode = PEAR_ERROR_RETURN,
-                      $level = E_USER_NOTICE, $debuginfo = null)
+    public function __construct($code = DB_ERROR, $mode = PEAR_ERROR_RETURN, $level = E_USER_NOTICE, $debuginfo = null)
     {
         if (is_int($code)) {
-            $this->PEAR_Error('DB Error: ' . DB::errorMessage($code), $code,
-                              $mode, $level, $debuginfo);
+            $this->PEAR_Error(
+                'DB Error: ' . DB::errorMessage($code),
+                $code,
+                $mode,
+                $level,
+                $debuginfo
+            );
         } else {
-            $this->PEAR_Error("DB Error: $code", DB_ERROR,
-                              $mode, $level, $debuginfo);
+            $this->PEAR_Error(
+                "DB Error: $code",
+                DB_ERROR,
+                $mode,
+                $level,
+                $debuginfo
+            );
         }
     }
-
-    // }}}
 }

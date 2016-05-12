@@ -17,8 +17,6 @@ namespace Mayden\Pineapple\DB;
  */
 class Result
 {
-    // {{{ properties
-
     /**
      * Should results be freed automatically when there are no more rows?
      * @var boolean
@@ -106,10 +104,6 @@ class Result
      */
     var $statement;
 
-
-    // }}}
-    // {{{ constructor
-
     /**
      * This constructor sets the object's properties
      *
@@ -119,7 +113,7 @@ class Result
      *
      * @return void
      */
-    function DB_result(&$dbh, $result, $options = array())
+    function __construct(&$dbh, $result, $options = array())
     {
         $this->autofree    = $dbh->options['autofree'];
         $this->dbh         = &$dbh;
@@ -152,9 +146,6 @@ class Result
                 $this->limit_count = $value;
         }
     }
-
-    // }}}
-    // {{{ fetchRow()
 
     /**
      * Fetch a row of data and return it by reference into an array
@@ -234,9 +225,6 @@ class Result
         }
         return $res;
     }
-
-    // }}}
-    // {{{ fetchInto()
 
     /**
      * Fetch a row of data into an array which is passed by reference
@@ -318,9 +306,6 @@ class Result
         return $res;
     }
 
-    // }}}
-    // {{{ numCols()
-
     /**
      * Get the the number of columns in a result set
      *
@@ -330,9 +315,6 @@ class Result
     {
         return $this->dbh->numCols($this->result);
     }
-
-    // }}}
-    // {{{ numRows()
 
     /**
      * Get the number of rows in a result set
@@ -385,9 +367,6 @@ class Result
         return $count;
     }
 
-    // }}}
-    // {{{ nextResult()
-
     /**
      * Get the next result if a batch of queries was executed
      *
@@ -397,9 +376,6 @@ class Result
     {
         return $this->dbh->nextResult($this->result);
     }
-
-    // }}}
-    // {{{ free()
 
     /**
      * Frees the resources allocated for this result set
@@ -417,9 +393,6 @@ class Result
         return true;
     }
 
-    // }}}
-    // {{{ tableInfo()
-
     /**
      * @see DB\Common::tableInfo()
      * @deprecated Method deprecated some time before Release 1.2
@@ -431,9 +404,6 @@ class Result
         }
         return $this->dbh->tableInfo($this, $mode);
     }
-
-    // }}}
-    // {{{ getQuery()
 
     /**
      * Determine the query string that created this result
@@ -447,9 +417,6 @@ class Result
         return $this->query;
     }
 
-    // }}}
-    // {{{ getRowCounter()
-
     /**
      * Tells which row number is currently being processed
      *
@@ -459,6 +426,4 @@ class Result
     {
         return $this->row_counter;
     }
-
-    // }}}
 }

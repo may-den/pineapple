@@ -18,8 +18,6 @@ namespace Mayden\Pineapple\DB;
  */
 class Row
 {
-    // {{{ constructor
-
     /**
      * The constructor places a row's data into properties of this object
      *
@@ -33,6 +31,4 @@ class Row
             $this->$key = &$arr[$key];
         }
     }
-
-    // }}}
 }

@@ -1,7 +1,7 @@
 <?php
 namespace Mayden\Pineapple\DB\Driver;
 
-use Mayden\Pineapple\Util as PEAR;
+use Mayden\Pineapple\Util;
 
 /**
  * Contains the Common base class
@@ -41,7 +41,7 @@ use Mayden\Pineapple\Util as PEAR;
  * @version    Release: 1.8.2
  * @link       http://pear.php.net/package/DB
  */
-class Common extends PEAR
+class Common extends Util
 {
     // {{{ properties
 
