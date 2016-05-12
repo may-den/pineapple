@@ -1,5 +1,5 @@
 {
-    "name": "borb/pear-db-dbal",
+    "name": "borb/pineapple",
     "description": "A stripped PEAR and DB that removes unused code from legacy and adds Doctrine DBAL support",
     "require": {
         "doctrine/dbal": "^2.5"
