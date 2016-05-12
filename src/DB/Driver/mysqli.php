@@ -1,4 +1,5 @@
 <?php
+// NB: this has not yet been refactored to work with the renamed classes. be patient!
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
@@ -253,7 +254,7 @@ class DB_mysqli extends DB_common
      * Example of how to connect using SSL:
      * <code>
      * require_once 'DB.php';
-     * 
+     *
      * $dsn = array(
      *     'phptype'  => 'mysqli',
      *     'username' => 'someuser',
@@ -266,11 +267,11 @@ class DB_mysqli extends DB_common
      *     'capath'   => '/path/to/ca/dir',
      *     'cipher'   => 'AES',
      * );
-     * 
+     *
      * $options = array(
      *     'ssl' => true,
      * );
-     * 
+     *
      * $db = DB::connect($dsn, $options);
      * if (PEAR::isError($db)) {
      *     die($db->getMessage());

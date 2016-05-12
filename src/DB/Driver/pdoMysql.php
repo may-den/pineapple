@@ -1,4 +1,6 @@
 <?php
+// NB: this has not yet been refactored to work with the renamed classes. be patient!
+
 /**
  * A PEAR DB driver for PHP's PDO::mysql extension
  */
