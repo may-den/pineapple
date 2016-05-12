@@ -1,7 +1,8 @@
 <?php
 namespace Mayden\Pineapple\DB\Driver;
 
-use Mayden\Pineapple\Util;
+use Mayden\Pineapple\Util as PEAR;
+use Mayden\Pineapple\DB;
 
 /**
  * Contains the Common base class

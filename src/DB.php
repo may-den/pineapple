@@ -507,7 +507,7 @@ class DB
      */
     public static function connect($dsn, $options = array())
     {
-        $dsninfo = DB::parseDSN($dsn);
+        $dsninfo = self::parseDSN($dsn);
         $type = $dsninfo['phptype'];
 
         if (!is_array($options)) {
@@ -524,7 +524,7 @@ class DB
             $tmp = PEAR::raiseError(null, DB_ERROR_NOT_FOUND, null, null,
                                     "Driver class for {$classname} is not available"
                                     . " file for '"
-                                    . DB::getDSNString($dsn, true) . "'",
+                                    . self::getDSNString($dsn, true) . "'",
                                     'DB_Error', true);
             return $tmp;
         }
@@ -541,7 +541,7 @@ class DB
         $err = $obj->connect($dsninfo, $obj->getOption('persistent'));
         if (self::isError($err)) {
             if (is_array($dsn)) {
-                $err->addUserInfo(DB::getDSNString($dsn, true));
+                $err->addUserInfo(self::getDSNString($dsn, true));
             } else {
                 $err->addUserInfo($dsn);
             }
@@ -848,7 +848,7 @@ class DB
         /* Calling parseDSN will ensure that we have all the array elements
          * defined, and means that we deal with strings and array in the same
          * manner. */
-        $dsnArray = DB::parseDSN($dsn);
+        $dsnArray = self::parseDSN($dsn);
 
         if ($hidePassword) {
             $dsnArray['password'] = 'PASSWORD';

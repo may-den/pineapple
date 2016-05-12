@@ -470,18 +470,18 @@ class Util
                 $deleted =  $this->_checkDelExpect($error) ? true : false;
             }
 
-            return $deleted ? true : PEAR::raiseError("The expected error you submitted does not exist"); // IMPROVE ME
+            return $deleted ? true : self::raiseError("The expected error you submitted does not exist"); // IMPROVE ME
         } elseif (!empty($error_code)) {
             // $error_code comes alone, trying to unset it
             if ($this->_checkDelExpect($error_code)) {
                 return true;
             }
 
-            return PEAR::raiseError("The expected error you submitted does not exist"); // IMPROVE ME
+            return self::raiseError("The expected error you submitted does not exist"); // IMPROVE ME
         }
 
         // $error_code is empty
-        return PEAR::raiseError("The expected error you submitted is empty"); // IMPROVE ME
+        return self::raiseError("The expected error you submitted is empty"); // IMPROVE ME
     }
 
     /**
@@ -604,7 +604,7 @@ class Util
             return $a;
         }
 
-        $a = &PEAR::raiseError($message, $code, null, null, $userinfo);
+        $a = self::raiseError($message, $code, null, null, $userinfo);
         return $a;
     }
 
@@ -706,7 +706,7 @@ class Util
         if ($object !== null) {
             $object->setErrorHandling($mode, $options);
         } else {
-            PEAR::setErrorHandling($mode, $options);
+            self::setErrorHandling($mode, $options);
         }
         $stack[] = array($mode, $options);
         return true;
@@ -728,7 +728,7 @@ class Util
         if ($object !== null) {
             $object->setErrorHandling($mode, $options);
         } else {
-            PEAR::setErrorHandling($mode, $options);
+            self::setErrorHandling($mode, $options);
         }
         return true;
     }
@@ -778,7 +778,7 @@ function _PEAR_call_destructors()
     {
         reset($_PEAR_destructor_object_list);
 
-        $destructLifoExists = PEAR::getStaticProperty('PEAR', 'destructlifo');
+        $destructLifoExists = self::getStaticProperty('PEAR', 'destructlifo');
 
         if ($destructLifoExists) {
             $_PEAR_destructor_object_list = array_reverse($_PEAR_destructor_object_list);
