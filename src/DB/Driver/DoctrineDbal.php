@@ -188,8 +188,9 @@ class DoctrineDbal extends Common
      * @param DBALConnection $connection A constructed DBAL connection handle
      * @return DB_doctrinedbal The constructed DB_doctrinedbal object
      */
-    public function setConnectionHandle(DBALConnection $connection)
+    public function setConnectionHandle(DBALConnection $connection, array $database)
     {
+        $this->dsn = $database;
         $this->connection = $connection;
         return $this;
     }
