@@ -3,8 +3,6 @@ namespace Mayden\Pineapple;
 
 use Mayden\Pineapple\Util as PEAR;
 
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
 /**
  * Database independent query interface
  *
@@ -912,5 +910,3 @@ class DB
 
     // }}}
 }
-
-// }}}
