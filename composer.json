@@ -8,5 +8,8 @@
         "psr-4": {
             "Mayden\\Pineapple\\": "src/"
         }
+    },
+    "require-dev": {
+        "crysalead/kahlan": "^2.5"
     }
 }
