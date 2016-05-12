@@ -1,6 +1,8 @@
 <?php
 namespace Mayden\Pineapple\DB;
 
+use Mayden\Pineapple\DB;
+
 /**
  * This class implements a wrapper for a DB result set
  *
