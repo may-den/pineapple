@@ -1,6 +1,7 @@
 <?php
 namespace Mayden\Pineapple\DB;
 
+use Mayden\Pineapple\DB;
 use Mayden\Pineapple\Error as PineappleError;
 
 /**
