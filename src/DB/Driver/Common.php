@@ -3,6 +3,7 @@ namespace Mayden\Pineapple\DB\Driver;
 
 use Mayden\Pineapple\Util as PEAR;
 use Mayden\Pineapple\DB;
+use Mayden\Pineapple\DB\Result;
 
 /**
  * Contains the Common base class
@@ -873,7 +874,7 @@ class Common extends PEAR
      *                               append to the SQL statement.  Don't
      *                               include the "WHERE" keyword.
      *
-     * @return mixed  a new DB_result object for successful SELECT queries
+     * @return mixed  a new Result object for successful SELECT queries
      *                 or DB_OK for successul data manipulation queries.
      *                 A DB_Error object on failure.
      *
@@ -991,7 +992,7 @@ class Common extends PEAR
      *                         query:  meaning 1 placeholder for non-array
      *                         parameters or 1 placeholder per array element.
      *
-     * @return mixed  a new DB_result object for successful SELECT queries
+     * @return mixed  a new Result object for successful SELECT queries
      *                 or DB_OK for successul data manipulation queries.
      *                 A DB_Error object on failure.
      *
@@ -1010,7 +1011,7 @@ class Common extends PEAR
         if ($result === DB_OK || DB::isError($result)) {
             return $result;
         } else {
-            $tmp = new DB_result($this, $result);
+            $tmp = new Result($this, $result);
             return $tmp;
         }
     }
@@ -1191,11 +1192,11 @@ class Common extends PEAR
      *                         query:  meaning 1 placeholder for non-array
      *                         parameters or 1 placeholder per array element.
      *
-     * @return mixed  a new DB_result object for successful SELECT queries
+     * @return mixed  a new Result object for successful SELECT queries
      *                 or DB_OK for successul data manipulation queries.
      *                 A DB_Error object on failure.
      *
-     * @see DB_result, Common::prepare(), Common::execute()
+     * @see Result, Common::prepare(), Common::execute()
      */
     function &query($query, $params = array())
     {
@@ -1213,7 +1214,7 @@ class Common extends PEAR
             if ($result === DB_OK || DB::isError($result)) {
                 return $result;
             } else {
-                $tmp = new DB_result($this, $result);
+                $tmp = new Result($this, $result);
                 return $tmp;
             }
         }
@@ -1234,7 +1235,7 @@ class Common extends PEAR
      *                         query:  meaning 1 placeholder for non-array
      *                         parameters or 1 placeholder per array element.
      *
-     * @return mixed  a new DB_result object for successful SELECT queries
+     * @return mixed  a new Result object for successful SELECT queries
      *                 or DB_OK for successul data manipulation queries.
      *                 A DB_Error object on failure.
      */
@@ -1245,7 +1246,7 @@ class Common extends PEAR
             return $query;
         }
         $result = $this->query($query, $params);
-        if (is_object($result) && is_a($result, 'DB_result')) {
+        if (is_object($result) && is_a($result, 'Mayden\Pineapple\DB\Result')) {
             $result->setOption('limit_from', $from);
             $result->setOption('limit_count', $count);
         }
@@ -2065,7 +2066,7 @@ class Common extends PEAR
      * If the 'portability' option has <samp>DB_PORTABILITY_LOWERCASE</samp>
      * turned on, the names of tables and fields will be lowercased.
      *
-     * @param object|string  $result  DB_result object from a query or a
+     * @param object|string  $result  Result object from a query or a
      *                                string containing the name of a table.
      *                                While this also accepts a query result
      *                                resource identifier, this behavior is
