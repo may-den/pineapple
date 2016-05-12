@@ -1,4 +1,6 @@
 <?php
+use Doctrine\DBAL\Connection as DBALConnection;
+
 require_once 'DB/common.php';
 
 /**
@@ -75,11 +77,8 @@ class DB_doctrinedbal extends DB_common
         1452 => DB_ERROR_CONSTRAINT,
     );
 
-    /**
-     * The raw database connection created by PHP
-     * @var resource
-     */
-    var $connection;
+    // @var DBALConnection Our Doctrine DBAL connection
+    private $connection = null;
 
     /**
      * A copy of the last pdostatement object
@@ -91,7 +90,6 @@ class DB_doctrinedbal extends DB_common
      * @var array
      */
     var $dsn = array();
-
 
     /**
      * Should data manipulation queries be committed automatically?
@@ -179,52 +177,19 @@ class DB_doctrinedbal extends DB_common
      */
     function connect($dsn, $persistent = false)
     {
-        if (!PEAR::loadExtension('pdo_mysql')) {
-            return $this->raiseError(DB_ERROR_EXTENSION_NOT_FOUND);
-        }
-
-        $this->dsn = $dsn;
-        if ($dsn['dbsyntax']) {
-            $this->dbsyntax = $dsn['dbsyntax'];
-        }
-
-        $ini = ini_get('track_errors');
-        @ini_set('track_errors', 1);
-        $php_errormsg = '';
-
-        $options = array();
-
-        if (isset($dsn['port']) && !empty($dns['port'])) {
-            $hostSpec = $dsn['hostspec'] . ':' . $dsn['port'];
-        } else {
-            $hostSpec = $dsn['hostspec'];
-        }
-
-        $generatedDsn = sprintf('mysql:host=%s;dbname=%s', $hostSpec, $dsn['database']);
-
-        if (((int) $this->getOption('ssl')) === 1) {
-            $options = array_merge($options, array(
-                PDO::MYSQL_ATTR_SSL_CERT   => empty($dsn['cert'])   ? null : $dsn['cert'],
-                PDO::MYSQL_ATTR_SSL_KEY    => empty($dsn['key'])    ? null : $dsn['key'],
-                PDO::MYSQL_ATTR_SSL_CA     => empty($dsn['ca'])     ? null : $dsn['ca'],
-                PDO::MYSQL_ATTR_SSL_CAPATH => empty($dsn['capath']) ? null : $dsn['capath'],
-                PDO::MYSQL_ATTR_SSL_CIPHER => empty($dsn['cipher']) ? null : $dsn['cipher'],
-            ));
-        }
-
-        try {
-            $this->connection = @new PDO($generatedDsn, $dsn['username'], $dsn['password'], $options);
-        } catch (PDOException $e) {
-            return $this->raiseError(DB_ERROR_CONNET_FAILED, null, null, null, $e->getMessage());
-        }
-
-        @ini_set('track_errors', $ini);
-
-        if ($dsn['database']) {
-            $this->_db = $dsn['database'];
-        }
-
         return DB_OK;
+    }
+
+    /**
+     * Set the DBAL connection handle in the object
+     *
+     * @param DBALConnection $connection A constructed DBAL connection handle
+     * @return DB_doctrinedbal The constructed DB_doctrinedbal object
+     */
+    public function setConnectionHandle(DBALConnection $connection)
+    {
+        $this->connection = $connection;
+        return $this;
     }
 
     /**
