@@ -1,13 +1,14 @@
 <?php
-use Doctrine\DBAL\Connection as DBALConnection;
+namespace Mayden\Pineapple\DB\Driver;
 
-require_once 'DB/common.php';
+use Doctrine\DBAL\Connection as DBALConnection;
+use PDO;
 
 /**
  * A PEAR DB driver that uses Doctrine's DBAL as an underlying database
  * layer.
  */
-class DB_doctrinedbal extends DB_common
+class DoctrineDbal extends Common
 {
     /**
      * The DB driver type (mysql, oci8, odbc, etc.)
@@ -760,7 +761,7 @@ class DB_doctrinedbal extends DB_common
             $this->myRaiseError();
         }
 
-        if (!is_object($id) || !is_a($id, 'PDOStatement')) {
+        if (!is_object($id) || !is_a($id, 'Doctrine\DBAL\Driver\PDOStatement')) {
             return $this->myRaiseError(DB_ERROR_NEED_MORE_DATA);
         }
 

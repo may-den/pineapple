@@ -1,9 +1,10 @@
 <?php
+namespace Mayden\Pineapple\DB\Driver;
 
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+use Mayden\Pineapple\Util as PEAR;
 
 /**
- * Contains the DB_common base class
+ * Contains the Common base class
  *
  * PHP version 5
  *
@@ -25,12 +26,7 @@
  */
 
 /**
- * Obtain the PEAR class so it can be extended from
- */
-require_once 'PEAR.php';
-
-/**
- * DB_common is the base class from which each database driver class extends
+ * Common is the base class from which each database driver class extends
  *
  * All common methods are declared here.  If a given DBMS driver contains
  * a particular method, that method will overload the one here.
@@ -45,7 +41,7 @@ require_once 'PEAR.php';
  * @version    Release: 1.8.2
  * @link       http://pear.php.net/package/DB
  */
-class DB_common extends PEAR
+class Common extends PEAR
 {
     // {{{ properties
 
@@ -66,7 +62,7 @@ class DB_common extends PEAR
     /**
      * Was a connection present when the object was serialized()?
      * @var bool
-     * @see DB_common::__sleep(), DB_common::__wake()
+     * @see Common::__sleep(), Common::__wake()
      */
     var $was_connected = null;
 
@@ -83,7 +79,7 @@ class DB_common extends PEAR
      * option instead.
      *
      * @var array
-     * @see DB_common::setOption()
+     * @see Common::setOption()
      */
     var $options = array(
         'result_buffering' => 500,
@@ -138,14 +134,14 @@ class DB_common extends PEAR
 
 
     // }}}
-    // {{{ DB_common
+    // {{{ Common
 
     /**
      * This constructor calls <kbd>$this->PEAR('DB_Error')</kbd>
      *
      * @return void
      */
-    function DB_common()
+    function __construct()
     {
         $this->PEAR('DB_Error');
     }
@@ -256,7 +252,7 @@ class DB_common extends PEAR
      *
      * @return string  the quoted string
      *
-     * @see DB_common::quoteSmart(), DB_common::escapeSimple()
+     * @see Common::quoteSmart(), Common::escapeSimple()
      * @deprecated Method deprecated some time before Release 1.2
      */
     function quoteString($string)
@@ -279,7 +275,7 @@ class DB_common extends PEAR
      * @return string  the quoted string or the string <samp>NULL</samp>
      *                  if the value submitted is <kbd>null</kbd>.
      *
-     * @see DB_common::quoteSmart(), DB_common::escapeSimple()
+     * @see Common::quoteSmart(), Common::escapeSimple()
      * @deprecated Deprecated in release 1.6.0
      */
     function quote($string = null)
@@ -433,7 +429,7 @@ class DB_common extends PEAR
      *  </li>
      * </ul>
      *
-     * @see DB_common::escapeSimple()
+     * @see Common::escapeSimple()
      * @since Method available since Release 1.6.0
      */
     function quoteSmart($in)
@@ -465,7 +461,7 @@ class DB_common extends PEAR
      *
      * @param boolean the boolean value to be quoted.
      * @return string the quoted string.
-     * @see DB_common::quoteSmart()
+     * @see Common::quoteSmart()
      * @since Method available since release 1.7.8.
      */
     function quoteBoolean($boolean) {
@@ -481,7 +477,7 @@ class DB_common extends PEAR
      *
      * @param float the float value to be quoted.
      * @return string the quoted string.
-     * @see DB_common::quoteSmart()
+     * @see Common::quoteSmart()
      * @since Method available since release 1.7.8.
      */
     function quoteFloat($float) {
@@ -503,7 +499,7 @@ class DB_common extends PEAR
      *
      * @return string  the escaped string
      *
-     * @see DB_common::quoteSmart()
+     * @see Common::quoteSmart()
      * @since Method available since Release 1.6.0
      */
     function escapeSimple($str)
@@ -697,7 +693,7 @@ class DB_common extends PEAR
      *
      * @return int  DB_OK on success.  A DB_Error object on failure.
      *
-     * @see DB_common::$options
+     * @see Common::$options
      */
     function setOption($option, $value)
     {
@@ -796,7 +792,7 @@ class DB_common extends PEAR
      * @return mixed  DB statement resource on success. A DB_Error object
      *                 on failure.
      *
-     * @see DB_common::execute()
+     * @see Common::execute()
      */
     function prepare($query)
     {
@@ -848,7 +844,7 @@ class DB_common extends PEAR
      *
      * @return resource  the query handle
      *
-     * @uses DB_common::prepare(), DB_common::buildManipSQL()
+     * @uses Common::prepare(), Common::buildManipSQL()
      */
     function autoPrepare($table, $table_fields, $mode = DB_AUTOQUERY_INSERT,
                          $where = false)
@@ -880,7 +876,7 @@ class DB_common extends PEAR
      *                 or DB_OK for successul data manipulation queries.
      *                 A DB_Error object on failure.
      *
-     * @uses DB_common::autoPrepare(), DB_common::execute()
+     * @uses Common::autoPrepare(), Common::execute()
      */
     function autoExecute($table, $fields_values, $mode = DB_AUTOQUERY_INSERT,
                          $where = false)
@@ -1000,7 +996,7 @@ class DB_common extends PEAR
      *
      * {@internal ibase and oci8 have their own execute() methods.}}
      *
-     * @see DB_common::prepare()
+     * @see Common::prepare()
      */
     function &execute($stmt, $data = array())
     {
@@ -1035,7 +1031,7 @@ class DB_common extends PEAR
      *                 prepare/execute.  A DB_Error object on failure.
      *
      * @access protected
-     * @see DB_common::execute()
+     * @see Common::execute()
      */
     function executeEmulateQuery($stmt, $data = array())
     {
@@ -1089,7 +1085,7 @@ class DB_common extends PEAR
      *
      * @return int  DB_OK on success.  A DB_Error object on failure.
      *
-     * @see DB_common::prepare(), DB_common::execute()
+     * @see Common::prepare(), Common::execute()
      */
     function executeMultiple($stmt, $data)
     {
@@ -1115,7 +1111,7 @@ class DB_common extends PEAR
      *
      * @return bool  TRUE on success, FALSE if $result is invalid
      *
-     * @see DB_common::prepare()
+     * @see Common::prepare()
      */
     function freePrepared($stmt, $free_resource = true)
     {
@@ -1198,7 +1194,7 @@ class DB_common extends PEAR
      *                 or DB_OK for successul data manipulation queries.
      *                 A DB_Error object on failure.
      *
-     * @see DB_result, DB_common::prepare(), DB_common::execute()
+     * @see DB_result, Common::prepare(), Common::execute()
      */
     function &query($query, $params = array())
     {
@@ -1385,7 +1381,7 @@ class DB_common extends PEAR
      *
      * @return array  the results as an array.  A DB_Error object on failure.
      *
-     * @see DB_common::query()
+     * @see Common::query()
      */
     function &getCol($query, $col = 0, $params = array())
     {
@@ -1772,8 +1768,8 @@ class DB_common extends PEAR
      * @return string  the sequence's name in the backend
      *
      * @access protected
-     * @see DB_common::createSequence(), DB_common::dropSequence(),
-     *      DB_common::nextID(), DB_common::setOption()
+     * @see Common::createSequence(), Common::dropSequence(),
+     *      Common::nextID(), Common::setOption()
      */
     function getSequenceName($sqn)
     {
@@ -1794,8 +1790,8 @@ class DB_common extends PEAR
      * @return int  the next id number in the sequence.
      *               A DB_Error object on failure.
      *
-     * @see DB_common::createSequence(), DB_common::dropSequence(),
-     *      DB_common::getSequenceName()
+     * @see Common::createSequence(), Common::dropSequence(),
+     *      Common::getSequenceName()
      */
     function nextId($seq_name, $ondemand = true)
     {
@@ -1819,8 +1815,8 @@ class DB_common extends PEAR
      *
      * @return int  DB_OK on success.  A DB_Error object on failure.
      *
-     * @see DB_common::dropSequence(), DB_common::getSequenceName(),
-     *      DB_common::nextID()
+     * @see Common::dropSequence(), Common::getSequenceName(),
+     *      Common::nextID()
      */
     function createSequence($seq_name)
     {
@@ -1837,8 +1833,8 @@ class DB_common extends PEAR
      *
      * @return int  DB_OK on success.  A DB_Error object on failure.
      *
-     * @see DB_common::createSequence(), DB_common::getSequenceName(),
-     *      DB_common::nextID()
+     * @see Common::createSequence(), Common::getSequenceName(),
+     *      Common::nextID()
      */
     function dropSequence($seq_name)
     {
@@ -2083,7 +2079,7 @@ class DB_common extends PEAR
      * @return array  an associative array with the information requested.
      *                 A DB_Error object on failure.
      *
-     * @see DB_common::setOption()
+     * @see Common::setOption()
      */
     function tableInfo($result, $mode = null)
     {
@@ -2153,7 +2149,7 @@ class DB_common extends PEAR
      *                  support the object type requested
      *
      * @access protected
-     * @see DB_common::getListOf()
+     * @see Common::getListOf()
      */
     function getSpecialQuery($type)
     {
@@ -2250,12 +2246,3 @@ class DB_common extends PEAR
 
     // }}}
 }
-
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- */
-
-?>

@@ -5,7 +5,7 @@ use Doctrine\DBAL\DriverManager as DoctrineDriverManager;
 require_once 'vendor/autoload.php';
 
 $config = new DoctrineConfiguration();
-//..
+
 $connectionParams = array(
     'dbname' => 'testdb',
     'user' => 'root',
@@ -16,7 +16,8 @@ $connectionParams = array(
 $conn = DoctrineDriverManager::getConnection($connectionParams, $config);
 
 $sth = $conn->query('SELECT USER()');
+var_dump($sth);
 //$sth->execute();
 
-$result = $sth->fetch();
-var_dump($result);
+//$result = $sth->fetch();
+//var_dump($result);
