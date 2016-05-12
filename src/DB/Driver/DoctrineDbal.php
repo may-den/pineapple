@@ -219,7 +219,7 @@ class DoctrineDbal extends Common
         $ismanip = $this->_checkManip($query);
         $this->last_query = $query;
         $query = $this->modifyQuery($query);
-        if (!$this->_db) {
+        if (!$this->connection) {
             return $this->myRaiseError(DB_ERROR_NODBSELECTED);
         }
         if (!$this->autocommit && $ismanip) {
@@ -390,7 +390,7 @@ class DoctrineDbal extends Common
     function commit()
     {
         if ($this->transaction_opcount > 0) {
-            if (!$this->_db) {
+            if (!$this->connection) {
                 return $this->myRaiseError(DB_ERROR_NODBSELECTED);
             }
             $result = $this->connection->commit();
@@ -410,7 +410,7 @@ class DoctrineDbal extends Common
     function rollback()
     {
         if ($this->transaction_opcount > 0) {
-            if (!$this->_db) {
+            if (!$this->connection) {
                 return $this->myRaiseError(DB_ERROR_NODBSELECTED);
             }
             $result = $this->connection->rollback();
@@ -741,7 +741,7 @@ class DoctrineDbal extends Common
     {
         if (is_string($result)) {
             // Fix for bug #11580.
-            if (!$this->_db) {
+            if (!$this->connection) {
                 return $this->myRaiseError(DB_ERROR_NODBSELECTED);
             }
 
