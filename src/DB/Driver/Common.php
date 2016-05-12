@@ -42,7 +42,7 @@ use Mayden\Pineapple\DB;
  * @version    Release: 1.8.2
  * @link       http://pear.php.net/package/DB
  */
-class Common extends Util
+class Common extends PEAR
 {
     // {{{ properties
 
