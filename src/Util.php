@@ -33,25 +33,12 @@ define('PEAR_ERROR_CALLBACK',  16);
  * @deprecated
  */
 define('PEAR_ERROR_EXCEPTION', 32);
-/**#@-*/
-
-if (substr(PHP_OS, 0, 3) == 'WIN') {
-    define('OS_WINDOWS', true);
-    define('OS_UNIX',    false);
-    define('PEAR_OS',    'Windows');
-} else {
-    define('OS_WINDOWS', false);
-    define('OS_UNIX',    true);
-    define('PEAR_OS',    'Unix'); // blatant assumption
-}
 
 $GLOBALS['_PEAR_default_error_mode']     = PEAR_ERROR_RETURN;
 $GLOBALS['_PEAR_default_error_options']  = E_USER_NOTICE;
 $GLOBALS['_PEAR_destructor_object_list'] = array();
 $GLOBALS['_PEAR_shutdown_funcs']         = array();
 $GLOBALS['_PEAR_error_handler_stack']    = array();
-
-@ini_set('track_errors', true);
 
 /**
  * Base class for other PEAR classes.  Provides rudimentary
