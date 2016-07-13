@@ -345,17 +345,17 @@ class Util
         }
 
         switch ($mode) {
-            case PEAR_ERROR_EXCEPTION:
-            case PEAR_ERROR_RETURN:
-            case PEAR_ERROR_PRINT:
-            case PEAR_ERROR_TRIGGER:
-            case PEAR_ERROR_DIE:
+            case self::PEAR_ERROR_EXCEPTION:
+            case self::PEAR_ERROR_RETURN:
+            case self::PEAR_ERROR_PRINT:
+            case self::PEAR_ERROR_TRIGGER:
+            case self::PEAR_ERROR_DIE:
             case null:
                 $setmode = $mode;
                 $setoptions = $options;
                 break;
 
-            case PEAR_ERROR_CALLBACK:
+            case self::PEAR_ERROR_CALLBACK:
                 $setmode = $mode;
                 // class/object method callback
                 if (is_callable($options)) {
