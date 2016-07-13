@@ -230,7 +230,7 @@ class DoctrineDbal extends Common
         $this->last_query = $query;
         $query = $this->modifyQuery($query);
         if (!$this->connection) {
-            return $this->myRaiseError(DB_ERROR_NODBSELECTED);
+            return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
         }
         if (!$this->autocommit && $ismanip) {
             if ($this->transaction_opcount == 0) {
@@ -258,7 +258,7 @@ class DoctrineDbal extends Common
             $this->lastStatement = $result;
             return $result;
         }
-        return DB_OK;
+        return DB::DB_OK;
     }
 
     /**
