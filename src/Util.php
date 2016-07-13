@@ -502,7 +502,7 @@ class Util
      * @see PEAR::setErrorHandling
      * @since PHP 4.0.5
      */
-    protected static function _raiseError($object,
+    protected static function raiseError($object,
                          $message = null,
                          $code = null,
                          $mode = null,
@@ -579,7 +579,7 @@ class Util
      * @return object   a PEAR error object
      * @see PEAR::raiseError
      */
-    protected static function _throwError($object, $message = null, $code = null, $userinfo = null)
+    protected static function throwError($object, $message = null, $code = null, $userinfo = null)
     {
         if ($object !== null) {
             $a = &$object->raiseError($message, $code, null, null, $userinfo);
@@ -673,7 +673,7 @@ class Util
      *
      * @see PEAR::setErrorHandling
      */
-    protected static function _pushErrorHandling($object, $mode, $options = null)
+    protected static function pushErrorHandling($object, $mode, $options = null)
     {
         $stack = &$GLOBALS['_PEAR_error_handler_stack'];
         if ($object !== null) {
@@ -701,7 +701,7 @@ class Util
     *
     * @see PEAR::pushErrorHandling
     */
-    protected static function _popErrorHandling($object)
+    protected static function popErrorHandling($object)
     {
         $stack = &$GLOBALS['_PEAR_error_handler_stack'];
         array_pop($stack);
