@@ -1874,18 +1874,12 @@ class Common extends PEAR
      *
      * @see PEAR_Error
      */
-    function &raiseError($code = DB_ERROR, $mode = null, $options = null,
+    function raiseError($code = DB::DB_ERROR, $mode = null, $options = null,
                          $userinfo = null, $nativecode = null, $dummy1 = null,
                          $dummy2 = null)
     {
         // The error is yet a DB error object
         if (is_object($code)) {
-            // because we the static PEAR::raiseError, our global
-            // handler should be used if it is set
-            if ($mode === null && !empty($this->_default_error_mode)) {
-                $mode    = $this->_default_error_mode;
-                $options = $this->_default_error_options;
-            }
             $tmp = PEAR::raiseError($code, null, $mode, $options,
                                     null, null, true);
             return $tmp;

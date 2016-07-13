@@ -74,38 +74,12 @@ class Util
     private $debug = false;
 
     /**
-     * Default error mode for this object.
-     *
-     * @var     int
-     * @access  private
-     */
-    var $_default_error_mode = self::PEAR_ERROR_RETURN;
-
-    /**
-     * Default error options used for this object when error mode
-     * is PEAR_ERROR_TRIGGER.
-     *
-     * @var     int
-     * @access  private
-     */
-    var $_default_error_options = null;
-
-    /**
-     * Default error handler (callback) for this object, if error mode is
-     * PEAR_ERROR_CALLBACK.
-     *
-     * @var     string
-     * @access  private
-     */
-    var $_default_error_handler = '';
-
-    /**
      * Which class to use for error objects.
      *
      * @var     string
      * @access  private
      */
-    var $_error_class = 'PEAR_Error';
+    private $error_class = Error::class;
 
     /**
      * Constructor.  Registers this object in
@@ -167,7 +141,7 @@ class Util
      */
     public static function isError($data, $code = null)
     {
-        if (!is_a($data, 'PEAR_Error')) {
+        if (!($data instanceof Error)) {
             return false;
         }
 
@@ -216,30 +190,23 @@ class Util
      * @see PEAR::setErrorHandling
      * @since PHP 4.0.5
      */
-    protected static function raiseError($object,
-                         $message = null,
-                         $code = null,
-                         $mode = null,
-                         $options = null,
-                         $userinfo = null,
-                         $error_class = null,
-                         $skipmsg = false)
+    protected static function raiseError($object, $message = null, $code = null, $mode = null, $options = null, $userinfo = null, $error_class = null, $skipmsg = false)
     {
         // The error is yet a PEAR error object
         if (is_object($message)) {
-            $code        = $message->getCode();
-            $userinfo    = $message->getUserInfo();
+            $code = $message->getCode();
+            $userinfo = $message->getUserInfo();
             $error_class = $message->getType();
             $message->error_message_prefix = '';
-            $message     = $message->getMessage();
+            $message = $message->getMessage();
         }
 
         if ($error_class !== null) {
             $ec = $error_class;
-        } elseif ($object !== null && isset($object->_error_class)) {
-            $ec = $object->_error_class;
+        } elseif ($object !== null && isset($object->error_class)) {
+            $ec = $object->error_class;
         } else {
-            $ec = 'PEAR_Error';
+            $ec = Error::class;
         }
 
         if ($skipmsg) {
