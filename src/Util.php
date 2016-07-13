@@ -258,9 +258,7 @@ class Util
      *
      * @since PHP 4.0.5
      */
-    protected static function _setErrorHandling(
-        $object, $mode = null, $options = null
-    ) {
+    protected static function setErrorHandling($object, $mode = null, $options = null) {
         if ($object !== null) {
             $setmode     = &$object->_default_error_mode;
             $setoptions  = &$object->_default_error_options;
