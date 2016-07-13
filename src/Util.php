@@ -147,61 +147,6 @@ class Util
     }
 
     /**
-     * Only here for backwards compatibility.
-     * E.g. Archive_Tar calls $this->PEAR() in its constructor.
-     *
-     * @param string $error_class Which class to use for error objects,
-     *                            defaults to PEAR_Error.
-     */
-    public function PEAR($error_class = null)
-    {
-        self::__construct($error_class);
-    }
-
-    /**
-     * Destructor (the emulated type of...).  Does nothing right now,
-     * but is included for forward compatibility, so subclass
-     * destructors should always call it.
-     *
-     * See the note in the class desciption about output from
-     * destructors.
-     *
-     * @access public
-     * @return void
-     */
-    function _PEAR() {
-        if ($this->_debug) {
-            printf("PEAR destructor called, class=%s\n", strtolower(get_class($this)));
-        }
-    }
-
-    public function __call($method, $arguments)
-    {
-        if (!isset(self::$bivalentMethods[$method])) {
-            trigger_error(
-                'Call to undefined method PEAR::' . $method . '()', E_USER_ERROR
-            );
-        }
-        return call_user_func_array(
-            array(get_class(), '_' . $method),
-            array_merge(array($this), $arguments)
-        );
-    }
-
-    public static function __callStatic($method, $arguments)
-    {
-        if (!isset(self::$bivalentMethods[$method])) {
-            trigger_error(
-                'Call to undefined method PEAR::' . $method . '()', E_USER_ERROR
-            );
-        }
-        return call_user_func_array(
-            array(get_class(), '_' . $method),
-            array_merge(array(null), $arguments)
-        );
-    }
-
-    /**
     * If you have a class that's mostly/entirely static, and you need static
     * properties, you can use this method to simulate them. Eg. in your method(s)
     * do this: $myVar = &PEAR::getStaticProperty('myclass', 'myVar');
