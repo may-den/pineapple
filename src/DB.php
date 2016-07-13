@@ -1,8 +1,6 @@
 <?php
 namespace Mayden\Pineapple;
 
-use Mayden\Pineapple\Util as PEAR;
-
 /**
  * Database independent query interface
  *
@@ -287,10 +285,15 @@ class DB
         $classname = "\\Mayden\\Pineapple\\DB\\Driver\\${type}";
 
         if (!class_exists($classname)) {
-            $tmp = PEAR::raiseError(null, self::DB_ERROR_NOT_FOUND, null, null,
-                                    "Driver class for {$classname} is not available"
-                                    . " file for '$dsn'",
-                                    'DB_Error', true);
+            $tmp = Util::raiseError(
+                null,
+                self::DB_ERROR_NOT_FOUND,
+                null,
+                null,
+                "Driver class for {$classname} is not available file for '{$dsn}'",
+                DB\Error::class,
+                true
+            );
             return $tmp;
         }
 
@@ -355,11 +358,15 @@ class DB
         $classname = "\\Mayden\\Pineapple\\DB\\Driver\\${type}";
 
         if (!class_exists($classname)) {
-            $tmp = PEAR::raiseError(null, self::DB_ERROR_NOT_FOUND, null, null,
-                                    "Driver class for {$classname} is not available"
-                                    . " file for '"
-                                    . self::getDSNString($dsn, true) . "'",
-                                    'DB_Error', true);
+            $tmp = Util::raiseError(
+                null,
+                self::DB_ERROR_NOT_FOUND,
+                null,
+                null,
+                "Driver class for {$classname} is not available file for '" . self::getDSNString($dsn, true) . "'",
+                DB\Error::class,
+                true
+            );
             return $tmp;
         }
 
@@ -394,7 +401,7 @@ class DB
      */
     public static function isError($value)
     {
-        return is_object($value) && is_a($value, 'Mayden\Pineapple\DB\Error');
+        return is_object($value) && ($value instanceof DB\Error);
     }
 
     /**
@@ -407,7 +414,7 @@ class DB
     public static function isConnection($value)
     {
         return (is_object($value) &&
-                is_subclass_of($value, 'Mayden\Pineapple\DB\Driver\Common') &&
+                ($value instanceof DB\Driver\Common) &&
                 method_exists($value, 'simpleQuery'));
     }
 
@@ -568,7 +575,7 @@ class DB
 
         // Get (if found): username and password
         // $dsn => username:password@protocol+hostspec/database
-        if (($at = strrpos($dsn,'@')) !== false) {
+        if (($at = strrpos($dsn, '@')) !== false) {
             $str = substr($dsn, 0, $at);
             $dsn = substr($dsn, $at + 1);
             if (($pos = strpos($str, ':')) !== false) {
@@ -586,7 +593,6 @@ class DB
             $proto       = $match[1];
             $proto_opts  = $match[2] ? $match[2] : false;
             $dsn         = $match[3];
-
         } else {
             // $dsn => protocol+hostspec/database (old format)
             if (strpos($dsn, '+') !== false) {
@@ -647,7 +653,8 @@ class DB
      * @param boolean true to hide the password, false to include it
      * @return string
      */
-    public static function getDSNString($dsn, $hidePassword) {
+    public static function getDSNString($dsn, $hidePassword)
+    {
         /* Calling parseDSN will ensure that we have all the array elements
          * defined, and means that we deal with strings and array in the same
          * manner. */
@@ -686,18 +693,21 @@ class DB
         }
         $dsnString .= '/'.$dsnArray['database'];
 
-        /* Option handling. Unfortunately, parseDSN simply places options into
+        /**
+         * Option handling. Unfortunately, parseDSN simply places options into
          * the top-level array, so we'll first get rid of the fields defined by
-         * DB and see what's left. */
-        unset($dsnArray['phptype'],
-              $dsnArray['dbsyntax'],
-              $dsnArray['username'],
-              $dsnArray['password'],
-              $dsnArray['protocol'],
-              $dsnArray['socket'],
-              $dsnArray['hostspec'],
-              $dsnArray['port'],
-              $dsnArray['database']
+         * DB and see what's left.
+         */
+        unset(
+            $dsnArray['phptype'],
+            $dsnArray['dbsyntax'],
+            $dsnArray['username'],
+            $dsnArray['password'],
+            $dsnArray['protocol'],
+            $dsnArray['socket'],
+            $dsnArray['hostspec'],
+            $dsnArray['port'],
+            $dsnArray['database']
         );
         if (count($dsnArray) > 0) {
             $dsnString .= '?';
@@ -706,7 +716,7 @@ class DB
                 if (++$i > 1) {
                     $dsnString .= '&';
                 }
-                $dsnString .= $key.'='.$value;
+                $dsnString .= $key . '=' . $value;
             }
         }
 
