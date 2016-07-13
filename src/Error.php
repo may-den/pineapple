@@ -60,13 +60,9 @@ class Error
         $this->mode      = $mode;
         $this->userinfo  = $userinfo;
 
-        $skiptrace = PineappleUtil::getStaticProperty('PEAR_Error', 'skiptrace');
-
-        if (!$skiptrace) {
-            $this->backtrace = debug_backtrace();
-            if (isset($this->backtrace[0]) && isset($this->backtrace[0]['object'])) {
-                unset($this->backtrace[0]['object']);
-            }
+        $this->backtrace = debug_backtrace();
+        if (isset($this->backtrace[0]) && isset($this->backtrace[0]['object'])) {
+            unset($this->backtrace[0]['object']);
         }
 
         if ($mode & PineappleUtil::PEAR_ERROR_CALLBACK) {

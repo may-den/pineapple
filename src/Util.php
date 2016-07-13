@@ -99,33 +99,8 @@ class Util
         }
 
         if ($error_class !== null) {
-            $this->_error_class = $error_class;
+            $this->error_class = $error_class;
         }
-    }
-
-    /**
-    * If you have a class that's mostly/entirely static, and you need static
-    * properties, you can use this method to simulate them. Eg. in your method(s)
-    * do this: $myVar = &PEAR::getStaticProperty('myclass', 'myVar');
-    * You MUST use a reference, or they will not persist!
-    *
-    * @param  string $class  The calling classname, to prevent clashes
-    * @param  string $var    The variable to retrieve.
-    * @return mixed   A reference to the variable. If not set it will be
-    *                 auto initialised to NULL.
-    */
-    public static function getStaticProperty($class, $var)
-    {
-        static $properties;
-        if (!isset($properties[$class])) {
-            $properties[$class] = array();
-        }
-
-        if (!array_key_exists($var, $properties[$class])) {
-            $properties[$class][$var] = null;
-        }
-
-        return $properties[$class][$var];
     }
 
     /**
