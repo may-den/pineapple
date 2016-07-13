@@ -20,26 +20,6 @@ namespace Mayden\Pineapple;
  * @since      File available since Release 0.1
  */
 
-/**#@+
- * ERROR constants
- */
-define('PEAR_ERROR_RETURN',     1);
-define('PEAR_ERROR_PRINT',      2);
-define('PEAR_ERROR_TRIGGER',    4);
-define('PEAR_ERROR_DIE',        8);
-define('PEAR_ERROR_CALLBACK',  16);
-/**
- * WARNING: obsolete
- * @deprecated
- */
-define('PEAR_ERROR_EXCEPTION', 32);
-
-$GLOBALS['_PEAR_default_error_mode']     = PEAR_ERROR_RETURN;
-$GLOBALS['_PEAR_default_error_options']  = E_USER_NOTICE;
-$GLOBALS['_PEAR_destructor_object_list'] = array();
-$GLOBALS['_PEAR_shutdown_funcs']         = array();
-$GLOBALS['_PEAR_error_handler_stack']    = array();
-
 /**
  * Base class for other PEAR classes.  Provides rudimentary
  * emulation of destructors.
@@ -68,10 +48,25 @@ $GLOBALS['_PEAR_error_handler_stack']    = array();
  * @link       http://pear.php.net/package/PEAR
  * @see        PEAR_Error
  * @since      Class available since PHP 4.0.2
- * @link        http://pear.php.net/manual/en/core.pear.php#core.pear.pear
+ * @link       http://pear.php.net/manual/en/core.pear.php#core.pear.pear
  */
 class Util
 {
+    /**
+     * Constants
+     */
+    const PEAR_ERROR_RETURN = 1;
+    const PEAR_ERROR_PRINT = 2;
+    const PEAR_ERROR_TRIGGER = 4;
+    const PEAR_ERROR_DIE = 8;
+    const PEAR_ERROR_CALLBACK = 16;
+
+    /**
+     * WARNING: obsolete
+     * @deprecated
+     */
+    const PEAR_ERROR_EXCEPTION = 32;
+
     /**
      * Whether to enable internal debug messages.
      *
