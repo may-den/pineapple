@@ -79,7 +79,7 @@ class Util
      * @var     int
      * @access  private
      */
-    var $_default_error_mode = null;
+    var $_default_error_mode = self::PEAR_ERROR_RETURN;
 
     /**
      * Default error options used for this object when error mode

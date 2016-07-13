@@ -470,10 +470,8 @@ class DoctrineDbal extends Common
         $seqname = $this->getSequenceName($seq_name);
         do {
             $repeat = 0;
-            $this->pushErrorHandling(PEAR_ERROR_RETURN);
             $result = $this->query('UPDATE ' . $seqname
                                    . ' SET id = LAST_INSERT_ID(id + 1)');
-            $this->popErrorHandling();
             if ($result === DB_OK) {
                 // COMMON CASE
                 $id = @$this->connection->lastInsertId();
