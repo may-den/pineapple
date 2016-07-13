@@ -73,7 +73,7 @@ class Util
      * @var     bool
      * @access  private
      */
-    var $_debug = false;
+    private $debug = false;
 
     /**
      * Default error mode for this object.
@@ -142,7 +142,7 @@ class Util
     function __construct($error_class = null)
     {
         $classname = strtolower(get_class($this));
-        if ($this->_debug) {
+        if ($this->debug) {
             print "PEAR constructor called, class=$classname\n";
         }
 
