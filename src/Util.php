@@ -515,42 +515,6 @@ class Util
         }
         return true;
     }
-
-    /**
-    * OS independent PHP extension load. Remember to take care
-    * on the correct extension name for case sensitive OSes.
-    *
-    * @param string $ext The extension name
-    * @return bool Success or not on the dl() call
-    */
-    public static function loadExtension($ext)
-    {
-        if (extension_loaded($ext)) {
-            return true;
-        }
-
-        // if either returns true dl() will produce a FATAL error, stop that
-        if (
-            function_exists('dl') === false ||
-            ini_get('enable_dl') != 1
-        ) {
-            return false;
-        }
-
-        if (OS_WINDOWS) {
-            $suffix = '.dll';
-        } elseif (PHP_OS == 'HP-UX') {
-            $suffix = '.sl';
-        } elseif (PHP_OS == 'AIX') {
-            $suffix = '.a';
-        } elseif (PHP_OS == 'OSX') {
-            $suffix = '.bundle';
-        } else {
-            $suffix = '.so';
-        }
-
-        return @dl('php_'.$ext.$suffix) || @dl($ext.$suffix);
-    }
 }
 
 function _PEAR_call_destructors()
