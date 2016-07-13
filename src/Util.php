@@ -4,8 +4,6 @@ namespace Mayden\Pineapple;
 /**
  * PEAR, the PHP Extension and Application Repository
  *
- * PEAR class and PEAR_Error class
- *
  * PHP versions 4 and 5
  *
  * @category   pear
@@ -119,7 +117,7 @@ class Util
      * @access public
      * @return void
      */
-    function __construct($error_class = null)
+    public function __construct($error_class = null)
     {
         $classname = strtolower(get_class($this));
         if ($this->debug) {
