@@ -764,7 +764,7 @@ class DoctrineDbal extends Common
              * Probably received a result object.
              * Extract the result resource identifier.
              */
-            $id = $result;
+            $id = $result->result;
             $got_string = false;
         } else {
             $this->myRaiseError();
