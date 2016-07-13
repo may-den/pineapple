@@ -110,26 +110,6 @@ class Util
     var $_error_class = 'PEAR_Error';
 
     /**
-     * An array of expected errors.
-     *
-     * @var     array
-     * @access  private
-     */
-    var $_expected_errors = array();
-
-    /**
-     * List of methods that can be called both statically and non-statically.
-     * @var array
-     */
-    protected static $bivalentMethods = array(
-        'setErrorHandling' => true,
-        'raiseError' => true,
-        'throwError' => true,
-        'pushErrorHandling' => true,
-        'popErrorHandling' => true,
-    );
-
-    /**
      * Constructor.  Registers this object in
      * $_PEAR_destructor_object_list for destructor emulation if a
      * destructor object exists.
@@ -372,101 +352,6 @@ class Util
     }
 
     /**
-     * This method is used to tell which errors you expect to get.
-     * Expected errors are always returned with error mode
-     * PEAR_ERROR_RETURN.  Expected error codes are stored in a stack,
-     * and this method pushes a new element onto it.  The list of
-     * expected errors are in effect until they are popped off the
-     * stack with the popExpect() method.
-     *
-     * Note that this method can not be called statically
-     *
-     * @param mixed $code a single error code or an array of error codes to expect
-     *
-     * @return int     the new depth of the "expected errors" stack
-     * @access public
-     */
-    function expectError($code = '*')
-    {
-        if (is_array($code)) {
-            array_push($this->_expected_errors, $code);
-        } else {
-            array_push($this->_expected_errors, array($code));
-        }
-        return count($this->_expected_errors);
-    }
-
-    /**
-     * This method pops one element off the expected error codes
-     * stack.
-     *
-     * @return array   the list of error codes that were popped
-     */
-    function popExpect()
-    {
-        return array_pop($this->_expected_errors);
-    }
-
-    /**
-     * This method checks unsets an error code if available
-     *
-     * @param mixed error code
-     * @return bool true if the error code was unset, false otherwise
-     * @access private
-     * @since PHP 4.3.0
-     */
-    function _checkDelExpect($error_code)
-    {
-        $deleted = false;
-        foreach ($this->_expected_errors as $key => $error_array) {
-            if (in_array($error_code, $error_array)) {
-                unset($this->_expected_errors[$key][array_search($error_code, $error_array)]);
-                $deleted = true;
-            }
-
-            // clean up empty arrays
-            if (0 == count($this->_expected_errors[$key])) {
-                unset($this->_expected_errors[$key]);
-            }
-        }
-
-        return $deleted;
-    }
-
-    /**
-     * This method deletes all occurences of the specified element from
-     * the expected error codes stack.
-     *
-     * @param  mixed $error_code error code that should be deleted
-     * @return mixed list of error codes that were deleted or error
-     * @access public
-     * @since PHP 4.3.0
-     */
-    function delExpect($error_code)
-    {
-        $deleted = false;
-        if ((is_array($error_code) && (0 != count($error_code)))) {
-            // $error_code is a non-empty array here; we walk through it trying
-            // to unset all values
-            foreach ($error_code as $key => $error) {
-                $deleted =  $this->_checkDelExpect($error) ? true : false;
-            }
-
-            return $deleted ? true : self::raiseError("The expected error you submitted does not exist"); // IMPROVE ME
-        } elseif (!empty($error_code)) {
-            // $error_code comes alone, trying to unset it
-            if ($this->_checkDelExpect($error_code)) {
-                return true;
-            }
-
-            return self::raiseError("The expected error you submitted does not exist"); // IMPROVE ME
-        }
-
-        // $error_code is empty
-        return self::raiseError("The expected error you submitted is empty"); // IMPROVE ME
-    }
-
-    /**
      * This method is a wrapper that returns an instance of the
      * configured error class with this object's default error
      * handling applied.  If the $mode and $options parameters are not
@@ -520,33 +405,6 @@ class Util
             $message     = $message->getMessage();
         }
 
-        if (
-            $object !== null &&
-            isset($object->_expected_errors) &&
-            count($object->_expected_errors) > 0 &&
-            count($exp = end($object->_expected_errors))
-        ) {
-            if ($exp[0] == "*" ||
-                (is_int(reset($exp)) && in_array($code, $exp)) ||
-                (is_string(reset($exp)) && in_array($message, $exp))
-            ) {
-                $mode = PEAR_ERROR_RETURN;
-            }
-        }
-
-        // No mode given, try global ones
-        if ($mode === null) {
-            // Class error handler
-            if ($object !== null && isset($object->_default_error_mode)) {
-                $mode    = $object->_default_error_mode;
-                $options = $object->_default_error_options;
-            // Global error handler
-            } elseif (isset($GLOBALS['_PEAR_default_error_mode'])) {
-                $mode    = $GLOBALS['_PEAR_default_error_mode'];
-                $options = $GLOBALS['_PEAR_default_error_options'];
-            }
-        }
-
         if ($error_class !== null) {
             $ec = $error_class;
         } elseif ($object !== null && isset($object->_error_class)) {
@@ -556,9 +414,9 @@ class Util
         }
 
         if ($skipmsg) {
-            $a = new $ec($code, $mode, $options, $userinfo);
+            $a = new $ec($code, self::PEAR_ERROR_RETURN, $options, $userinfo);
         } else {
-            $a = new $ec($message, $code, $mode, $options, $userinfo);
+            $a = new $ec($message, $code, self::PEAR_ERROR_RETURN, $options, $userinfo);
         }
 
         return $a;
