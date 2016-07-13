@@ -386,16 +386,6 @@ class DB
     }
 
     /**
-     * Return the DB API version
-     *
-     * @return string  the DB API version number
-     */
-    function apiVersion()
-    {
-        return '1.8.2';
-    }
-
-    /**
      * Determines if a variable is a DB_Error object
      *
      * @param mixed $value  the variable to check
