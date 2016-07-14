@@ -1,8 +1,10 @@
 <?php
 namespace Mayden\Pineapple\DB\Driver;
 
+use Mayden\Pineapple\Util;
 use Mayden\Pineapple\DB;
 use Doctrine\DBAL\Connection as DBALConnection;
+use Doctrine\DBAL\Driver\PDOStatement;
 use PDO;
 
 /**
@@ -91,7 +93,7 @@ class DoctrineDbal extends Common
      * The DSN information for connecting to a database
      * @var array
      */
-    var $dsn = array();
+    var $dsn = [];
 
     /**
      * Should data manipulation queries be committed automatically?
@@ -149,7 +151,7 @@ class DoctrineDbal extends Common
      * <code>
      * require_once 'DB.php';
      *
-     * $dsn = array(
+     * $dsn = [
      *     'phptype'  => 'mysqli',
      *     'username' => 'someuser',
      *     'password' => 'apasswd',
@@ -160,14 +162,14 @@ class DoctrineDbal extends Common
      *     'ca'       => 'cacert.pem',
      *     'capath'   => '/path/to/ca/dir',
      *     'cipher'   => 'AES',
-     * );
+     * ];
      *
-     * $options = array(
+     * $options = [
      *     'ssl' => true,
-     * );
+     * ];
      *
      * $db = DB::connect($dsn, $options);
-     * if (PEAR::isError($db)) {
+     * if (Util::isError($db)) {
      *     die($db->getMessage());
      * }
      * </code>
@@ -179,7 +181,7 @@ class DoctrineDbal extends Common
      */
     function connect($dsn, $persistent = false)
     {
-        return DB_OK;
+        return DB::DB_OK;
     }
 
     /**
@@ -297,9 +299,9 @@ class DoctrineDbal extends Common
      */
     function fetchInto($result, &$arr, $fetchmode, $rownum = null)
     {
-        if ($fetchmode & DB_FETCHMODE_ASSOC) {
+        if ($fetchmode & DB::DB_FETCHMODE_ASSOC) {
             $arr = @$result->fetch(PDO::FETCH_ASSOC, null, $rownum);
-            if ($this->options['portability'] & DB_PORTABILITY_LOWERCASE && $arr) {
+            if ($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE && $arr) {
                 $arr = array_change_key_case($arr, CASE_LOWER);
             }
         } else {
@@ -308,7 +310,7 @@ class DoctrineDbal extends Common
         if (!$arr) {
             return null;
         }
-        if ($this->options['portability'] & DB_PORTABILITY_RTRIM) {
+        if ($this->options['portability'] & DB::DB_PORTABILITY_RTRIM) {
             /*
              * Even though this DBMS already trims output, we do this because
              * a field might have intentional whitespace at the end that
@@ -316,10 +318,10 @@ class DoctrineDbal extends Common
              */
             $this->_rtrimArrayValues($arr);
         }
-        if ($this->options['portability'] & DB_PORTABILITY_NULL_TO_EMPTY) {
+        if ($this->options['portability'] & DB::DB_PORTABILITY_NULL_TO_EMPTY) {
             $this->_convertNullArrayValuesToEmpty($arr);
         }
-        return DB_OK;
+        return DB::DB_OK;
     }
 
     /**
@@ -398,7 +400,7 @@ class DoctrineDbal extends Common
         // XXX if $this->transaction_opcount > 0, we should probably
         // issue a warning here.
         $this->autocommit = $onoff ? true : false;
-        return DB_OK;
+        return DB::DB_OK;
     }
 
     /**
@@ -410,7 +412,7 @@ class DoctrineDbal extends Common
     {
         if ($this->transaction_opcount > 0) {
             if (!$this->connection) {
-                return $this->myRaiseError(DB_ERROR_NODBSELECTED);
+                return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
             $result = $this->connection->commit();
             $this->transaction_opcount = 0;
@@ -418,7 +420,7 @@ class DoctrineDbal extends Common
                 return $this->myRaiseError();
             }
         }
-        return DB_OK;
+        return DB::DB_OK;
     }
 
     /**
@@ -430,7 +432,7 @@ class DoctrineDbal extends Common
     {
         if ($this->transaction_opcount > 0) {
             if (!$this->connection) {
-                return $this->myRaiseError(DB_ERROR_NODBSELECTED);
+                return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
             $result = $this->connection->rollback();
             $this->transaction_opcount = 0;
@@ -438,7 +440,7 @@ class DoctrineDbal extends Common
                 return $this->myRaiseError();
             }
         }
-        return DB_OK;
+        return DB::DB_OK;
     }
 
     /**
@@ -479,9 +481,8 @@ class DoctrineDbal extends Common
         $seqname = $this->getSequenceName($seq_name);
         do {
             $repeat = 0;
-            $result = $this->query('UPDATE ' . $seqname
-                                   . ' SET id = LAST_INSERT_ID(id + 1)');
-            if ($result === DB_OK) {
+            $result = $this->query("UPDATE {$seqname} SET id = LAST_INSERT_ID(id + 1)");
+            if ($result === DB::DB_OK) {
                 // COMMON CASE
                 $id = @$this->connection->lastInsertId();
                 if ($id != 0) {
@@ -492,33 +493,29 @@ class DoctrineDbal extends Common
                 // Sequence table must be empty for some reason,
                 // so fill it and return 1
                 // Obtain a user-level lock
-                $result = $this->getOne('SELECT GET_LOCK('
-                                        . "'${seqname}_lock', 10)");
+                $result = $this->getOne("SELECT GET_LOCK('${seqname}_lock', 10)");
                 if (DB::isError($result)) {
                     return $this->raiseError($result);
                 }
                 if ($result == 0) {
-                    return $this->myRaiseError(DB_ERROR_NOT_LOCKED);
+                    return $this->myRaiseError(DB::DB_ERROR_NOT_LOCKED);
                 }
 
                 // add the default value
-                $result = $this->query('REPLACE INTO ' . $seqname
-                                       . ' (id) VALUES (0)');
+                $result = $this->query("REPLACE INTO {$seqname} (id) VALUES (0)");
                 if (DB::isError($result)) {
                     return $this->raiseError($result);
                 }
 
                 // Release the lock
-                $result = $this->getOne('SELECT RELEASE_LOCK('
-                                        . "'${seqname}_lock')");
+                $result = $this->getOne("SELECT RELEASE_LOCK('${seqname}_lock')");
                 if (DB::isError($result)) {
                     return $this->raiseError($result);
                 }
                 // We know what the result will be, so no need to try again
                 return 1;
-
             } elseif ($ondemand && DB::isError($result) &&
-                $result->getCode() == DB_ERROR_NOSUCHTABLE) {
+                $result->getCode() == DB::DB_ERROR_NOSUCHTABLE) {
                 // ONDEMAND TABLE CREATION
                 $result = $this->createSequence($seq_name);
 
@@ -532,7 +529,7 @@ class DoctrineDbal extends Common
                 }
 
             } elseif (DB::isError($result) &&
-                      $result->getCode() == DB_ERROR_ALREADY_EXISTS) {
+                      $result->getCode() == DB::DB_ERROR_ALREADY_EXISTS) {
                 // BACKWARDS COMPAT
                 // see _BCsequence() comment
                 $result = $this->_BCsequence($seqname);
@@ -559,9 +556,7 @@ class DoctrineDbal extends Common
     function createSequence($seq_name)
     {
         $seqname = $this->getSequenceName($seq_name);
-        $res = $this->query('CREATE TABLE ' . $seqname
-                            . ' (id INTEGER UNSIGNED AUTO_INCREMENT NOT NULL,'
-                            . ' PRIMARY KEY(id))');
+        $res = $this->query("CREATE TABLE {$seqname} (id INTEGER UNSIGNED AUTO_INCREMENT NOT NULL, PRIMARY KEY(id))");
         if (DB::isError($res)) {
             return $res;
         }
@@ -606,7 +601,7 @@ class DoctrineDbal extends Common
         if ($result == 0) {
             // Failed to get the lock, can't do the conversion, bail
             // with a DB_ERROR_NOT_LOCKED error
-            return $this->myRaiseError(DB_ERROR_NOT_LOCKED);
+            return $this->myRaiseError(DB::DB_ERROR_NOT_LOCKED);
         }
 
         $highest_id = $this->getOne("SELECT MAX(id) FROM ${seqname}");
@@ -617,8 +612,7 @@ class DoctrineDbal extends Common
         // This should kill all rows except the highest
         // We should probably do something if $highest_id isn't
         // numeric, but I'm at a loss as how to handle that...
-        $result = $this->query('DELETE FROM ' . $seqname
-                               . " WHERE id <> $highest_id");
+        $result = $this->query("DELETE FROM {$seqname} WHERE id <> $highest_id");
         if (DB::isError($result)) {
             return $result;
         }
@@ -683,7 +677,7 @@ class DoctrineDbal extends Common
      *
      * @access protected
      */
-    function modifyLimitQuery($query, $from, $count, $params = array())
+    function modifyLimitQuery($query, $from, $count, $params = [])
     {
         if (DB::isManip($query) || $this->_next_query_manip) {
             return $query . " LIMIT $count";
@@ -759,7 +753,7 @@ class DoctrineDbal extends Common
         if (is_string($result)) {
             // Fix for bug #11580.
             if (!$this->connection) {
-                return $this->myRaiseError(DB_ERROR_NODBSELECTED);
+                return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
 
             /*
@@ -779,18 +773,18 @@ class DoctrineDbal extends Common
             $this->myRaiseError();
         }
 
-        if (!is_object($id) || !is_a($id, 'Doctrine\DBAL\Driver\PDOStatement')) {
-            return $this->myRaiseError(DB_ERROR_NEED_MORE_DATA);
+        if (!is_object($id) || !($id instanceof PDOStatement)) {
+            return $this->myRaiseError(DB::DB_ERROR_NEED_MORE_DATA);
         }
 
-        if ($this->options['portability'] & DB_PORTABILITY_LOWERCASE) {
+        if ($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) {
             $case_func = 'strtolower';
         } else {
             $case_func = 'strval';
         }
 
         $count = $id->columnCount();
-        $res = array();
+        $res = [];
 
         if ($mode) {
             $res['num_fields'] = $count;
@@ -799,18 +793,18 @@ class DoctrineDbal extends Common
         for ($i = 0; $i < $count; $i++) {
             $tmp = @$id->getColumnMeta($i);
 
-            $res[$i] = array(
+            $res[$i] = [
                 'table' => $tmp['table'],
                 'name'  => $tmp['name'],
                 'type'  => isset($tmp['native_type']) ? $tmp['native_type'] : 'unknown',
                 'len'   => $tmp['len'],
                 'flags' => $tmp['flags'],
-            );
+            ];
 
-            if ($mode & DB_TABLEINFO_ORDER) {
+            if ($mode & DB::DB_TABLEINFO_ORDER) {
                 $res['order'][$res[$i]['name']] = $i;
             }
-            if ($mode & DB_TABLEINFO_ORDERTABLE) {
+            if ($mode & DB::DB_TABLEINFO_ORDERTABLE) {
                 $res['ordertable'][$res[$i]['table']][$res[$i]['name']] = $i;
             }
         }
