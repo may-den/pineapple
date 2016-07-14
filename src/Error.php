@@ -202,9 +202,6 @@ class Error
      */
     public function getBacktrace($frame = null)
     {
-        if (defined('PEAR_IGNORE_BACKTRACE')) {
-            return null;
-        }
         if ($frame === null) {
             return $this->backtrace;
         }
