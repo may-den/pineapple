@@ -36,48 +36,48 @@ class DoctrineDbal extends Common
      *
      * @var array
      */
-    var $features = array(
-        'limit'         => 'alter',
-        'new_link'      => false,
-        'numrows'       => true,
-        'pconnect'      => false,
-        'prepare'       => false,
-        'ssl'           => true,
-        'transactions'  => true,
-    );
+    var $features = [
+        'limit' => 'alter',
+        'new_link' => false,
+        'numrows' => true,
+        'pconnect' => false,
+        'prepare' => false,
+        'ssl' => true,
+        'transactions' => true,
+    ];
 
     /**
      * A mapping of native error codes to DB error codes
      * @var array
      */
-    var $errorcode_map = array(
-        1004 => DB_ERROR_CANNOT_CREATE,
-        1005 => DB_ERROR_CANNOT_CREATE,
-        1006 => DB_ERROR_CANNOT_CREATE,
-        1007 => DB_ERROR_ALREADY_EXISTS,
-        1008 => DB_ERROR_CANNOT_DROP,
-        1022 => DB_ERROR_ALREADY_EXISTS,
-        1044 => DB_ERROR_ACCESS_VIOLATION,
-        1046 => DB_ERROR_NODBSELECTED,
-        1048 => DB_ERROR_CONSTRAINT,
-        1049 => DB_ERROR_NOSUCHDB,
-        1050 => DB_ERROR_ALREADY_EXISTS,
-        1051 => DB_ERROR_NOSUCHTABLE,
-        1054 => DB_ERROR_NOSUCHFIELD,
-        1061 => DB_ERROR_ALREADY_EXISTS,
-        1062 => DB_ERROR_ALREADY_EXISTS,
-        1064 => DB_ERROR_SYNTAX,
-        1091 => DB_ERROR_NOT_FOUND,
-        1100 => DB_ERROR_NOT_LOCKED,
-        1136 => DB_ERROR_VALUE_COUNT_ON_ROW,
-        1142 => DB_ERROR_ACCESS_VIOLATION,
-        1146 => DB_ERROR_NOSUCHTABLE,
-        1216 => DB_ERROR_CONSTRAINT,
-        1217 => DB_ERROR_CONSTRAINT,
-        1356 => DB_ERROR_DIVZERO,
-        1451 => DB_ERROR_CONSTRAINT,
-        1452 => DB_ERROR_CONSTRAINT,
-    );
+    var $errorcode_map = [
+        1004 => DB::DB_ERROR_CANNOT_CREATE,
+        1005 => DB::DB_ERROR_CANNOT_CREATE,
+        1006 => DB::DB_ERROR_CANNOT_CREATE,
+        1007 => DB::DB_ERROR_ALREADY_EXISTS,
+        1008 => DB::DB_ERROR_CANNOT_DROP,
+        1022 => DB::DB_ERROR_ALREADY_EXISTS,
+        1044 => DB::DB_ERROR_ACCESS_VIOLATION,
+        1046 => DB::DB_ERROR_NODBSELECTED,
+        1048 => DB::DB_ERROR_CONSTRAINT,
+        1049 => DB::DB_ERROR_NOSUCHDB,
+        1050 => DB::DB_ERROR_ALREADY_EXISTS,
+        1051 => DB::DB_ERROR_NOSUCHTABLE,
+        1054 => DB::DB_ERROR_NOSUCHFIELD,
+        1061 => DB::DB_ERROR_ALREADY_EXISTS,
+        1062 => DB::DB_ERROR_ALREADY_EXISTS,
+        1064 => DB::DB_ERROR_SYNTAX,
+        1091 => DB::DB_ERROR_NOT_FOUND,
+        1100 => DB::DB_ERROR_NOT_LOCKED,
+        1136 => DB::DB_ERROR_VALUE_COUNT_ON_ROW,
+        1142 => DB::DB_ERROR_ACCESS_VIOLATION,
+        1146 => DB::DB_ERROR_NOSUCHTABLE,
+        1216 => DB::DB_ERROR_CONSTRAINT,
+        1217 => DB::DB_ERROR_CONSTRAINT,
+        1356 => DB::DB_ERROR_DIVZERO,
+        1451 => DB::DB_ERROR_CONSTRAINT,
+        1452 => DB::DB_ERROR_CONSTRAINT,
+    ];
 
     // @var DBALConnection Our Doctrine DBAL connection
     private $connection = null;

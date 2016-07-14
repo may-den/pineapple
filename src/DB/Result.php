@@ -188,25 +188,15 @@ class Result
         if (is_null($rownum) && $this->limit_from !== null) {
             if ($this->row_counter === null) {
                 $this->row_counter = $this->limit_from;
-                // Skip rows
-                if ($this->dbh->features['limit'] === false) {
-                    $i = 0;
-                    while ($i++ < $this->limit_from) {
-                        $this->dbh->fetchInto($this->result, $arr, $fetchmode);
-                    }
-                }
             }
-            if ($this->row_counter >= ($this->limit_from + $this->limit_count))
-            {
+            if ($this->row_counter >= ($this->limit_from + $this->limit_count)) {
                 if ($this->autofree) {
                     $this->free();
                 }
                 $tmp = null;
                 return $tmp;
             }
-            if ($this->dbh->features['limit'] === 'emulate') {
-                $rownum = $this->row_counter;
-            }
+
             $this->row_counter++;
         }
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
@@ -267,24 +257,12 @@ class Result
         if (is_null($rownum) && $this->limit_from !== null) {
             if ($this->row_counter === null) {
                 $this->row_counter = $this->limit_from;
-                // Skip rows
-                if ($this->dbh->features['limit'] === false) {
-                    $i = 0;
-                    while ($i++ < $this->limit_from) {
-                        $this->dbh->fetchInto($this->result, $arr, $fetchmode);
-                    }
-                }
             }
-            if ($this->row_counter >= (
-                    $this->limit_from + $this->limit_count))
-            {
+            if ($this->row_counter >= ($this->limit_from + $this->limit_count)) {
                 if ($this->autofree) {
                     $this->free();
                 }
                 return null;
-            }
-            if ($this->dbh->features['limit'] === 'emulate') {
-                $rownum = $this->row_counter;
             }
 
             $this->row_counter++;
@@ -325,9 +303,7 @@ class Result
      */
     public function numRows()
     {
-        if ($this->dbh->features['numrows'] === 'emulate'
-            && $this->dbh->options['portability'] & DB::DB_PORTABILITY_NUMROWS)
-        {
+        if ($this->dbh->options['portability'] & DB::DB_PORTABILITY_NUMROWS) {
             if ($this->dbh->features['prepare']) {
                 $res = $this->dbh->query($this->query, $this->parameters);
             } else {
@@ -343,26 +319,6 @@ class Result
             $count = $i;
         } else {
             $count = $this->dbh->numRows($this->result);
-        }
-
-        /* fbsql is checked for here because limit queries are implemented
-         * using a TOP() function, which results in fbsql_num_rows still
-         * returning the total number of rows that would have been returned,
-         * rather than the real number. As a result, we'll just do the limit
-         * calculations for fbsql in the same way as a database with emulated
-         * limits. Unfortunately, we can't just do this in DB_fbsql::numRows()
-         * because that only gets the result resource, rather than the full
-         * DB_Result object. */
-        if (($this->dbh->features['limit'] === 'emulate'
-             && $this->limit_from !== null)) {
-            $limit_count = is_null($this->limit_count) ? $count : $this->limit_count;
-            if ($count < $this->limit_from) {
-                $count = 0;
-            } elseif ($count < ($this->limit_from + $limit_count)) {
-                $count -= $this->limit_from;
-            } else {
-                $count = $limit_count;
-            }
         }
 
         return $count;
