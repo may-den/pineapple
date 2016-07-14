@@ -32,19 +32,19 @@ namespace Mayden\Pineapple;
  *
  * The object model of DB is as follows (indentation means inheritance):
  * <pre>
- * DB           The main DB class.  This is simply a utility class
- *              with some "static" methods for creating DB objects as
- *              well as common utility functions for other DB classes.
+ * DB The main DB class.  This is simply a utility class
+ *    with some "static" methods for creating DB objects as
+ *    well as common utility functions for other DB classes.
  *
- * DB_common    The base for each DB implementation.  Provides default
- * |            implementations (in OO lingo virtual methods) for
- * |            the actual DB implementations as well as a bunch of
- * |            query utility functions.
+ * DB\Driver\Common The base for each DB implementation.  Provides default
+ * |                implementations (in OO lingo virtual methods) for
+ * |                the actual DB implementations as well as a bunch of
+ * |                query utility functions.
  * |
- * +-DB_mysql   The DB implementation for MySQL.  Inherits DB_common.
- *              When calling DB::factory or DB::connect for MySQL
- *              connections, the object returned is an instance of this
- *              class.
+ * +- DB\Driver\DoctrineDbal The driver implementation for DBAL. Inherits DB\Driver\Common.
+ *                           When calling DB::factory or DB::connect for MySQL
+ *                           connections, the object returned is an instance of this
+ *                           class.
  * </pre>
  *
  * @category   Database
@@ -311,7 +311,7 @@ class DB
     public static function factory($type, $options = false)
     {
         if (!is_array($options)) {
-            $options = array('persistent' => $options);
+            $options = ['persistent' => $options];
         }
 
         $classname = "\\Mayden\\Pineapple\\DB\\Driver\\${type}";
@@ -345,17 +345,16 @@ class DB
      * Create a new DB object including a connection to the specified database
      *
      * Example 1.
-     * <code>
-     * require_once 'DB.php';
      *
-     * $dsn = 'pgsql://user:password@host/database';
-     * $options = array(
-     *     'debug'       => 2,
+     * <code>
+     * $dsn = 'DoctrineDbal://';
+     * $options = [
+     *     'debug' => 2,
      *     'portability' => self::DB_PORTABILITY_ALL,
-     * );
+     * ];
      *
      * $db = DB::connect($dsn, $options);
-     * if (PEAR::isError($db)) {
+     * if (DB\Error::isError($db)) {
      *     die($db->getMessage());
      * }
      * </code>
@@ -365,9 +364,9 @@ class DB
      * @param array $options  an associative array of option names and values
      * @return object  a new DB object.  A DB\Error object on failure.
      * @uses DB\Driver\DoctrineDbal::connect()
-     * @uses DB::parseDSN(), DB\Driver\Common::setOption(), PEAR::isError()
+     * @uses DB::parseDSN(), DB\Driver\Common::setOption(), DB\Error::isError()
      */
-    public static function connect($dsn, $options = array())
+    public static function connect($dsn, $options = [])
     {
         $dsninfo = self::parseDSN($dsn);
         $type = $dsninfo['phptype'];
@@ -377,7 +376,7 @@ class DB
              * For backwards compatibility.  $options used to be boolean,
              * indicating whether the connection should be persistent.
              */
-            $options = array('persistent' => $options);
+            $options = ['persistent' => $options];
         }
 
         $classname = "\\Mayden\\Pineapple\\DB\\Driver\\${type}";
@@ -531,17 +530,17 @@ class DB
      */
     public static function parseDSN($dsn)
     {
-        $parsed = array(
-            'phptype'  => false,
+        $parsed = [
+            'phptype' => false,
             'dbsyntax' => false,
             'username' => false,
             'password' => false,
             'protocol' => false,
             'hostspec' => false,
-            'port'     => false,
-            'socket'   => false,
+            'port' => false,
+            'socket' => false,
             'database' => false,
-        );
+        ];
 
         if (is_array($dsn)) {
             $dsn = array_merge($parsed, $dsn);
@@ -631,8 +630,9 @@ class DB
                 $dsn = substr($dsn, $pos + 1);
                 if (strpos($dsn, '&') !== false) {
                     $opts = explode('&', $dsn);
-                } else { // database?param1=value1
-                    $opts = array($dsn);
+                } else {
+                    // /database?param1=value1
+                    $opts = [$dsn];
                 }
                 foreach ($opts as $opt) {
                     list($key, $value) = explode('=', $opt);
