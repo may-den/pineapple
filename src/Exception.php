@@ -18,7 +18,6 @@ namespace Mayden\Pineapple;
  * @since      File available since Release 1.3.3
  */
 
-
 /**
  * Base PEAR_Exception Class
  *
@@ -100,9 +99,8 @@ class Exception extends \Exception
     const OBSERVER_TRIGGER = -4;
     const OBSERVER_DIE = -8;
     protected $cause;
-    private static $_observers = array();
-    private static $_uniqueid = 0;
-    private $_trace;
+    private static $observers = array();
+    private static $uniqueid = 0;
 
     /**
      * Supported signatures:
@@ -155,12 +153,12 @@ class Exception extends \Exception
      */
     public static function addObserver($callback, $label = 'default')
     {
-        self::$_observers[$label] = $callback;
+        self::$observers[$label] = $callback;
     }
 
     public static function removeObserver($label = 'default')
     {
-        unset(self::$_observers[$label]);
+        unset(self::$observers[$label]);
     }
 
     /**
@@ -168,27 +166,27 @@ class Exception extends \Exception
      */
     public static function getUniqueId()
     {
-        return self::$_uniqueid++;
+        return self::$uniqueid++;
     }
 
     private function signal()
     {
-        foreach (self::$_observers as $func) {
+        foreach (self::$observers as $func) {
             if (is_callable($func)) {
                 call_user_func($func, $this);
                 continue;
             }
             settype($func, 'array');
             switch ($func[0]) {
-                case self::OBSERVER_PRINT :
+                case self::OBSERVER_PRINT:
                     $f = (isset($func[1])) ? $func[1] : '%s';
                     printf($f, $this->getMessage());
                     break;
-                case self::OBSERVER_TRIGGER :
+                case self::OBSERVER_TRIGGER:
                     $f = (isset($func[1])) ? $func[1] : E_USER_NOTICE;
                     trigger_error($this->getMessage(), $f);
                     break;
-                case self::OBSERVER_DIE :
+                case self::OBSERVER_DIE:
                     $f = (isset($func[1])) ? $func[1] : '%s';
                     die(printf($f, $this->getMessage()));
                     break;
@@ -325,22 +323,36 @@ class Exception extends \Exception
         $trace = $this->getTraceSafe();
         $causes = array();
         $this->getCauseMessage($causes);
-        $html =  '<table style="border: 1px" cellspacing="0">' . "\n";
+        $html =  "<table style=\"border: 1px\" cellspacing=\"0\">\n";
         foreach ($causes as $i => $cause) {
-            $html .= '<tr><td colspan="3" style="background: #ff9999">'
-               . str_repeat('-', $i) . ' <b>' . $cause['class'] . '</b>: '
-               . htmlspecialchars($cause['message']) . ' in <b>' . $cause['file'] . '</b> '
-               . 'on line <b>' . $cause['line'] . '</b>'
-               . "</td></tr>\n";
+            $html .= sprintf(
+                "<tr>
+                    <td colspan=\"3\" style=\"background: #ff9999\">
+                        %s <b>%s</b>: %s in <b>%s</b> on line <b>%s</b>
+                    </td>
+                </tr>",
+                str_repeat('-', $i),
+                $cause['class'],
+                htmlentities($cause['message']),
+                $cause['file'],
+                $cause['line']
+            );
         }
-        $html .= '<tr><td colspan="3" style="background-color: #aaaaaa; text-align: center; font-weight: bold;">Exception trace</td></tr>' . "\n"
-               . '<tr><td style="text-align: center; background: #cccccc; width:20px; font-weight: bold;">#</td>'
-               . '<td style="text-align: center; background: #cccccc; font-weight: bold;">Function</td>'
-               . '<td style="text-align: center; background: #cccccc; font-weight: bold;">Location</td></tr>' . "\n";
+        $html .= '
+            <tr>
+                <td colspan="3" style="background-color: #aaaaaa; text-align: center; font-weight: bold;">
+                    Exception trace
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: center; background: #cccccc; width:20px; font-weight: bold;">#</td>
+                <td style="text-align: center; background: #cccccc; font-weight: bold;">Function</td>
+                <td style="text-align: center; background: #cccccc; font-weight: bold;">Location</td>
+            </tr>
+        ';
 
         foreach ($trace as $k => $v) {
-            $html .= '<tr><td style="text-align: center;">' . $k . '</td>'
-                   . '<td>';
+            $html .= '<tr><td style="text-align: center;">' . $k . '</td><td>';
             if (!empty($v['class'])) {
                 $html .= $v['class'] . $v['type'];
             }
@@ -348,26 +360,48 @@ class Exception extends \Exception
             $args = array();
             if (!empty($v['args'])) {
                 foreach ($v['args'] as $arg) {
-                    if (is_null($arg)) $args[] = 'null';
-                    elseif (is_array($arg)) $args[] = 'Array';
-                    elseif (is_object($arg)) $args[] = 'Object('.get_class($arg).')';
-                    elseif (is_bool($arg)) $args[] = $arg ? 'true' : 'false';
-                    elseif (is_int($arg) || is_double($arg)) $args[] = $arg;
-                    else {
-                        $arg = (string)$arg;
-                        $str = htmlspecialchars(substr($arg, 0, 16));
-                        if (strlen($arg) > 16) $str .= '&hellip;';
-                        $args[] = "'" . $str . "'";
+                    switch (gettype($arg)) {
+                        case 'NULL':
+                            $args[] = 'null';
+                            break;
+
+                        case 'array':
+                            $args[] = 'Array';
+                            break;
+
+                        case 'object':
+                            $args[] = 'Object(' . get_class($arg) . ')';
+                            break;
+
+                        case 'boolean':
+                            $args[] = $arg ? 'true' : 'false';
+                            break;
+
+                        case 'integer':
+                        case 'double':
+                            $args[] = $arg;
+                            break;
+
+                        default:
+                            $arg = (string) $arg;
+                            $str = htmlspecialchars(substr($arg, 0, 16));
+                            if (strlen($arg) > 16) {
+                                $str .= '&hellip;';
+                            } else {
+                                $args[] = "'" . $str . "'";
+                            }
+                            break;
                     }
                 }
             }
-            $html .= '(' . implode(', ',$args) . ')'
+
+            $html .= '(' . implode(', ', $args) . ')'
                    . '</td>'
                    . '<td>' . (isset($v['file']) ? $v['file'] : 'unknown')
                    . ':' . (isset($v['line']) ? $v['line'] : 'unknown')
                    . '</td></tr>' . "\n";
         }
-        $html .= '<tr><td style="text-align: center;">' . ($k+1) . '</td>'
+        $html .= '<tr><td style="text-align: center;">' . ($k + 1) . '</td>'
                . '<td>{main}</td>'
                . '<td>&nbsp;</td></tr>' . "\n"
                . '</table>';
@@ -381,8 +415,8 @@ class Exception extends \Exception
         $causeMsg = '';
         foreach ($causes as $i => $cause) {
             $causeMsg .= str_repeat(' ', $i) . $cause['class'] . ': '
-                   . $cause['message'] . ' in ' . $cause['file']
-                   . ' on line ' . $cause['line'] . "\n";
+                . $cause['message'] . ' in ' . $cause['file']
+                . ' on line ' . $cause['line'] . "\n";
         }
         return $causeMsg . $this->getTraceAsString();
     }
