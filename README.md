@@ -14,17 +14,32 @@ It is up to your application to cache the constructed DBAL connection. Please do
 
 In order to facilitate a deep rework without breaking compatibility with applications that use the `DB` and `DB_*` classnames, the code has been refactored to reside within the `Mayden\Pineapple` namespace. Here is a handy table of the mapping:
 
-| Old class    | New class                           |
-|----------------------------------------------------|
-| `DB`         | `Mayden\Pineapple\DB`               |
-| `DB_Error`   | `Mayden\Pineapple\DB\Error`         |
-| `DB_result`  | `Mayden\Pineapple\DB\Result`        |
-| `DB_row`     | `Mayden\Pineapple\DB\Row`           |
-| `DB_common`  | `Mayden\Pineapple\DB\Driver\Common` |
-| `PEAR`       | `Mayden\Pineapple\Util`             |
-| `PEAR_Error` | `Mayden\Pineapple\Error`            |
+| Old class        | New class                           |
+|--------------------------------------------------------|
+| `DB`             | `Mayden\Pineapple\DB`               |
+| `DB_Error`       | `Mayden\Pineapple\DB\Error`         |
+| `DB_result`      | `Mayden\Pineapple\DB\Result`        |
+| `DB_row`         | `Mayden\Pineapple\DB\Row`           |
+| `DB_common`      | `Mayden\Pineapple\DB\Driver\Common` |
+| `PEAR`           | `Mayden\Pineapple\Util`             |
+| `PEAR_Error`     | `Mayden\Pineapple\Error`            |
+| `PEAR_Exception` | `Mayden\Pineapple\Exception`        |
 
-If possible, it would be beneficial for you to refactor your code to use the new class names. However, if refactoring isn't an option, you can use the counterpart module, which provides root namespace class names in the left column of the above table. See [borb/pineapple-compat](https://github.com/borb/pineapple-compat) and load that into your composer configuration to add compatible classes.
+If possible, it would be beneficial for you to refactor your code to use the new class names and class constants (instead of global constants). However, if refactoring isn't an option, you can use the counterpart module, which provides root namespace class names in the left column of the above table. See [borb/pineapple-compat](https://github.com/borb/pineapple-compat) and load that into your composer configuration to add compatible classes.
+
+## What's changed? What's missing?
+
+- All classes are namespaced. See the table in the previous section for the class name mappings.
+- All global variables have now been dropped. This also applies to [borb/pineapple-compat](https://github.com/borb/pineapple-compat). They will not be retained or readded.
+- Global constants have been moved to class constants. [borb/pineapple-compat](https://github.com/borb/pineapple-compat) adds global mappings back to class constants if you're using it as a drop-in replacement.
+- **All connectivity drivers have been removed**. The only driver provided is `DoctrineDbal` to connect with Doctrine's DBAL (an abstracted PDO).
+- All methods in PEAR have been dropped, except for `isError`, `raiseError` and `throwError`. This includes PEAR's pseudo-destructors.
+- Compatibility names for legacy constructors and '`_Name`' destructors has been removed and placed in [borb/pineapple-compat](https://github.com/borb/pineapple-compat).
+- PEAR & DB Error suppression has been removed.
+- Large swathes of code put in place to aid multi-driver compatibility have been removed.
+- Spit, polish & PSR-2. Refactoring to support some more modern aspects of PHP (e.g. method statics replaced with class statics).
+
+It would not take a large amount of effort to refactor your code to avoid using the compatibility layer, but it is provided for your convenience.
 
 ## Usage
 
@@ -59,3 +74,11 @@ And these from PEAR:
 
 * Rob Andrews [rob.andrews@mayden.co.uk](mailto:rob.andrews@mayden.co.uk)
 * Aaron Lang [aaron.lang@mayden.co.uk](mailto:aaron.lang@mayden.co.uk)
+
+## License
+
+Upstream PEAR is distributed under the BSD 2-clause license. This license is retained. This applies to classes `Util`, `Error` and `Exception`.
+
+Upstream DB is distributed under the PHP License [http://php.net/license/](http://php.net/license/), which is a BSD-style license. This license is retained. This applies to all other classes and includes `DoctrineDbal`, which is derived from `DB_mysqli` (no longer included in this package).
+
+Any additional code or test suites are provided under the PHP License [http://php.net/license/](http://php.net/license/).
