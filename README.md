@@ -15,7 +15,7 @@ It is up to your application to cache the constructed DBAL connection. Please do
 In order to facilitate a deep rework without breaking compatibility with applications that use the `DB` and `DB_*` classnames, the code has been refactored to reside within the `Mayden\Pineapple` namespace. Here is a handy table of the mapping:
 
 | Old class        | New class                           |
-|--------------------------------------------------------|
+|------------------|-------------------------------------|
 | `DB`             | `Mayden\Pineapple\DB`               |
 | `DB_Error`       | `Mayden\Pineapple\DB\Error`         |
 | `DB_result`      | `Mayden\Pineapple\DB\Result`        |
