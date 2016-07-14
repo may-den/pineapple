@@ -1,8 +1,6 @@
 <?php
 namespace Mayden\Pineapple;
 
-use Mayden\Pineapple\Util as PineappleUtil;
-
 /**
  * Standard PEAR error class for PHP 4
  *
@@ -23,7 +21,7 @@ use Mayden\Pineapple\Util as PineappleUtil;
 class Error
 {
     private $error_message_prefix = '';
-    private $mode = PineappleUtil::PEAR_ERROR_RETURN;
+    private $mode = Util::PEAR_ERROR_RETURN;
     private $level = E_USER_NOTICE;
     private $code = -1;
     private $message = '';
@@ -65,7 +63,7 @@ class Error
             unset($this->backtrace[0]['object']);
         }
 
-        if ($mode & PineappleUtil::PEAR_ERROR_CALLBACK) {
+        if ($mode & Util::PEAR_ERROR_CALLBACK) {
             $this->level = E_USER_NOTICE;
             $this->callback = $options;
         } else {
@@ -77,7 +75,7 @@ class Error
             $this->callback = null;
         }
 
-        if ($this->mode & PineappleUtil::PEAR_ERROR_PRINT) {
+        if ($this->mode & Util::PEAR_ERROR_PRINT) {
             if (is_null($options) || is_int($options)) {
                 $format = "%s";
             } else {
@@ -87,11 +85,11 @@ class Error
             printf($format, $this->getMessage());
         }
 
-        if ($this->mode & PineappleUtil::PEAR_ERROR_TRIGGER) {
+        if ($this->mode & Util::PEAR_ERROR_TRIGGER) {
             trigger_error($this->getMessage(), $this->level);
         }
 
-        if ($this->mode & PineappleUtil::PEAR_ERROR_DIE) {
+        if ($this->mode & Util::PEAR_ERROR_DIE) {
             $msg = $this->getMessage();
             if (is_null($options) || is_int($options)) {
                 $format = "%s";
@@ -104,11 +102,11 @@ class Error
             die(sprintf($format, $msg));
         }
 
-        if ($this->mode & PineappleUtil::PEAR_ERROR_CALLBACK && is_callable($this->callback)) {
+        if ($this->mode & Util::PEAR_ERROR_CALLBACK && is_callable($this->callback)) {
             call_user_func($this->callback, $this);
         }
 
-        if ($this->mode & PineappleUtil::PEAR_ERROR_EXCEPTION) {
+        if ($this->mode & Util::PEAR_ERROR_EXCEPTION) {
             trigger_error("PEAR_ERROR_EXCEPTION is obsolete, use class PEAR_Exception for exceptions", E_USER_WARNING);
             $e = new Exception($this->message, $this->code);
             throw($e);
@@ -145,7 +143,7 @@ class Error
      */
     public function getMessage()
     {
-        return ($this->error_message_prefix . $this->message);
+        return $this->error_message_prefix . $this->message;
     }
 
     /**
@@ -237,7 +235,7 @@ class Error
             E_USER_ERROR => 'error'
         ];
 
-        if ($this->mode & PineappleUtil::PEAR_ERROR_CALLBACK) {
+        if ($this->mode & Util::PEAR_ERROR_CALLBACK) {
             if (is_array($this->callback)) {
                 $callback = (is_object($this->callback[0]) ?
                     strtolower(get_class($this->callback[0])) :
@@ -256,16 +254,16 @@ class Error
                 $this->userinfo
             );
         }
-        if ($this->mode & PineappleUtil::PEAR_ERROR_PRINT) {
+        if ($this->mode & Util::PEAR_ERROR_PRINT) {
             $modes[] = 'print';
         }
-        if ($this->mode & PineappleUtil::PEAR_ERROR_TRIGGER) {
+        if ($this->mode & Util::PEAR_ERROR_TRIGGER) {
             $modes[] = 'trigger';
         }
-        if ($this->mode & PineappleUtil::PEAR_ERROR_DIE) {
+        if ($this->mode & Util::PEAR_ERROR_DIE) {
             $modes[] = 'die';
         }
-        if ($this->mode & PineappleUtil::PEAR_ERROR_RETURN) {
+        if ($this->mode & Util::PEAR_ERROR_RETURN) {
             $modes[] = 'return';
         }
         return sprintf(
