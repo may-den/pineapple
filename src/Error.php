@@ -31,32 +31,29 @@ class Error
     /**
      * PEAR_Error constructor
      *
-     * @param string $message  message
-     *
-     * @param int $code     (optional) error code
-     *
-     * @param int $mode     (optional) error mode, one of: PEAR_ERROR_RETURN,
-     * PEAR_ERROR_PRINT, PEAR_ERROR_DIE, PEAR_ERROR_TRIGGER,
-     * PEAR_ERROR_CALLBACK or PEAR_ERROR_EXCEPTION
-     *
-     * @param mixed $options   (optional) error level, _OR_ in the case of
-     * PEAR_ERROR_CALLBACK, the callback function or object/method
-     * tuple.
+     * @param string $message message
+     * @param int    $code    (optional) error code
+     * @param int    $mode    (optional) error mode, one of: PEAR_ERROR_RETURN,
+     *                        PEAR_ERROR_PRINT, PEAR_ERROR_DIE, PEAR_ERROR_TRIGGER,
+     *                        PEAR_ERROR_CALLBACK or PEAR_ERROR_EXCEPTION
+     * @param mixed  $options (optional) error level, _OR_ in the case of
+     *                        PEAR_ERROR_CALLBACK, the callback function or object/method
+     *                        tuple.
      *
      * @param string $userinfo (optional) additional user/debug info
      *
      * @access public
      *
      */
-    public function __construct($message = 'unknown error', $code = null, $mode = null, $options = null, $userinfo = null)
+    public function __construct($message = null, $code = null, $mode = null, $options = null, $userinfo = null)
     {
         if ($mode === null) {
-            $mode = PineappleUtil::PEAR_ERROR_RETURN;
+            $mode = Util::PEAR_ERROR_RETURN;
         }
-        $this->message   = $message;
-        $this->code      = $code;
-        $this->mode      = $mode;
-        $this->userinfo  = $userinfo;
+        $this->message = isset($message) ? $message : 'unknown error';
+        $this->code = $code;
+        $this->mode = $mode;
+        $this->userinfo = $userinfo;
 
         $this->backtrace = debug_backtrace();
         if (isset($this->backtrace[0]) && isset($this->backtrace[0]['object'])) {
@@ -107,7 +104,10 @@ class Error
         }
 
         if ($this->mode & Util::PEAR_ERROR_EXCEPTION) {
-            trigger_error("PEAR_ERROR_EXCEPTION is obsolete, use class PEAR_Exception for exceptions", E_USER_WARNING);
+            trigger_error(
+                "PEAR_ERROR_EXCEPTION is obsolete, use class Mayden\Pineapple\Exception for exceptions",
+                E_USER_WARNING
+            );
             $e = new Exception($this->message, $this->code);
             throw($e);
         }
