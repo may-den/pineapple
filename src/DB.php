@@ -265,6 +265,38 @@ class DB
     // @const Turn on all portability features
     const DB_PORTABILITY_ALL = 63;
 
+    // @var error messages
+    private static $errorMessages = [
+        self::DB_ERROR => 'unknown error',
+        self::DB_ERROR_ACCESS_VIOLATION => 'insufficient permissions',
+        self::DB_ERROR_ALREADY_EXISTS => 'already exists',
+        self::DB_ERROR_CANNOT_CREATE => 'can not create',
+        self::DB_ERROR_CANNOT_DROP => 'can not drop',
+        self::DB_ERROR_CONNECT_FAILED => 'connect failed',
+        self::DB_ERROR_CONSTRAINT => 'constraint violation',
+        self::DB_ERROR_CONSTRAINT_NOT_NULL => 'null value violates not-null constraint',
+        self::DB_ERROR_DIVZERO => 'division by zero',
+        self::DB_ERROR_EXTENSION_NOT_FOUND => 'extension not found',
+        self::DB_ERROR_INVALID => 'invalid',
+        self::DB_ERROR_INVALID_DATE => 'invalid date or time',
+        self::DB_ERROR_INVALID_DSN => 'invalid DSN',
+        self::DB_ERROR_INVALID_NUMBER => 'invalid number',
+        self::DB_ERROR_MISMATCH => 'mismatch',
+        self::DB_ERROR_NEED_MORE_DATA => 'insufficient data supplied',
+        self::DB_ERROR_NODBSELECTED => 'no database selected',
+        self::DB_ERROR_NOSUCHDB => 'no such database',
+        self::DB_ERROR_NOSUCHFIELD => 'no such field',
+        self::DB_ERROR_NOSUCHTABLE => 'no such table',
+        self::DB_ERROR_NOT_CAPABLE => 'DB backend not capable',
+        self::DB_ERROR_NOT_FOUND => 'not found',
+        self::DB_ERROR_NOT_LOCKED => 'not locked',
+        self::DB_ERROR_SYNTAX => 'syntax error',
+        self::DB_ERROR_UNSUPPORTED => 'not supported',
+        self::DB_ERROR_TRUNCATED => 'truncated',
+        self::DB_ERROR_VALUE_COUNT_ON_ROW => 'value count on row',
+        self::DB_OK => 'no error',
+    ];
+
     /**
      * Create a new DB object for the specified database type but don't
      * connect to the database
@@ -272,7 +304,7 @@ class DB
      * @param string $type     the database type (eg "mysql")
      * @param array  $options  an associative array of option names and values
      *
-     * @return object  a new DB object.  A DB_Error object on failure.
+     * @return object  a new DB object.  A DB\Error object on failure.
      *
      * @see DB\Driver\Common::setOption()
      */
@@ -329,17 +361,10 @@ class DB
      * </code>
      *
      * @param mixed $dsn      the string "data source name" or array in the
-     *                         format returned by DB::parseDSN()
+     *                        format returned by DB::parseDSN()
      * @param array $options  an associative array of option names and values
-     *
-     * @return object  a new DB object.  A DB_Error object on failure.
-     *
-     * @uses DB_dbase::connect(), DB_fbsql::connect(), DB_ibase::connect(),
-     *       DB_ifx::connect(), DB_msql::connect(), DB_mssql::connect(),
-     *       DB_mysql::connect(), DB_mysqli::connect(), DB_oci8::connect(),
-     *       DB_odbc::connect(), DB_pgsql::connect(), DB_sqlite::connect(),
-     *       DB_sybase::connect()
-     *
+     * @return object  a new DB object.  A DB\Error object on failure.
+     * @uses DB\Driver\DoctrineDbal::connect()
      * @uses DB::parseDSN(), DB\Driver\Common::setOption(), PEAR::isError()
      */
     public static function connect($dsn, $options = array())
@@ -393,11 +418,11 @@ class DB
     }
 
     /**
-     * Determines if a variable is a DB_Error object
+     * Determines if a variable is a DB\Error object
      *
      * @param mixed $value  the variable to check
      *
-     * @return bool  whether $value is DB_Error object
+     * @return bool  whether $value is DB\Error object
      */
     public static function isError($value)
     {
@@ -413,9 +438,7 @@ class DB
      */
     public static function isConnection($value)
     {
-        return (is_object($value) &&
-                ($value instanceof DB\Driver\Common) &&
-                method_exists($value, 'simpleQuery'));
+        return is_object($value) && ($value instanceof DB\Driver\Common) && method_exists($value, 'simpleQuery');
     }
 
     /**
@@ -431,11 +454,22 @@ class DB
      */
     public static function isManip($query)
     {
-        $manips = 'INSERT|UPDATE|DELETE|REPLACE|'
-                . 'CREATE|DROP|'
-                . 'LOAD DATA|SELECT .* INTO .* FROM|COPY|'
-                . 'ALTER|GRANT|REVOKE|'
-                . 'LOCK|UNLOCK';
+        $manips = implode('|', [
+            'INSERT',
+            'UPDATE',
+            'DELETE',
+            'REPLACE',
+            'CREATE',
+            'DROP',
+            'LOAD DATA',
+            'SELECT .* INTO .* FROM',
+            'COPY',
+            'ALTER',
+            'GRANT',
+            'REVOKE',
+            'LOCK',
+            'UNLOCK'
+        ]);
         if (preg_match('/^\s*"?(' . $manips . ')\s+/i', $query)) {
             return true;
         }
@@ -452,46 +486,13 @@ class DB
      */
     public static function errorMessage($value)
     {
-        static $errorMessages;
-        if (!isset($errorMessages)) {
-            $errorMessages = array(
-                self::DB_ERROR                    => 'unknown error',
-                self::DB_ERROR_ACCESS_VIOLATION   => 'insufficient permissions',
-                self::DB_ERROR_ALREADY_EXISTS     => 'already exists',
-                self::DB_ERROR_CANNOT_CREATE      => 'can not create',
-                self::DB_ERROR_CANNOT_DROP        => 'can not drop',
-                self::DB_ERROR_CONNECT_FAILED     => 'connect failed',
-                self::DB_ERROR_CONSTRAINT         => 'constraint violation',
-                self::DB_ERROR_CONSTRAINT_NOT_NULL=> 'null value violates not-null constraint',
-                self::DB_ERROR_DIVZERO            => 'division by zero',
-                self::DB_ERROR_EXTENSION_NOT_FOUND=> 'extension not found',
-                self::DB_ERROR_INVALID            => 'invalid',
-                self::DB_ERROR_INVALID_DATE       => 'invalid date or time',
-                self::DB_ERROR_INVALID_DSN        => 'invalid DSN',
-                self::DB_ERROR_INVALID_NUMBER     => 'invalid number',
-                self::DB_ERROR_MISMATCH           => 'mismatch',
-                self::DB_ERROR_NEED_MORE_DATA     => 'insufficient data supplied',
-                self::DB_ERROR_NODBSELECTED       => 'no database selected',
-                self::DB_ERROR_NOSUCHDB           => 'no such database',
-                self::DB_ERROR_NOSUCHFIELD        => 'no such field',
-                self::DB_ERROR_NOSUCHTABLE        => 'no such table',
-                self::DB_ERROR_NOT_CAPABLE        => 'DB backend not capable',
-                self::DB_ERROR_NOT_FOUND          => 'not found',
-                self::DB_ERROR_NOT_LOCKED         => 'not locked',
-                self::DB_ERROR_SYNTAX             => 'syntax error',
-                self::DB_ERROR_UNSUPPORTED        => 'not supported',
-                self::DB_ERROR_TRUNCATED          => 'truncated',
-                self::DB_ERROR_VALUE_COUNT_ON_ROW => 'value count on row',
-                self::DB_OK                       => 'no error',
-            );
-        }
-
         if (self::isError($value)) {
             $value = $value->getCode();
         }
 
-        return isset($errorMessages[$value]) ? $errorMessages[$value]
-                     : $errorMessages[self::DB_ERROR];
+        return isset(self::$errorMessages[$value]) ?
+            self::$errorMessages[$value] :
+            self::$errorMessages[self::DB_ERROR];
     }
 
     /**
@@ -673,25 +674,20 @@ class DB
         // Now we just have to construct the actual string. This is ugly.
         $dsnString = $dsnArray['phptype'];
         if ($dsnArray['dbsyntax']) {
-            $dsnString .= '('.$dsnArray['dbsyntax'].')';
+            $dsnString .= '(' . $dsnArray['dbsyntax'] . ')';
         }
-        $dsnString .= '://'
-                     .$dsnArray['username']
-                     .':'
-                     .$dsnArray['password']
-                     .'@'
-                     .$dsnArray['protocol'];
+        $dsnString .= sprintf("://%s:%s@%s", $dsnArray['username'], $dsnArray['password'], $dsnArray['protocol']);
         if ($dsnArray['socket']) {
-            $dsnString .= '('.$dsnArray['socket'].')';
+            $dsnString .= '(' . $dsnArray['socket'] . ')';
         }
         if ($dsnArray['protocol'] && $dsnArray['hostspec']) {
             $dsnString .= '+';
         }
         $dsnString .= $dsnArray['hostspec'];
         if ($dsnArray['port']) {
-            $dsnString .= ':'.$dsnArray['port'];
+            $dsnString .= ':' . $dsnArray['port'];
         }
-        $dsnString .= '/'.$dsnArray['database'];
+        $dsnString .= '/' . $dsnArray['database'];
 
         /**
          * Option handling. Unfortunately, parseDSN simply places options into
