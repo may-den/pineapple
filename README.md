@@ -73,7 +73,6 @@ And these from PEAR:
 ## Who is responsible for this?
 
 * Rob Andrews [rob.andrews@mayden.co.uk](mailto:rob.andrews@mayden.co.uk)
-* Aaron Lang [aaron.lang@mayden.co.uk](mailto:aaron.lang@mayden.co.uk)
 
 ## License
 
