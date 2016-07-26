@@ -66,14 +66,6 @@ class Util
     const PEAR_ERROR_EXCEPTION = 32;
 
     /**
-     * Whether to enable internal debug messages.
-     *
-     * @var     bool
-     * @access  private
-     */
-    private $debug = false;
-
-    /**
      * Which class to use for error objects.
      *
      * @var     string
@@ -94,13 +86,48 @@ class Util
     public function __construct($error_class = null)
     {
         $classname = strtolower(get_class($this));
-        if ($this->debug) {
-            print "PEAR constructor called, class=$classname\n";
-        }
 
         if ($error_class !== null) {
             $this->error_class = $error_class;
         }
+    }
+
+    /**
+     * Handle calling of isError/raiseError/throwError in static context
+     *
+     * @param string $method    Name of method being called
+     * @param array  $arguments Parameters to the function
+     * @return mixed
+     */
+    public static function __callStatic($method, $arguments = [])
+    {
+        if (!in_array($method, ['isError', 'raiseError', 'throwError'])) {
+            // @codeCoverageIgnoreStart
+            // can't expect a forced error
+            trigger_error('Static method not found', E_USER_ERROR);
+            // @codeCoverageIgnoreEnd
+        }
+
+        return call_user_func_array([self::class, 'static' . ucfirst($method)], $arguments);
+    }
+
+    /**
+     * Handle calling of isError/raiseError/throwError in an object context.
+     *
+     * @param string $method    Name of method being called
+     * @param array  $arguments Parameters to the function
+     * @return mixed
+     */
+    public function __call($method, $arguments = [])
+    {
+        if (!in_array($method, ['isError', 'raiseError', 'throwError'])) {
+            // @codeCoverageIgnoreStart
+            // can't expect a forced error
+            trigger_error('Method not found', E_USER_ERROR);
+            // @codeCoverageIgnoreEnd
+        }
+
+        return call_user_func_array([self::class, 'static' . ucfirst($method)], $arguments);
     }
 
     /**
@@ -114,7 +141,7 @@ class Util
      *
      * @return  bool    true if parameter is an error
      */
-    public static function isError($data, $code = null)
+    public static function staticIsError($data, $code = null)
     {
         if (!($data instanceof Error)) {
             return false;
@@ -165,7 +192,7 @@ class Util
      * @see PEAR::setErrorHandling
      * @since PHP 4.0.5
      */
-    protected static function raiseError($object, $message = null, $code = null, $mode = null, $options = null, $userinfo = null, $error_class = null, $skipmsg = false)
+    protected static function staticRaiseError($object, $message = null, $code = null, $mode = null, $options = null, $userinfo = null, $error_class = null, $skipmsg = false)
     {
         // The error is yet a PEAR error object
         if (is_object($message)) {
@@ -208,7 +235,7 @@ class Util
      * @return object   a PEAR error object
      * @see PEAR::raiseError
      */
-    protected static function throwError($object, $message = null, $code = null, $userinfo = null)
+    protected static function staticThrowError($object, $message = null, $code = null, $userinfo = null)
     {
         if ($object !== null) {
             $a = &$object->raiseError($message, $code, null, null, $userinfo);

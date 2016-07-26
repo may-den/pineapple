@@ -1733,9 +1733,9 @@ class Common extends Util
      *
      * @see PEAR_Error
      */
-    function raiseError($code = DB::DB_ERROR, $mode = null, $options = null,
-                        $userinfo = null, $nativecode = null, $dummy1 = null,
-                        $dummy2 = null)
+    public function raiseError($code = DB::DB_ERROR, $mode = null, $options = null,
+                               $userinfo = null, $nativecode = null, $dummy1 = null,
+                               $dummy2 = null)
     {
         // The error is yet a DB error object
         if (is_object($code)) {
