@@ -4,12 +4,18 @@
     "require": {
         "doctrine/dbal": "^2.5"
     },
+    "scripts": {
+        "phan": "phan -l src/",
+        "test": "phpunit test/"
+    },
     "autoload": {
         "psr-4": {
-            "Mayden\\Pineapple\\": "src/"
+            "Mayden\\Pineapple\\": "src/",
+            "Mayden\\Pineapple\\Test\\": "test/"
         }
     },
     "require-dev": {
-        "crysalead/kahlan": "^2.5"
+        "phpunit/phpunit": "^5.4",
+        "etsy/phan": "^0.6.0"
     }
 }
