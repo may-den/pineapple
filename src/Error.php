@@ -43,7 +43,6 @@ class Error
      * @param string $userinfo (optional) additional user/debug info
      *
      * @access public
-     *
      */
     public function __construct($message = null, $code = null, $mode = null, $options = null, $userinfo = null)
     {
@@ -86,6 +85,8 @@ class Error
             trigger_error($this->getMessage(), $this->level);
         }
 
+        // we cannot test something which dies
+        // @codeCoverageIgnoreStart
         if ($this->mode & Util::PEAR_ERROR_DIE) {
             $msg = $this->getMessage();
             if (is_null($options) || is_int($options)) {
@@ -98,6 +99,7 @@ class Error
             }
             die(sprintf($format, $msg));
         }
+        // @codeCoverageIgnoreEnd
 
         if ($this->mode & Util::PEAR_ERROR_CALLBACK && is_callable($this->callback)) {
             call_user_func($this->callback, $this);
