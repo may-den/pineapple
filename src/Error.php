@@ -262,9 +262,12 @@ class Error
         if ($this->mode & Util::PEAR_ERROR_TRIGGER) {
             $modes[] = 'trigger';
         }
+        // untestable because we can't trigger a die
+        // @codeCoverageIgnoreStart
         if ($this->mode & Util::PEAR_ERROR_DIE) {
             $modes[] = 'die';
         }
+        // @codeCoverageIgnoreEnd
         if ($this->mode & Util::PEAR_ERROR_RETURN) {
             $modes[] = 'return';
         }

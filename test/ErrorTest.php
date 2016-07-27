@@ -184,6 +184,40 @@ class ErrorTest extends TestCase
 
     public function testToString()
     {
-        $this->warn('not yet written');
+        $error = new Error('otter');
+        $this->assertEquals('[' . strtolower(Error::class) . ': message="otter" code=0 mode=return level=notice prefix="" info=""]', $error->toString());
+    }
+
+    public function testToStringWithMethodCallback()
+    {
+        $this->callbackMessageTrap = null;
+        $error = new Error('test callback', null, Util::PEAR_ERROR_CALLBACK, [$this, 'errorCallback']);
+        $this->assertEquals('[' . strtolower(Error::class) . ': message="test callback" code=0 mode=callback callback=' . strtolower(get_class()) . '::errorCallback prefix="" info=""]', $error->toString());
+    }
+
+    public function testToStringWithBasicCallback()
+    {
+        // use strtolower as a parameter-eating noop
+        $error = new Error('test callback', null, Util::PEAR_ERROR_CALLBACK, 'strtolower');
+        $this->assertEquals('[' . strtolower(Error::class) . ': message="test callback" code=0 mode=callback callback=strtolower prefix="" info=""]', $error->toString());
+    }
+
+    public function testToStringWithPrint()
+    {
+        $this->expectOutputString('test print');
+        $error = new Error('test print', null, Util::PEAR_ERROR_PRINT);
+        $this->assertEquals('[' . strtolower(Error::class) . ': message="test print" code=0 mode=print level=notice prefix="" info=""]', $error->toString());
+    }
+
+    public function testToStringWithTrigger()
+    {
+        $this->setErrorHandler();
+        $error = new Error('test trigger error', null, Util::PEAR_ERROR_TRIGGER);
+        $this->restoreErrorHandler();
+
+        $this->assertEquals(1, count($this->errors), 'Expected one error, but got: ' . json_encode($this->errors));
+
+        $this->assertEquals('[' . strtolower(Error::class) . ': message="test trigger error" code=0 mode=trigger level=notice prefix="" info=""]', $error->toString());
+
     }
 }
