@@ -4,7 +4,6 @@ namespace Mayden\Pineapple\Test;
 use PHPUnit\Framework\TestCase;
 use Mayden\Pineapple\Util;
 use Mayden\Pineapple\Error;
-use Mayden\Pineapple\Test\PseudoError;
 
 class UtilTest extends TestCase
 {
@@ -47,11 +46,39 @@ class UtilTest extends TestCase
         $this->assertInstanceOf(Error::class, $error);
     }
 
+    public function testRaiseErrorWithoutMessage()
+    {
+        $util = new Util();
+        $error = $util->raiseError('something broke', 12345, null, null, null, null, true);
+        $this->assertInstanceOf(Error::class, $error);
+    }
+
     public function testIsError()
     {
         $util = new Util();
         $error = $util->raiseError('something broke');
         $this->assertTrue($util->isError($error));
+    }
+
+    public function testIsErrorIsNotAnError()
+    {
+        $util = new Util();
+        $error = new \stdClass();
+        $this->assertFalse($util->isError($error));
+    }
+
+    public function testIsErrorByMessage()
+    {
+        $util = new Util();
+        $error = $util->raiseError('something broke');
+        $this->assertTrue($util->isError($error, 'something broke'));
+    }
+
+    public function testIsErrorByCode()
+    {
+        $util = new Util();
+        $error = $util->raiseError('something broke', 54321);
+        $this->assertTrue($util->isError($error, 54321));
     }
 
     public function testIsErrorStatic()
@@ -64,6 +91,26 @@ class UtilTest extends TestCase
     {
         $util = new Util();
         $error = $util->throwError('something broke');
+        $this->assertInstanceOf(Error::class, $error);
+    }
+
+    public function testThrowErrorWithObject()
+    {
+        $util = new Util();
+
+        $error = $util->throwError(Util::raiseError('something broke'));
+        $this->assertInstanceOf(Error::class, $error);
+    }
+
+    public function testThrowErrorStatic()
+    {
+        $error = Util::throwError('something broke');
+        $this->assertInstanceOf(Error::class, $error);
+    }
+
+    public function testThrowErrorStaticWithObject()
+    {
+        $error = Util::throwError(Util::raiseError('something broke'));
         $this->assertInstanceOf(Error::class, $error);
     }
 }
