@@ -108,6 +108,10 @@ class Util
             // @codeCoverageIgnoreEnd
         }
 
+        // isError doesn't need $this, but raise and throw need it faked
+        if ($method != 'isError') {
+            array_unshift($arguments, null);
+        }
         return call_user_func_array([self::class, 'static' . ucfirst($method)], $arguments);
     }
 
@@ -127,6 +131,10 @@ class Util
             // @codeCoverageIgnoreEnd
         }
 
+        // isError doesn't need $this, but raise and throw need it faked
+        if ($method != 'isError') {
+            array_unshift($arguments, $this);
+        }
         return call_user_func_array([self::class, 'static' . ucfirst($method)], $arguments);
     }
 
@@ -238,7 +246,7 @@ class Util
     protected static function staticThrowError($object, $message = null, $code = null, $userinfo = null)
     {
         if ($object !== null) {
-            $a = &$object->raiseError($message, $code, null, null, $userinfo);
+            $a = $object->raiseError($message, $code, null, null, $userinfo);
             return $a;
         }
 

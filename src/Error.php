@@ -20,7 +20,7 @@ namespace Mayden\Pineapple;
  */
 class Error
 {
-    private $error_message_prefix = '';
+    public $error_message_prefix = '';
     private $mode = Util::PEAR_ERROR_RETURN;
     private $level = E_USER_NOTICE;
     private $code = -1;
