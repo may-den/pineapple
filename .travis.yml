@@ -19,7 +19,7 @@ script:
 matrix:
   fast_finish: true
 
-sudo: false
+sudo: required
 
 cache:
   directories:
