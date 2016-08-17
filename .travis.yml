@@ -5,7 +5,8 @@ php:
 # - hhvm
 
 before_install:
-  - pecl install ast
+  - sudo apt-get -qq update
+  - sudo apt-get install -y php-ast
   - echo "extension=ast.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 before_script:
