@@ -231,18 +231,13 @@ class Exception extends \Exception
      */
     public function getCauseMessage(&$causes)
     {
-        $trace = $this->getTraceSafe();
-        $cause = array('class'   => get_class($this),
-                       'message' => $this->message,
-                       'file' => 'unknown',
-                       'line' => 'unknown');
-        if (isset($trace[0])) {
-            if (isset($trace[0]['file'])) {
-                $cause['file'] = $trace[0]['file'];
-                $cause['line'] = $trace[0]['line'];
-            }
-        }
-        $causes[] = $cause;
+        $causes[] = [
+            'class' => get_class($this),
+            'message' => $this->message,
+            'file' => 'unknown',
+            'line' => 'unknown'
+        ];
+
         if ($this->cause instanceof self) {
             $this->cause->getCauseMessage($causes);
         } elseif ($this->cause instanceof \Exception) {
