@@ -288,10 +288,6 @@ class Exception extends \Exception
     {
         if (!isset($this->_trace)) {
             $this->_trace = $this->getTrace();
-            if (empty($this->_trace)) {
-                $backtrace = debug_backtrace();
-                $this->_trace = array($backtrace[count($backtrace)-1]);
-            }
         }
         return $this->_trace;
     }
