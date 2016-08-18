@@ -261,4 +261,144 @@ class ExceptionTest extends TestCase
             'line' => 12345,
         ]], $causes);
     }
+
+    public function testGetTraceSafe()
+    {
+        // in all seriousness, i have no idea why this method exists in the class
+        $e = new Exception('uh oh');
+        $trace = $e->getTraceSafe();
+        $this->assertEquals(__CLASS__, $trace[0]['class']);
+    }
+
+    public function testGetErrorClass()
+    {
+        // in all seriousness, i have no idea why this method exists in the class
+        $e = new Exception('uh oh');
+        $errorClass = $e->getErrorClass();
+        $this->assertEquals(__CLASS__, $errorClass);
+    }
+
+    public function testGetErrorMethod()
+    {
+        $e = new Exception('uh oh');
+        $errorMethod = $e->getErrorMethod();
+        $this->assertEquals(__FUNCTION__, $errorMethod);
+    }
+
+    public function testToString()
+    {
+        unset($_SERVER['REQUEST_URI']); // we want to avoid any possibly html output
+        $e = new Exception('garg. i am saying garg.');
+        $exceptionString = $e->__toString();
+        $this->assertRegExp('/^' . preg_quote(Exception::class) . ': garg. i am saying garg. in/', $exceptionString);
+    }
+
+    public function testToText()
+    {
+        $e = new Exception('i have powers pinto beans can only dream of.');
+        $exceptionString = $e->toText();
+        $this->assertRegExp(
+            '/^' . preg_quote(Exception::class) . ': i have powers pinto beans can only dream of. in/',
+            $exceptionString
+        );
+    }
+
+    public function testToStringMagic()
+    {
+        unset($_SERVER['REQUEST_URI']); // we want to avoid any possibly html output
+        $e = new Exception('you fried cyclops.');
+        $exceptionString = (string) $e;
+        $this->assertRegExp('/^' . preg_quote(Exception::class) . ': you fried cyclops. in/', $exceptionString);
+    }
+
+    public function backtraceFodder(array $fodder, $food)
+    {
+        if (is_callable($food)) {
+            call_user_func($food);
+        }
+        if (!empty($fodder)) {
+            $nextFood = array_shift($fodder);
+            $this->backtraceFodder($fodder, $nextFood);
+        }
+    }
+
+    public function testToStringHtml()
+    {
+        // generate some backtrace fodder - the last item triggers the real test execution
+        $this->backtraceFodder([
+            null,
+            [1, 2, 3],
+            new \stdClass(),
+            true,
+            (int) 1,
+            (double) 1.1,
+            (string) 'goat',
+            (string) 'this is a really long string, greater than 16 characters',
+            [$this, 'realTestToStringHtml'],
+        ], null);
+    }
+
+    public function realTestToStringHtml()
+    {
+        // this sort of test is really an output test, and best suited to characterisation, so let's just test a few
+        // things to ensure that the output contains something like the exception we generated.
+
+        $_SERVER['REQUEST_URI'] = 'http://localhost/'; // force html output
+
+        // generate the exception and get the html string
+        $e = new Exception('i have no kiwis.');
+        $exceptionString = $e->__toString();
+
+        // ensure the output is a table
+        $this->assertRegExp('/^\<table/', $exceptionString);
+
+        // look for our exception message and class
+        $this->assertRegExp(
+            '#' . preg_quote('<b>' . Exception::class . '</b>: i have no kiwis. in') . '#',
+            $exceptionString
+        );
+
+        // method backtraceFodder should have been called number_of_elements_in_array + 1
+        $this->assertEquals(10, substr_count($exceptionString, 'backtraceFodder'));
+
+        // unset the request string from superglobal
+        unset($_SERVER['REQUEST_URI']);
+    }
+
+    public function testConstructWithObserverSignal()
+    {
+        Exception::addObserver([$this, 'pseudoObserver']);
+        $this->observerCalled = false;
+
+        $e = new Exception('far from the evil toenails of doom.');
+
+        $this->assertTrue($this->observerCalled);
+        $this->observerCalled = false;
+        Exception::removeObserver();
+    }
+
+    public function testConstructWithPrintObserver()
+    {
+        Exception::addObserver(Exception::OBSERVER_PRINT);
+        $this->expectOutputString('rise up and bare your biscuit filthy fangs at the oppressive leash wielding demon.');
+        $e = new Exception('rise up and bare your biscuit filthy fangs at the oppressive leash wielding demon.');
+        Exception::removeObserver();
+    }
+
+    public function testConstructWithTriggerObserver()
+    {
+        Exception::addObserver(Exception::OBSERVER_TRIGGER);
+        $this->expectException(\PHPUnit_Framework_Error_Notice::class);
+        $this->expectExceptionMessage('parts break after overuse');
+        $e = new Exception('parts break after overuse');
+        Exception::removeObserver();
+    }
+
+    public function testConstructWithBadObserver()
+    {
+        Exception::addObserver('spoon');
+        $this->expectException(\PHPUnit_Framework_Error_Warning::class);
+        $this->expectExceptionMessage('invalid observer type');
+        $e = new Exception('meow! meow! meow! cat chow!!');
+    }
 }
