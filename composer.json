@@ -5,7 +5,6 @@
         "doctrine/dbal": "^2.5"
     },
     "scripts": {
-        "phan": "phan -l src/",
         "test": "phpunit --coverage-html='coverage/' --coverage-text='php://stdout' --colors=auto test/",
         "serve-coverage": "php -S [::1]:3000 -t 'coverage/'"
     },
