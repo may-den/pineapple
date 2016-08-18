@@ -99,7 +99,7 @@ class Exception extends \Exception
     const OBSERVER_TRIGGER = -4;
     const OBSERVER_DIE = -8;
     protected $cause;
-    private static $observers = array();
+    private static $observers = [];
     private static $uniqueid = 0;
 
     /**
@@ -212,7 +212,7 @@ class Exception extends \Exception
      */
     public function getErrorData()
     {
-        return array();
+        return [];
     }
 
     /**
