@@ -210,8 +210,55 @@ class ExceptionTest extends TestCase
         ]], $causes);
     }
 
-    // public function testGetCauseMessageWithArray()
-    // {
-    //     // original code could have done with some recursion.
-    // }
+    public function testGetCauseMessageWithArray()
+    {
+        // original code could have done with some recursion. then these tests could be simpler.
+        $causes = null;
+        $nestedException = new Exception('emergency puppies');
+        $nestedError = new Error('ack');
+        $nestedRootException = new \Exception('how many fingers am i holding up');
+
+        $e = new Exception('green wing', [
+            $nestedException,
+            $nestedError,
+            $nestedRootException,
+            [
+                'package' => 'pineapple',
+                'message' => 'everything is awesome',
+                'context' => [
+                    'file' => __FILE__,
+                    'line' => 12345,
+                ]
+            ]
+        ]);
+
+        $e->getCauseMessage($causes);
+
+        $this->assertEquals([[
+            'class' => Exception::class,
+            'message' => 'green wing',
+            'file' => 'unknown',
+            'line' => 'unknown'
+        ], [
+            'class' => Exception::class,
+            'message' => 'emergency puppies',
+            'file' => 'unknown',
+            'line' => 'unknown'
+        ], [
+            'class' => Error::class,
+            'message' => 'ack',
+            'file' => 'unknown',
+            'line' => 'unknown'
+        ], [
+            'class' => \Exception::class,
+            'message' => 'how many fingers am i holding up',
+            'file' => __FILE__,
+            'line' => $nestedRootException->getLine(),
+        ], [
+            'class' => 'pineapple',
+            'message' => 'everything is awesome',
+            'file' => __FILE__,
+            'line' => 12345,
+        ]], $causes);
+    }
 }
