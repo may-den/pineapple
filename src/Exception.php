@@ -182,14 +182,23 @@ class Exception extends \Exception
                     $f = (isset($func[1])) ? $func[1] : '%s';
                     printf($f, $this->getMessage());
                     break;
+
                 case self::OBSERVER_TRIGGER:
                     $f = (isset($func[1])) ? $func[1] : E_USER_NOTICE;
                     trigger_error($this->getMessage(), $f);
+                    // @codeCoverageIgnoreStart
+                    // this cannot be reached during unit test
                     break;
+                    // @codeCoverageIgnoreEnd
+
+                // @codeCoverageIgnoreStart
+                // can't cover this, die is kind of a finality
                 case self::OBSERVER_DIE:
                     $f = (isset($func[1])) ? $func[1] : '%s';
                     die(printf($f, $this->getMessage()));
                     break;
+                // @codeCoverageIgnoreEnd
+
                 default:
                     trigger_error('invalid observer type', E_USER_WARNING);
             }
