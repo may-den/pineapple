@@ -5,8 +5,7 @@
         "doctrine/dbal": "^2.5"
     },
     "scripts": {
-        "test": "phpunit --coverage-html='coverage/' --coverage-text='php://stdout' --colors=auto test/",
-        "serve-coverage": "php -S [::1]:3000 -t 'coverage/'"
+        "test": "phpunit --coverage-html='coverage/' --coverage-text='php://stdout' --colors=auto test/"
     },
     "autoload": {
         "psr-4": {
