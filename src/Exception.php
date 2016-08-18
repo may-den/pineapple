@@ -132,7 +132,7 @@ class Exception extends \Exception
             $code = $p3;
             if (is_array($p2) && isset($p2['message'])) {
                 // fix potential problem of passing in a single warning
-                $p2 = array($p2);
+                $p2 = [$p2];
             }
             $this->cause = $p2;
         } else {
@@ -315,7 +315,7 @@ class Exception extends \Exception
     public function toHtml()
     {
         $trace = $this->getTraceSafe();
-        $causes = array();
+        $causes = [];
         $this->getCauseMessage($causes);
         $html =  "<table style=\"border: 1px\" cellspacing=\"0\">\n";
         foreach ($causes as $i => $cause) {
@@ -351,7 +351,7 @@ class Exception extends \Exception
                 $html .= $v['class'] . $v['type'];
             }
             $html .= $v['function'];
-            $args = array();
+            $args = [];
             if (!empty($v['args'])) {
                 foreach ($v['args'] as $arg) {
                     switch (gettype($arg)) {
@@ -404,7 +404,7 @@ class Exception extends \Exception
 
     public function toText()
     {
-        $causes = array();
+        $causes = [];
         $this->getCauseMessage($causes);
         $causeMsg = '';
         foreach ($causes as $i => $cause) {
