@@ -241,41 +241,44 @@ class Exception extends \Exception
         if ($this->cause instanceof self) {
             $this->cause->getCauseMessage($causes);
         } elseif ($this->cause instanceof \Exception) {
-            $causes[] = array('class'   => get_class($this->cause),
-                              'message' => $this->cause->getMessage(),
-                              'file' => $this->cause->getFile(),
-                              'line' => $this->cause->getLine());
+            $causes[] = [
+                'class' => get_class($this->cause),
+                'message' => $this->cause->getMessage(),
+                'file' => $this->cause->getFile(),
+                'line' => $this->cause->getLine()];
         } elseif (class_exists(Error::class) && $this->cause instanceof Error) {
-            $causes[] = array('class' => get_class($this->cause),
-                              'message' => $this->cause->getMessage(),
-                              'file' => 'unknown',
-                              'line' => 'unknown');
+            $causes[] = [
+                'class' => get_class($this->cause),
+                'message' => $this->cause->getMessage(),
+                'file' => 'unknown',
+                'line' => 'unknown'
+            ];
         } elseif (is_array($this->cause)) {
             foreach ($this->cause as $cause) {
                 if ($cause instanceof self) {
                     $cause->getCauseMessage($causes);
                 } elseif ($cause instanceof \Exception) {
-                    $causes[] = array('class'   => get_class($cause),
-                                   'message' => $cause->getMessage(),
-                                   'file' => $cause->getFile(),
-                                   'line' => $cause->getLine());
+                    $causes[] = [
+                        'class' => get_class($cause),
+                        'message' => $cause->getMessage(),
+                        'file' => $cause->getFile(),
+                        'line' => $cause->getLine()
+                    ];
                 } elseif (class_exists(Error::class) && $cause instanceof Error) {
-                    $causes[] = array('class' => get_class($cause),
-                                      'message' => $cause->getMessage(),
-                                      'file' => 'unknown',
-                                      'line' => 'unknown');
+                    $causes[] = [
+                        'class' => get_class($cause),
+                        'message' => $cause->getMessage(),
+                        'file' => 'unknown',
+                        'line' => 'unknown'
+                    ];
                 } elseif (is_array($cause) && isset($cause['message'])) {
                     // ErrorStack warning
-                    $causes[] = array(
+                    $causes[] = [
                         'class' => $cause['package'],
                         'message' => $cause['message'],
-                        'file' => isset($cause['context']['file']) ?
-                                            $cause['context']['file'] :
-                                            'unknown',
-                        'line' => isset($cause['context']['line']) ?
-                                            $cause['context']['line'] :
-                                            'unknown',
-                    );
+                        'file' => isset($cause['context']['file']) ? $cause['context']['file'] : 'unknown',
+                        'line' => isset($cause['context']['line']) ? $cause['context']['line'] : 'unknown',
+                    ];
                 }
             }
         }
