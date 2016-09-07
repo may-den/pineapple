@@ -314,7 +314,19 @@ class DB
             $options = ['persistent' => $options];
         }
 
-        $classname = "\\Mayden\\Pineapple\\DB\\Driver\\${type}";
+        // if $type contains a slash, it's likely a full class name
+        if (strpos($type, '\\') === false) {
+            // this is a "short" name
+
+            // @codeCoverageIgnoreStart
+            // unreachable in unit tests, feasible in integration.
+            // @todo remove when integration suite is added
+            $classname = "\\Mayden\\Pineapple\\DB\\Driver\\${type}";
+            // @codeCoverageIgnoreEnd
+        } else {
+            // full name
+            $classname = $type;
+        }
 
         if (!class_exists($classname)) {
             $tmp = Util::raiseError(
