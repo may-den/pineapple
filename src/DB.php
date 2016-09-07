@@ -265,6 +265,9 @@ class DB
     // @const Turn on all portability features
     const DB_PORTABILITY_ALL = 63;
 
+    // @const Driver class namespace prefix
+    const INTERNAL_DRIVER_PREFIX = '\\Mayden\\Pineapple\\DB\\Driver\\';
+
     // @var error messages
     private static $errorMessages = [
         self::DB_ERROR => 'unknown error',
@@ -314,19 +317,7 @@ class DB
             $options = ['persistent' => $options];
         }
 
-        // if $type contains a slash, it's likely a full class name
-        if (strpos($type, '\\') === false) {
-            // this is a "short" name
-
-            // @codeCoverageIgnoreStart
-            // unreachable in unit tests, feasible in integration.
-            // @todo remove when integration suite is added
-            $classname = "\\Mayden\\Pineapple\\DB\\Driver\\${type}";
-            // @codeCoverageIgnoreEnd
-        } else {
-            // full name
-            $classname = $type;
-        }
+        $classname = self::qualifyClassname($type);
 
         if (!class_exists($classname)) {
             $tmp = Util::raiseError(
@@ -351,6 +342,17 @@ class DB
         }
 
         return $obj;
+    }
+
+    private static function qualifyClassname($class)
+    {
+        if (strpos($class, '\\') === false) {
+            // @todo untestable in unit tests; remove annotation when adding integration test
+            return self::INTERNAL_DRIVER_PREFIX . $class; // @codeCoverageIgnore
+        }
+
+        // this is fully qualified or a relative class, use verbatim
+        return $class;
     }
 
     /**
