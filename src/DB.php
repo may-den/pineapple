@@ -325,7 +325,7 @@ class DB
                 self::DB_ERROR_NOT_FOUND,
                 null,
                 null,
-                "Driver class for {$classname} is not available file for '{$dsn}'",
+                "Driver class for {$classname} is not available",
                 DB\Error::class,
                 true
             );
