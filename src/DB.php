@@ -383,7 +383,6 @@ class DB
     public static function connect($dsn, $options = [])
     {
         $dsninfo = self::parseDSN($dsn);
-        $type = $dsninfo['phptype'];
 
         if (!is_array($options)) {
             /*
