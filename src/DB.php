@@ -393,7 +393,7 @@ class DB
             $options = ['persistent' => $options];
         }
 
-        $classname = "\\Mayden\\Pineapple\\DB\\Driver\\${type}";
+        $classname = self::qualifyClassname($$dsninfo['phptype']);
 
         if (!class_exists($classname)) {
             $tmp = Util::raiseError(
