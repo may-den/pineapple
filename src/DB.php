@@ -393,7 +393,7 @@ class DB
             $options = ['persistent' => $options];
         }
 
-        $classname = self::qualifyClassname($$dsninfo['phptype']);
+        $classname = self::qualifyClassname($dsninfo['phptype']);
 
         if (!class_exists($classname)) {
             $tmp = Util::raiseError(
