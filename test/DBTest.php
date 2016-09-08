@@ -17,10 +17,16 @@ class DBTest extends TestCase
 
     public function testFactoryWithArrayOptions()
     {
-        $this->markTestSkipped('@todo this test current fails');
-        $dbh = DB::factory(TestDriver::class, ['q' => 'q who?']);
+        $dbh = DB::factory(TestDriver::class, ['debug' => 'q who?']);
         $this->assertInstanceOf(TestDriver::class, $dbh);
-        $this->assertEquals('q who?', $dbh->getOption('q'));
+        $this->assertEquals('q who?', $dbh->getOption('debug'));
+    }
+
+    public function testFactoryWithLegacyOption()
+    {
+        $dbh = DB::factory(TestDriver::class, true);
+        $this->assertInstanceOf(TestDriver::class, $dbh);
+        $this->assertTrue($dbh->getOption('persistent'));
     }
 
     public function testFactoryWithBadDriver()
@@ -35,22 +41,43 @@ class DBTest extends TestCase
         $this->assertInstanceOf(TestDriver::class, $dbh);
     }
 
+    public function testConnectWithDsnArray()
+    {
+        $dsn = ['phptype' => TestDriver::class];
+        $dbh = DB::connect($dsn);
+        $this->assertInstanceOf(TestDriver::class, $dbh);
+    }
+
     public function testConnectWithOptions()
     {
-        $dbh = DB::connect(TestDriver::class . '://', ['persistent' => false]);
+        $dbh = DB::connect(TestDriver::class . '://', ['debug' => 'q who?']);
         $this->assertInstanceOf(TestDriver::class, $dbh);
+        $this->assertEquals('q who?', $dbh->getOption('debug'));
     }
 
     public function testConnectWithLegacyOption()
     {
-        $dbh = DB::connect(TestDriver::class . '://', false);
+        $dbh = DB::connect(TestDriver::class . '://', true);
         $this->assertInstanceOf(TestDriver::class, $dbh);
-        $this->assertFalse($dbh->getOption('persistent'));
+        $this->assertTrue($dbh->getOption('persistent'));
     }
 
     public function testConnectWithBadDriver()
     {
         $dbh = DB::connect('meep://');
+        $this->assertInstanceOf(Error::class, $dbh);
+    }
+
+    public function testConnectWithFailingDriver()
+    {
+        $dbh = DB::connect(TestDriver::class . '://', ['debug' => 'please fail']); // magic value
+        $this->assertInstanceOf(Error::class, $dbh);
+    }
+
+    public function testConnectWithDsnArrayAndFailingDriver()
+    {
+        $dsn = ['phptype' => TestDriver::class];
+        $dbh = DB::connect($dsn, ['debug' => 'please fail']);
         $this->assertInstanceOf(Error::class, $dbh);
     }
 }
