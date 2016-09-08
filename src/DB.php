@@ -482,7 +482,7 @@ class DB
             'LOCK',
             'UNLOCK'
         ]);
-        if (preg_match('/^\s*"?(' . $manips . ')\s+/i', $query)) {
+        if (preg_match('/^\s*"?(' . $manips . ')\s+/si', $query)) {
             return true;
         }
         return false;
