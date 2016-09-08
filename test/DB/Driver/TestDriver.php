@@ -64,6 +64,10 @@ class TestDriver extends Common
 
     public function connect($dsn, $persistent = false)
     {
+        $debug = $this->getOption('debug');
+        if (!Util::isError($debug) && ($debug === 'please fail')) {
+            return $this->myRaiseError();
+        }
         return DB::DB_OK;
     }
 
