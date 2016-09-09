@@ -78,7 +78,7 @@ class TestDriver extends Common
 
     public function simpleQuery($query)
     {
-        if (preg_match('/^SELECT', $query)) {
+        if (preg_match('/^SELECT/', $query)) {
             $this->lastQueryType = 'SELECT';
             return [
                 'type' => 'resultResource',
@@ -93,7 +93,7 @@ class TestDriver extends Common
                     ]
                 ]
             ];
-        } elseif (preg_match('^INSERT', $query)) {
+        } elseif (preg_match('/^INSERT/', $query)) {
             // this may not be correct
             $this->lastQueryType = 'INSERT';
             return DB::OK;
