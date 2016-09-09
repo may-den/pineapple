@@ -74,6 +74,6 @@ class Row
      */
     public function __unset($key)
     {
-        delete($this->row[$key]);
+        unset($this->row[$key]);
     }
 }
