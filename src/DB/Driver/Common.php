@@ -498,11 +498,12 @@ class Common extends Util
      *
      * @see DB_FETCHMODE_ORDERED, DB_FETCHMODE_ASSOC, DB_FETCHMODE_OBJECT
      */
-    function setFetchMode($fetchmode, $object_class = 'stdClass')
+    public function setFetchMode($fetchmode, $object_class = 'stdClass')
     {
         switch ($fetchmode) {
             case DB::DB_FETCHMODE_OBJECT:
                 $this->fetchmode_object_class = $object_class;
+                // no break here deliberately
             case DB::DB_FETCHMODE_ORDERED:
             case DB::DB_FETCHMODE_ASSOC:
                 $this->fetchmode = $fetchmode;
