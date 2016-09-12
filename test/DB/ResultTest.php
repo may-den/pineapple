@@ -184,4 +184,164 @@ class ResultTest extends TestCase
         $this->assertTrue($dbh->getFreeFlag());
         $this->assertNull($row);
     }
+
+    public function testFetchInto()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth);
+
+        $row = null;
+        $result = $result->fetchInto($row);
+        $this->assertEquals([1, 'test1'], $row);
+    }
+
+    public function testFetchIntoByAssoc()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth);
+
+        $row = null;
+        $result = $result->fetchInto($row, DB::DB_FETCHMODE_ASSOC);
+        $this->assertEquals([
+            'id' => 1,
+            'data' => 'test1'
+        ], $row);
+    }
+
+    public function testFetchIntoByObject()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth);
+        $expected = new \stdClass();
+        $expected->id = 1;
+        $expected->data = 'test1';
+
+        $row = null;
+        $result = $result->fetchInto($row, DB::DB_FETCHMODE_OBJECT);
+        $this->assertEquals($expected, $row);
+    }
+
+    public function testFetchIntoByRowObject()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh->setFetchMode(DB::DB_FETCHMODE_OBJECT, Row::class);
+
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+
+        $result = new Result($dbh, $sth);
+        $fakeRow = [
+            'id' => 1,
+            'data' => 'test1',
+        ];
+        $expected = new Row($fakeRow);
+
+        $row = null;
+        $result = $result->fetchInto($row, DB::DB_FETCHMODE_OBJECT);
+        $this->assertEquals($expected, $row);
+    }
+
+    public function testFetchIntoWithLimit()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        // i am 99% sure this is a bug in Result, that if from is specified without count,
+        // then the result is null. not fixing as it's probably been there for ~10 years,
+        // and it's likely everyone who has encountered that bug has accounted for it, yet
+        // if they haven't they are probably now relying on the 'null' it is returning.
+        $result = new Result($dbh, $sth, [
+            'limit_from' => 1,
+            'limit_count' => 5,
+        ]);
+
+        $row = null;
+        $result = $result->fetchInto($row);
+        $this->assertEquals([1, 'test1'], $row);
+    }
+
+    public function testFetchIntoWithLimitBeyondAvailableResults()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+
+        $result = new Result($dbh, $sth, [
+            'limit_from' => 5,
+            'limit_count' => 5,
+        ]);
+
+        for ($i = 0; $i < 5; $i++) {
+            $row = $result->fetchRow(); // rip out the first five rows
+            $this->assertInternalType('array', $row);
+        }
+
+        $row = null;
+        $result = $result->fetchInto($row);
+        $this->assertNull($row);
+    }
+
+    public function testFetchIntoAutofreeWithLimit()
+    {
+        $dbh = DB::connect(TestDriver::class . '://', ['autofree' => true]);
+        $dbh->resetFreeFlag();
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        // i am 99% sure this is a bug in Result, that if from is specified without count,
+        // then the result is null. not fixing as it's probably been there for ~10 years,
+        // and it's likely everyone who has encountered that bug has accounted for it, yet
+        // if they haven't they are probably now relying on the 'null' it is returning.
+        $result = new Result($dbh, $sth, [
+            'limit_from' => 1,
+            'limit_count' => 1,
+        ]);
+
+        $this->assertFalse($dbh->getFreeFlag());
+        $row = null;
+        $fetchResult = $result->fetchInto($row);
+        $this->assertFalse($dbh->getFreeFlag());
+        $this->assertInternalType('array', $row);
+        $row = null;
+        $fetchResult = $result->fetchInto($row);
+        $this->assertTrue($dbh->getFreeFlag());
+        $this->assertNull($row);
+    }
+
+    public function testFetchIntoAutofreeWithoutLimit()
+    {
+        $dbh = DB::connect(TestDriver::class . '://', ['autofree' => true]);
+        $dbh->resetFreeFlag();
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        // i am 99% sure this is a bug in Result, that if from is specified without count,
+        // then the result is null. not fixing as it's probably been there for ~10 years,
+        // and it's likely everyone who has encountered that bug has accounted for it, yet
+        // if they haven't they are probably now relying on the 'null' it is returning.
+        $result = new Result($dbh, $sth);
+
+        $this->assertFalse($dbh->getFreeFlag());
+        for ($i = 0; $i < 20; $i++) {
+            $row = $result->fetchRow();
+            $this->assertInternalType('array', $row);
+        }
+        $this->assertFalse($dbh->getFreeFlag());
+        $row = null;
+        $result = $result->fetchInto($row);
+        $this->assertTrue($dbh->getFreeFlag());
+        $this->assertNull($row);
+    }
+
+    public function testNumCols()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth);
+        $this->assertEquals(2, $result->numCols());
+    }
+
+    public function testNumRows()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth);
+        $this->assertEquals(20, $result->numRows());
+    }
 }
