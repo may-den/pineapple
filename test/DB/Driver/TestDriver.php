@@ -11,6 +11,9 @@ use Mayden\Pineapple\DB\Driver\Common;
  */
 class TestDriver extends Common
 {
+    private $lastResult = null;
+    private $hasFreed = false;
+
     var $phptype = 'test';
     var $dbsyntax = 'test';
     var $features = [
@@ -78,21 +81,22 @@ class TestDriver extends Common
 
     public function simpleQuery($query)
     {
+        $this->lastResult = null;
+
         if (preg_match('/^SELECT/', $query)) {
             $this->lastQueryType = 'SELECT';
-            return [
+            $results = [
                 'type' => 'resultResource',
-                'results' => [
-                    [
-                        'id' => 1,
-                        'data' => 'test1',
-                    ],
-                    [
-                        'id' => 2,
-                        'data' => 'test2',
-                    ]
-                ]
+                'results' => [],
             ];
+            // generate 20 test results
+            for ($i = 1; $i <= 20; $i++) {
+                $results['results'][] = [
+                    'id' => $i,
+                    'data' => 'test' . $i,
+                ];
+            }
+            return $results;
         } elseif (preg_match('/^INSERT/', $query)) {
             // this may not be correct
             $this->lastQueryType = 'INSERT';
@@ -109,16 +113,20 @@ class TestDriver extends Common
 
     public function fetchInto($result, &$arr, $fetchmode, $rownum = null)
     {
+        if ($this->lastResult !== $result) {
+            $this->lastResult = $result;
+        }
+
         if (!is_null($rownum)) {
             // hand-picked row
-            if (!isset($result['results'][$rownum])) {
+            if (!isset($this->lastResult['results'][$rownum])) {
                 // if the row isn't present, don't bother continuing
                 return null;
             }
-            $row = $result['results'][$rownum];
+            $row = $this->lastResult['results'][$rownum];
         } else {
-            $row = current($result['results']);
-            next($result['results']); // advance ptr, even if we're not using it
+            $row = current($this->lastResult['results']);
+            next($this->lastResult['results']); // advance ptr, even if we're not using it
 
             if ($row === false) {
                 return null;
@@ -135,6 +143,16 @@ class TestDriver extends Common
         return DB::DB_OK;
     }
 
+    public function resetFreeFlag()
+    {
+        $this->hasFreed = false;
+    }
+
+    public function getFreeFlag()
+    {
+        return $this->hasFreed;
+    }
+
     public function freeResult($result)
     {
         if (!isset($result['type']) || ($result['type'] != 'resultResource')) {
@@ -145,6 +163,7 @@ class TestDriver extends Common
             return false;
         }
 
+        $this->hasFreed = true;
         return true;
     }
 
