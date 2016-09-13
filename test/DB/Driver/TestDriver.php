@@ -65,6 +65,11 @@ class TestDriver extends Common
         parent::__construct();
     }
 
+    public function setPrepareFeature($flag)
+    {
+        $this->features['prepare'] = $flag ? true : false;
+    }
+
     public function connect($dsn, $persistent = false)
     {
         $debug = $this->getOption('debug');
@@ -82,6 +87,9 @@ class TestDriver extends Common
     public function simpleQuery($query)
     {
         $this->lastResult = null;
+
+        // this is a very specific name relied upon by neighbouring classes.
+        $this->last_query = $query;
 
         if (preg_match('/^SELECT/', $query)) {
             $this->lastQueryType = 'SELECT';
