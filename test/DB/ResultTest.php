@@ -353,18 +353,19 @@ class ResultTest extends TestCase
         $dbh = DB::connect(TestDriver::class . '://', ['portability' => DB::DB_PORTABILITY_NUMROWS]);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
+
         $this->assertEquals(20, $result->numRows());
     }
 
     public function testNumRowsWithPortabilityAndPreparedStatements()
     {
-        $this->markTestIncomplete('this test is broken due to storing expanded query after variable sub');
+        // $this->markTestIncomplete('this test is broken due to storing expanded query after variable sub');
         $dbh = DB::connect(TestDriver::class . '://', ['portability' => DB::DB_PORTABILITY_NUMROWS]);
         // "enable" prepared queries
         $dbh->setPrepareFeature(true);
         $sth = $dbh->prepare('SELECT things FROM a_table WHERE foo = ?');
         $result = $dbh->execute($sth, ['bar']);
-        $result->numRows();
+
         $this->assertEquals(20, $result->numRows());
 
         // testdriver doesn't implement bound parameters, so the tokeniser expands the query.
@@ -379,5 +380,97 @@ class ResultTest extends TestCase
         $dbh->simpleQuery('BREAK DELIBERATELY');
         $result = new Result($dbh, $sth);
         $this->assertInstanceOf(Error::class, $result->numRows());
+    }
+
+    public function testNextResult()
+    {
+        // this tests the next query in sequence for stacked queries.
+        // testdriver does not implement this, but the pricinple stands.
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth);
+        $this->assertInstanceOf(Result::class, $result);
+        $this->assertFalse($result->nextResult());
+    }
+
+    public function testFree()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+
+        $result = new Result($dbh, $sth);
+        $this->assertInstanceOf(Result::class, $result);
+        $this->assertTrue($result->free());
+    }
+
+    public function testFreeWithDbError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+
+        // inject our magic value to make us fail
+        $sth['feignFailure'] = true;
+
+        $result = new Result($dbh, $sth);
+        $this->assertInstanceOf(Result::class, $result);
+        $this->assertInstanceOf(Error::class, $result->free());
+    }
+
+    public function testTableInfo()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth);
+        $this->assertInstanceOf(Result::class, $result);
+        $this->assertEquals([
+            [
+                'table' => 'bonzotable',
+                'name' => 'bonzoname',
+                'type' => 'integer',
+                'len' => '12',
+                'flags' => 'NOT NULL',
+            ],
+            [
+                'table' => 'bonzotable',
+                'name' => 'banjoname',
+                'type' => 'string',
+                'len' => '20',
+                'flags' => '',
+            ]
+        ], $result->tableInfo());
+    }
+
+    public function testTableInfoWithModeString()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth);
+        $this->assertInstanceOf(Result::class, $result);
+
+        $tableInfo = $result->tableInfo('NO WAY');
+        $this->assertInstanceOf(Error::class, $tableInfo);
+        $this->assertEquals('DB Error: insufficient data supplied', $tableInfo->getMessage());
+    }
+
+    public function testGetQuery()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth);
+        $this->assertEquals('SELECT things FROM a_table', $result->getQuery());
+    }
+
+    public function testGetRowCounter()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth, [
+            'limit_from' => 5,
+            'limit_count' => 5,
+        ]);
+
+        $this->assertNull($result->getRowCounter());
+        $result->fetchRow();
+        $this->assertEquals(6, $result->getRowCounter());
     }
 }
