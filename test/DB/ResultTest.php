@@ -4,6 +4,7 @@ namespace Mayden\Pineapple\Test\DB;
 use Mayden\Pineapple\DB;
 use Mayden\Pineapple\DB\Result;
 use Mayden\Pineapple\DB\Row;
+use Mayden\Pineapple\DB\Error;
 use Mayden\Pineapple\Test\DB\Driver\TestDriver;
 use PHPUnit\Framework\TestCase;
 
@@ -343,5 +344,40 @@ class ResultTest extends TestCase
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $this->assertEquals(20, $result->numRows());
+    }
+
+    public function testNumRowsWithPortability()
+    {
+        // tempted to rip out numRows' 'portability' facility entirely.
+        // really, it should be avoided if at all possible. i hope it is never used.
+        $dbh = DB::connect(TestDriver::class . '://', ['portability' => DB::DB_PORTABILITY_NUMROWS]);
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $result = new Result($dbh, $sth);
+        $this->assertEquals(20, $result->numRows());
+    }
+
+    public function testNumRowsWithPortabilityAndPreparedStatements()
+    {
+        $this->markTestIncomplete('this test is broken due to storing expanded query after variable sub');
+        $dbh = DB::connect(TestDriver::class . '://', ['portability' => DB::DB_PORTABILITY_NUMROWS]);
+        // "enable" prepared queries
+        $dbh->setPrepareFeature(true);
+        $sth = $dbh->prepare('SELECT things FROM a_table WHERE foo = ?');
+        $result = $dbh->execute($sth, ['bar']);
+        $result->numRows();
+        $this->assertEquals(20, $result->numRows());
+
+        // testdriver doesn't implement bound parameters, so the tokeniser expands the query.
+        // also, there's no getter to pull the last query out of dbh, so fetch directly.
+        $this->assertEquals('SELECT things FROM a_table WHERE foo = \'bar\'', $dbh->last_query);
+    }
+
+    public function testNumRowsWithPortabilityQueryFailure()
+    {
+        $dbh = DB::connect(TestDriver::class . '://', ['portability' => DB::DB_PORTABILITY_NUMROWS]);
+        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
+        $dbh->simpleQuery('BREAK DELIBERATELY');
+        $result = new Result($dbh, $sth);
+        $this->assertInstanceOf(Error::class, $result->numRows());
     }
 }
