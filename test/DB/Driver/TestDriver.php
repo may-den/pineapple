@@ -84,12 +84,20 @@ class TestDriver extends Common
         return true;
     }
 
+    public function prepare($query)
+    {
+        // this is a very specific name relied upon by neighbouring classes.
+        $this->last_query = $query;
+        return parent::prepare($query);
+    }
+
     public function simpleQuery($query)
     {
         $this->lastResult = null;
 
         // this is a very specific name relied upon by neighbouring classes.
         $this->last_query = $query;
+        $this->last_parameters = [];
 
         if (preg_match('/^SELECT/', $query)) {
             $this->lastQueryType = 'SELECT';
@@ -163,12 +171,12 @@ class TestDriver extends Common
 
     public function freeResult($result)
     {
-        if (!isset($result['type']) || ($result['type'] != 'resultResource')) {
+        if (!isset($result['type']) || ($result['type'] !== 'resultResource')) {
             return false;
         }
 
         if (isset($result['feignFailure']) && ($result['feignFailure'] === true)) {
-            return false;
+            return $this->myRaiseError();
         }
 
         $this->hasFreed = true;
