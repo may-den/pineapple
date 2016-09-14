@@ -199,7 +199,7 @@ abstract class Common extends Util
      */
     function __toString()
     {
-        $info = strtolower(get_class($this));
+        $info = get_class($this);
         $info .=  ': (phptype=' . $this->phptype .
                   ', dbsyntax=' . $this->dbsyntax .
                   ')';
