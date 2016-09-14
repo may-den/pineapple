@@ -266,7 +266,7 @@ class DB
     const DB_PORTABILITY_ALL = 63;
 
     // @const Driver class namespace prefix
-    const INTERNAL_DRIVER_PREFIX = '\\Mayden\\Pineapple\\DB\\Driver\\';
+    const INTERNAL_DRIVER_PREFIX = '\\Pineapple\\DB\\Driver\\';
 
     // @var error messages
     private static $errorMessages = [

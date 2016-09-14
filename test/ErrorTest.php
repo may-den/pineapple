@@ -61,7 +61,7 @@ class ErrorTest extends TestCase
 
         $this->assertEquals(1, count($this->errors), 'Expected one error, but got: ' . json_encode($this->errors));
 
-        $this->assertContains('PEAR_ERROR_EXCEPTION is obsolete, use class Mayden\Pineapple\Exception for exceptions', $this->errors[0]);
+        $this->assertContains('PEAR_ERROR_EXCEPTION is obsolete, use class Pineapple\Exception for exceptions', $this->errors[0]);
     }
 
     public function errorCallback(Error $error)
