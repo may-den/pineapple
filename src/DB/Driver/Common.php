@@ -599,29 +599,6 @@ abstract class Common extends Util
     {
         if (isset($this->options[$option])) {
             $this->options[$option] = $value;
-
-            /*
-             * Backwards compatibility check for the deprecated 'optimize'
-             * option.  Done here in case settings change after connecting.
-             */
-            if ($option == 'optimize') {
-                if ($value == 'portability') {
-                    switch ($this->phptype) {
-                        case 'oci8':
-                            $this->options['portability'] = DB::DB_PORTABILITY_LOWERCASE | DB::DB_PORTABILITY_NUMROWS;
-                            break;
-                        case 'fbsql':
-                        case 'mysql':
-                        case 'mysqli':
-                        case 'sqlite':
-                            $this->options['portability'] = DB::DB_PORTABILITY_DELETE_COUNT;
-                            break;
-                    }
-                } else {
-                    $this->options['portability'] = DB::DB_PORTABILITY_NONE;
-                }
-            }
-
             return DB::DB_OK;
         }
         return $this->raiseError("unknown option $option");
