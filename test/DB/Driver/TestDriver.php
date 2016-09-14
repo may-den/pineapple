@@ -263,17 +263,6 @@ class TestDriver extends Common
         return DB::DB_OK;
     }
 
-    public function quoteIdentifier($str)
-    {
-        return '`' . str_replace('`', '``', $str) . '`';
-    }
-
-    public function escapeSimple($str)
-    {
-        // THE WORST
-        return addslashes($str);
-    }
-
     private function myRaiseError($errno = null)
     {
         return $this->raiseError(
