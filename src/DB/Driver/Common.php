@@ -246,7 +246,7 @@ abstract class Common extends Util
      *
      * @since Method available since Release 1.6.0
      */
-    function quoteIdentifier($str)
+    public function quoteIdentifier($str)
     {
         return '"' . str_replace('"', '""', $str) . '"';
     }
@@ -352,7 +352,7 @@ abstract class Common extends Util
      * @see Common::escapeSimple()
      * @since Method available since Release 1.6.0
      */
-    function quoteSmart($in)
+    public function quoteSmart($in)
     {
         if (is_int($in)) {
             return $in;
@@ -376,7 +376,8 @@ abstract class Common extends Util
      * @see Common::quoteSmart()
      * @since Method available since release 1.7.8.
      */
-    function quoteBoolean($boolean) {
+    protected function quoteBoolean($boolean)
+    {
         return $boolean ? '1' : '0';
     }
 
@@ -389,7 +390,8 @@ abstract class Common extends Util
      * @see Common::quoteSmart()
      * @since Method available since release 1.7.8.
      */
-    function quoteFloat($float) {
+    protected function quoteFloat($float)
+    {
         return "'".$this->escapeSimple(str_replace(',', '.', strval(floatval($float))))."'";
     }
 
@@ -408,7 +410,7 @@ abstract class Common extends Util
      * @see Common::quoteSmart()
      * @since Method available since Release 1.6.0
      */
-    function escapeSimple($str)
+    public function escapeSimple($str)
     {
         return str_replace("'", "''", $str);
     }
@@ -593,7 +595,7 @@ abstract class Common extends Util
      *
      * @see Common::$options
      */
-    function setOption($option, $value)
+    public function setOption($option, $value)
     {
         if (isset($this->options[$option])) {
             $this->options[$option] = $value;
