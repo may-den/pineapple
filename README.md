@@ -54,6 +54,24 @@ $db->setConnectionHandle($dbalConn, PineappleDB::parseDSN('mysql://foo:bar@dbhos
 $result = $db->query('SELECT USER(), DATABASE()');
 ```
 
+## Test suite
+
+A suite of tests to aid in regression testing whilst refactoring has been built. Every attempt to reach 100% coverage across all methods and classes has been made. Please ensure the test suite is run before submitting patches or pull requests.
+
+A script to run the suite has been put into the project's `composer.json` file. To execute it, run:
+
+```shell
+$ composer test
+```
+
+Unfortunately, composer squashes the colourised output which helps indicate failures whilst running interactively. If you wish to view the output with colourisation, run:
+
+```shell
+$ vendor/bin/phpunit --coverage-html='coverage/' --coverage-text='php://stdout' --colors=auto
+```
+
+**We recommend that all changes are tested with PHP versions 5.6.x and 7.x.**
+
 ## Credits
 
 The DB authors should take the most credit; the source was forked in its entirety for the refactor.
