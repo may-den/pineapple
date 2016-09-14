@@ -44,7 +44,7 @@ use Mayden\Pineapple\DB\Error;
  * @version    Release: 1.8.2
  * @link       http://pear.php.net/package/DB
  */
-class Common extends Util
+abstract class Common extends Util
 {
     /**
      * The current default fetch mode
