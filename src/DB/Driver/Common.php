@@ -611,7 +611,7 @@ abstract class Common extends Util
      *
      * @return mixed  the option's value
      */
-    function getOption($option)
+    public function getOption($option)
     {
         if (isset($this->options[$option])) {
             return $this->options[$option];
