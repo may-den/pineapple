@@ -149,34 +149,29 @@ abstract class Common extends Util
      *
      * @return array  the array of properties names that should be saved
      */
-    function __sleep()
+    public function __sleep()
     {
+        $this->was_connected = false;
+
         if ($this->connection) {
             // Don't disconnect(), people use serialize() for many reasons
             $this->was_connected = true;
-        } else {
-            $this->was_connected = false;
         }
+
+        $toSerialize = [
+            'dbsyntax',
+            'dsn',
+            'features',
+            'fetchmode',
+            'fetchmode_object_class',
+            'options',
+            'was_connected',
+            'error_class',
+        ];
         if (isset($this->autocommit)) {
-            return array('autocommit',
-                         'dbsyntax',
-                         'dsn',
-                         'features',
-                         'fetchmode',
-                         'fetchmode_object_class',
-                         'options',
-                         'was_connected',
-                   );
-        } else {
-            return array('dbsyntax',
-                         'dsn',
-                         'features',
-                         'fetchmode',
-                         'fetchmode_object_class',
-                         'options',
-                         'was_connected',
-                   );
+            $toSerialize = array_merge(['autocommit'], $toSerialize);
         }
+        return $toSerialize;
     }
 
     /**
