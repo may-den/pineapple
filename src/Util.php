@@ -69,9 +69,9 @@ class Util
      * Which class to use for error objects.
      *
      * @var     string
-     * @access  private
+     * @access  protected
      */
-    private $error_class = Error::class;
+    protected $error_class = Error::class;
 
     /**
      * Constructor.  Registers this object in
