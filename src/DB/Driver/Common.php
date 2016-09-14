@@ -197,7 +197,7 @@ abstract class Common extends Util
      *
      * @since Method available since Release 1.7.0
      */
-    function __toString()
+    public function __toString()
     {
         $info = get_class($this);
         $info .=  ': (phptype=' . $this->phptype .
