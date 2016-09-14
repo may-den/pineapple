@@ -6,7 +6,7 @@ PEAR DB is very old (the copyright range ends 9 years prior to Pineapple's incep
 
 This package is a fork of PEAR and DB, heavily refactored. The purpose of it is to provide a method-compatible drop-in replacement, reproducing `PEAR::raiseError` and `PEAR::isError`, and all methods under the `DB` class. Connection-specific drivers are dropped and only a `DoctrineDbal` driver remains, and that must be constructed without a connection-specific DSN and dependency injected with a constructed DBAL connection. It is intended _only_ as a path to Doctrine DBAL migration, to keep legacy systems working whilst retaining a single database connection per application.
 
-The intention is to strip unused methods, clean (remove all warnings and notices), make PSR-2 clean and provide full test coverage of the DB compatibility layer. Global constants will be replaced with class constants, though the compatibility module ([borb/pineapple-compat](https://github.com/borb/pineapple-compat)) will provide global constants that map to class constants for backward compatibility.
+The intention is to strip unused methods, clean (remove all warnings and notices), make PSR-2 clean and provide full test coverage of the DB compatibility layer. Global constants will be replaced with class constants, though the compatibility module ([wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat)) will provide global constants that map to class constants for backward compatibility.
 
 It is up to your application to cache the constructed DBAL connection. Please do not use Pineapple DB to retrieve your connection handle.
 
@@ -25,18 +25,19 @@ In order to facilitate a deep rework without breaking compatibility with applica
 | `PEAR_Error`     | `Mayden\Pineapple\Error`            |
 | `PEAR_Exception` | `Mayden\Pineapple\Exception`        |
 
-If possible, it would be beneficial for you to refactor your code to use the new class names and class constants (instead of global constants). However, if refactoring isn't an option, you can use the counterpart module, which provides root namespace class names in the left column of the above table. See [borb/pineapple-compat](https://github.com/borb/pineapple-compat) and load that into your composer configuration to add compatible classes.
+If possible, it would be beneficial for you to refactor your code to use the new class names and class constants (instead of global constants). However, if refactoring isn't an option, you can use the counterpart module, which provides root namespace class names in the left column of the above table. See [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat) and load that into your composer configuration to add compatible classes.
 
 ## What's changed? What's missing?
 
 - All classes are namespaced. See the table in the previous section for the class name mappings.
-- All global variables have now been dropped. This also applies to [borb/pineapple-compat](https://github.com/borb/pineapple-compat). They will not be retained or readded.
-- Global constants have been moved to class constants. [borb/pineapple-compat](https://github.com/borb/pineapple-compat) adds global mappings back to class constants if you're using it as a drop-in replacement.
+- All global variables have now been dropped. This also applies to [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat). They will not be retained or readded.
+- Global constants have been moved to class constants. [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat) adds global mappings back to class constants if you're using it as a drop-in replacement.
 - **All connectivity drivers have been removed**. The only driver provided is `DoctrineDbal` to connect with Doctrine's DBAL (an abstracted PDO).
 - All methods in PEAR have been dropped, except for `isError`, `raiseError` and `throwError`. This includes PEAR's pseudo-destructors.
-- Compatibility names for legacy constructors and '`_Name`' destructors has been removed and placed in [borb/pineapple-compat](https://github.com/borb/pineapple-compat).
+- Compatibility names for legacy constructors and '`_Name`' destructors has been removed and placed in [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat).
 - PEAR & DB Error suppression has been removed.
 - Large swathes of code put in place to aid multi-driver compatibility have been removed.
+- Methods marked deprecated have been moved to [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat). Try not to use them.
 - Spit, polish & PSR-2. Refactoring to support some more modern aspects of PHP (e.g. method statics replaced with class statics).
 
 It would not take a large amount of effort to refactor your code to avoid using the compatibility layer, but it is provided for your convenience.
