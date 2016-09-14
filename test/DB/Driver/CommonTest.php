@@ -1,9 +1,9 @@
 <?php
-namespace Mayden\Pineapple\Test\DB\Driver;
+namespace Pineapple\Test\DB\Driver;
 
-use Mayden\Pineapple\DB;
-use Mayden\Pineapple\DB\Driver\Common;
-use Mayden\Pineapple\Test\DB\Driver\TestDriver;
+use Pineapple\DB;
+use Pineapple\DB\Driver\Common;
+use Pineapple\Test\DB\Driver\TestDriver;
 use PHPUnit\Framework\TestCase;
 
 // 'Common' is an abstract class so we're going to use our mock TestDriver to stub

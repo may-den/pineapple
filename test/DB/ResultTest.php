@@ -1,11 +1,11 @@
 <?php
-namespace Mayden\Pineapple\Test\DB;
+namespace Pineapple\Test\DB;
 
-use Mayden\Pineapple\DB;
-use Mayden\Pineapple\DB\Result;
-use Mayden\Pineapple\DB\Row;
-use Mayden\Pineapple\DB\Error;
-use Mayden\Pineapple\Test\DB\Driver\TestDriver;
+use Pineapple\DB;
+use Pineapple\DB\Result;
+use Pineapple\DB\Row;
+use Pineapple\DB\Error;
+use Pineapple\Test\DB\Driver\TestDriver;
 use PHPUnit\Framework\TestCase;
 
 class ResultTest extends TestCase

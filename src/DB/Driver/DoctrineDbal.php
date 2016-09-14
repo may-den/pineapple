@@ -1,8 +1,8 @@
 <?php
-namespace Mayden\Pineapple\DB\Driver;
+namespace Pineapple\DB\Driver;
 
-use Mayden\Pineapple\Util;
-use Mayden\Pineapple\DB;
+use Pineapple\Util;
+use Pineapple\DB;
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\PDOStatement;
 use PDO;

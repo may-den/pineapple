@@ -1,10 +1,10 @@
 <?php
-namespace Mayden\Pineapple\DB\Driver;
+namespace Pineapple\DB\Driver;
 
-use Mayden\Pineapple\Util;
-use Mayden\Pineapple\DB;
-use Mayden\Pineapple\DB\Result;
-use Mayden\Pineapple\DB\Error;
+use Pineapple\Util;
+use Pineapple\DB;
+use Pineapple\DB\Result;
+use Pineapple\DB\Error;
 
 /**
  * Contains the Common base class

@@ -1,9 +1,9 @@
 <?php
-namespace Mayden\Pineapple\DB;
+namespace Pineapple\DB;
 
-use Mayden\Pineapple\Util;
-use Mayden\Pineapple\DB;
-use Mayden\Pineapple\Error as PineappleError;
+use Pineapple\Util;
+use Pineapple\DB;
+use Pineapple\Error as PineappleError;
 
 /**
  * DB_Error implements a class for reporting portable database error

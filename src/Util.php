@@ -1,5 +1,5 @@
 <?php
-namespace Mayden\Pineapple;
+namespace Pineapple;
 
 /**
  * PEAR, the PHP Extension and Application Repository

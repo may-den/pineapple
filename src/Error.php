@@ -1,5 +1,5 @@
 <?php
-namespace Mayden\Pineapple;
+namespace Pineapple;
 
 /**
  * Standard PEAR error class for PHP 4

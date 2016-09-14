@@ -1,10 +1,10 @@
 <?php
-namespace Mayden\Pineapple\Test;
+namespace Pineapple\Test;
 
-use Mayden\Pineapple\DB;
-use Mayden\Pineapple\Test\DB\Driver\TestDriver;
-use Mayden\Pineapple\Error;
-use Mayden\Pineapple\DB\Error as DBError;
+use Pineapple\DB;
+use Pineapple\Test\DB\Driver\TestDriver;
+use Pineapple\Error;
+use Pineapple\DB\Error as DBError;
 use PHPUnit\Framework\TestCase;
 
 class DBTest extends TestCase

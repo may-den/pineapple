@@ -1,5 +1,5 @@
 <?php
-namespace Mayden\Pineapple\DB;
+namespace Pineapple\DB;
 
 /**
  * PEAR DB Row Object

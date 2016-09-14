@@ -1,8 +1,8 @@
 <?php
-namespace Mayden\Pineapple\Test\DB;
+namespace Pineapple\Test\DB;
 
-use Mayden\Pineapple\DB;
-use Mayden\Pineapple\DB\Error;
+use Pineapple\DB;
+use Pineapple\DB\Error;
 use PHPUnit\Framework\TestCase;
 
 class ErrorTest extends TestCase

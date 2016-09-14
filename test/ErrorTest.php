@@ -1,10 +1,10 @@
 <?php
-namespace Mayden\Pineapple\Test;
+namespace Pineapple\Test;
 
 use PHPUnit\Framework\TestCase;
-use Mayden\Pineapple\Util;
-use Mayden\Pineapple\Error;
-use Mayden\Pineapple\Exception;
+use Pineapple\Util;
+use Pineapple\Error;
+use Pineapple\Exception;
 
 class ErrorTest extends TestCase
 {

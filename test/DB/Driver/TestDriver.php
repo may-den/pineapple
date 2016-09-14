@@ -1,9 +1,9 @@
 <?php
-namespace Mayden\Pineapple\Test\DB\Driver;
+namespace Pineapple\Test\DB\Driver;
 
-use Mayden\Pineapple\Util;
-use Mayden\Pineapple\DB;
-use Mayden\Pineapple\DB\Driver\Common;
+use Pineapple\Util;
+use Pineapple\DB;
+use Pineapple\DB\Driver\Common;
 
 /**
  * A null 'test' driver for Pineapple. This serves two purposes: one to act as a scaffold to test scope refactoring,

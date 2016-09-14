@@ -1,5 +1,5 @@
 <?php
-namespace Mayden\Pineapple;
+namespace Pineapple;
 
 /**
  * Database independent query interface

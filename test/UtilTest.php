@@ -1,9 +1,9 @@
 <?php
-namespace Mayden\Pineapple\Test;
+namespace Pineapple\Test;
 
 use PHPUnit\Framework\TestCase;
-use Mayden\Pineapple\Util;
-use Mayden\Pineapple\Error;
+use Pineapple\Util;
+use Pineapple\Error;
 
 class UtilTest extends TestCase
 {

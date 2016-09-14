@@ -1,7 +1,7 @@
 <?php
-namespace Mayden\Pineapple\Test;
+namespace Pineapple\Test;
 
-use Mayden\Pineapple\Error;
+use Pineapple\Error;
 
 class PseudoError extends Error
 {

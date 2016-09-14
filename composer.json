@@ -9,8 +9,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Mayden\\Pineapple\\": "src/",
-            "Mayden\\Pineapple\\Test\\": "test/"
+            "Pineapple\\": "src/",
+            "Pineapple\\Test\\": "test/"
         }
     },
     "require-dev": {

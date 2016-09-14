@@ -1,8 +1,8 @@
 <?php
-namespace Mayden\Pineapple\Test\DB\Driver;
+namespace Pineapple\Test\DB\Driver;
 
-use Mayden\Pineapple\DB;
-use Mayden\Pineapple\DB\Driver\DoctrineDbal;
+use Pineapple\DB;
+use Pineapple\DB\Driver\DoctrineDbal;
 use PHPUnit\Framework\TestCase;
 
 class DoctrineDbalTest extends TestCase

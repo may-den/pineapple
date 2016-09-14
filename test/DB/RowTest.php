@@ -1,7 +1,7 @@
 <?php
-namespace Mayden\Pineapple\Test\DB;
+namespace Pineapple\Test\DB;
 
-use Mayden\Pineapple\DB\Row;
+use Pineapple\DB\Row;
 use PHPUnit\Framework\TestCase;
 
 class RowTest extends TestCase

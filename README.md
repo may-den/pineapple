@@ -12,18 +12,18 @@ It is up to your application to cache the constructed DBAL connection. Please do
 
 ## How does it work?
 
-In order to facilitate a deep rework without breaking compatibility with applications that use the `DB` and `DB_*` classnames, the code has been refactored to reside within the `Mayden\Pineapple` namespace. Here is a handy table of the mapping:
+In order to facilitate a deep rework without breaking compatibility with applications that use the `DB` and `DB_*` classnames, the code has been refactored to reside within the `Pineapple` namespace. Here is a handy table of the mapping:
 
-| Old class        | New class                           |
-|------------------|-------------------------------------|
-| `DB`             | `Mayden\Pineapple\DB`               |
-| `DB_Error`       | `Mayden\Pineapple\DB\Error`         |
-| `DB_result`      | `Mayden\Pineapple\DB\Result`        |
-| `DB_row`         | `Mayden\Pineapple\DB\Row`           |
-| `DB_common`      | `Mayden\Pineapple\DB\Driver\Common` |
-| `PEAR`           | `Mayden\Pineapple\Util`             |
-| `PEAR_Error`     | `Mayden\Pineapple\Error`            |
-| `PEAR_Exception` | `Mayden\Pineapple\Exception`        |
+| Old class        | New class                    |
+|------------------|------------------------------|
+| `DB`             | `Pineapple\DB`               |
+| `DB_Error`       | `Pineapple\DB\Error`         |
+| `DB_result`      | `Pineapple\DB\Result`        |
+| `DB_row`         | `Pineapple\DB\Row`           |
+| `DB_common`      | `Pineapple\DB\Driver\Common` |
+| `PEAR`           | `Pineapple\Util`             |
+| `PEAR_Error`     | `Pineapple\Error`            |
+| `PEAR_Exception` | `Pineapple\Exception`        |
 
 If possible, it would be beneficial for you to refactor your code to use the new class names and class constants (instead of global constants). However, if refactoring isn't an option, you can use the counterpart module, which provides root namespace class names in the left column of the above table. See [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat) and load that into your composer configuration to add compatible classes.
 
@@ -47,7 +47,7 @@ It would not take a large amount of effort to refactor your code to avoid using 
 ```php
 <?php
 
-use Mayden\Pineapple\DB as PineappleDB;
+use Pineapple\DB as PineappleDB;
 
 $db = PineappleDB::connect('DoctrineDbal://');
 $db->setConnectionHandle($dbalConn, PineappleDB::parseDSN('mysql://foo:bar@dbhost/dbname');
