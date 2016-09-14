@@ -210,18 +210,6 @@ abstract class Common extends Util
     }
 
     /**
-     * DEPRECATED:  String conversion method
-     *
-     * @return string  a string describing the current PEAR DB object
-     *
-     * @deprecated Method deprecated in Release 1.7.0
-     */
-    function toString()
-    {
-        return $this->__toString();
-    }
-
-    /**
      * DEPRECATED: Quotes a string so it can be safely used within string
      * delimiters in a query
      *
