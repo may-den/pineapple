@@ -59,6 +59,9 @@ class TestDriver extends Common
 
     private $lastQueryType = null;
     private $sequenceCounter = 1000;
+    protected $dsn = null;
+    protected $connection = false;
+    protected $autocommit = false;
 
     public function __construct()
     {
@@ -72,15 +75,18 @@ class TestDriver extends Common
 
     public function connect($dsn, $persistent = false)
     {
+        $this->dsn = $dsn;
         $debug = $this->getOption('debug');
         if (!Util::isError($debug) && ($debug === 'please fail')) {
             return $this->myRaiseError();
         }
+        $this->connection = true;
         return DB::DB_OK;
     }
 
     public function disconnect()
     {
+        $this->connection = false;
         return true;
     }
 
@@ -208,6 +214,7 @@ class TestDriver extends Common
 
     public function autoCommit($onoff = false)
     {
+        $this->autocommit = $onoff ? true : false;
         return DB::DB_OK;
     }
 
