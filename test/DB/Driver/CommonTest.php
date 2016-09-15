@@ -142,4 +142,53 @@ class CommonTest extends TestCase
         $this->assertInstanceOf(Error::class, $result);
         $this->assertEquals('DB Error: unknown option blumfrub', $result->getMessage());
     }
+
+    public function testPrepareExecuteEmulateQuery()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $query = '
+            SELECT things, stuff
+              FROM my_awesome_table
+             WHERE good = ?
+               AND bad = &
+               AND ugly = !
+        ';
+
+        $sth = $dbh->prepare($query);
+
+        // buildDetokenisedQuery is a mock to test protected method
+        $product = $dbh->buildDetokenisedQuery($sth, [
+            'yes',
+            __DIR__ . DIRECTORY_SEPARATOR . 'opaquedata.txt',
+            'COUNT(dracula)',
+        ]);
+
+        $query = preg_replace('/\?/', '\'yes\'', $query);
+        $query = preg_replace('/\&/', "'no\n'", $query);
+        $query = preg_replace('/!/', 'COUNT(dracula)', $query);
+
+        $this->assertEquals($query, $product);
+    }
+
+    public function testPrepareExecuteEmulateQueryWithMismatch()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $query = '
+            SELECT things, stuff
+              FROM my_awesome_table
+             WHERE good = ?
+               AND bad = &
+               AND ugly = !
+        ';
+
+        $sth = $dbh->prepare($query);
+
+        // buildDetokenisedQuery is a mock to test protected method
+        $product = $dbh->buildDetokenisedQuery($sth, ['yes']);
+
+        $this->assertInstanceOf(Error::class, $product);
+        $this->assertEquals(DB::DB_ERROR_MISMATCH, $product->getCode());
+    }
 }
