@@ -444,7 +444,7 @@ abstract class Common extends Util
      *
      * @see DB_FETCHMODE_ORDERED, DB_FETCHMODE_ASSOC, DB_FETCHMODE_OBJECT
      */
-    public function setFetchMode($fetchmode, $object_class = 'stdClass')
+    public function setFetchMode($fetchmode, $object_class = \stdClass::class)
     {
         switch ($fetchmode) {
             case DB::DB_FETCHMODE_OBJECT:
