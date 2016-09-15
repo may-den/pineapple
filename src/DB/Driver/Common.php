@@ -851,7 +851,7 @@ abstract class Common extends Util
      *
      * @see Common::prepare()
      */
-    function execute($stmt, $data = array())
+    public function execute($stmt, $data = array())
     {
         $realquery = $this->executeEmulateQuery($stmt, $data);
         if (DB::isError($realquery)) {
@@ -883,7 +883,7 @@ abstract class Common extends Util
      * @access protected
      * @see Common::execute()
      */
-    function executeEmulateQuery($stmt, $data = array())
+    protected function executeEmulateQuery($stmt, $data = array())
     {
         $stmt = (int)$stmt;
         $data = (array)$data;
