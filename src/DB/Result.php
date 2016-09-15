@@ -117,10 +117,10 @@ class Result
      */
     public function __construct($dbh, $result, $options = array())
     {
-        $this->autofree = $dbh->options['autofree'];
+        $this->autofree = $dbh->getOption('autofree');
         $this->dbh = $dbh;
-        $this->fetchmode = $dbh->fetchmode;
-        $this->fetchmode_object_class = $dbh->fetchmode_object_class;
+        $this->fetchmode = $dbh->getFetchmode();
+        $this->fetchmode_object_class = $dbh->getFetchmodeObjectClass();
         $this->parameters = $dbh->last_parameters;
         $this->query = $dbh->last_query;
         $this->result = $result;
@@ -303,7 +303,7 @@ class Result
      */
     public function numRows()
     {
-        if ($this->dbh->options['portability'] & DB::DB_PORTABILITY_NUMROWS) {
+        if ($this->dbh->getOption('portability') & DB::DB_PORTABILITY_NUMROWS) {
             if ($this->dbh->features['prepare']) {
                 $res = $this->dbh->query($this->query, $this->parameters);
             } else {
