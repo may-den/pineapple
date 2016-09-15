@@ -302,4 +302,9 @@ class TestDriver extends Common
             ]
         ];
     }
+
+    public function buildDetokenisedQuery($stmt, $data = [])
+    {
+        return $this->executeEmulateQuery($stmt, $data);
+    }
 }
