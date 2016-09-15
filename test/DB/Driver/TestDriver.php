@@ -124,7 +124,7 @@ class TestDriver extends Common
             $this->lastQueryType = 'INSERT';
             return DB::DB_OK;
         } else {
-            return $this->myRaiseError();
+            return $this->raiseError(DB::DB_ERROR_NOSUCHTABLE);
         }
     }
 
@@ -306,5 +306,24 @@ class TestDriver extends Common
     public function buildDetokenisedQuery($stmt, $data = [])
     {
         return $this->executeEmulateQuery($stmt, $data);
+    }
+
+    protected function executeEmulateQuery($stmt, $data = [])
+    {
+        if (preg_match('/FAILURE/', $this->prepared_queries[$stmt])) {
+            return $this->raiseError(DB::DB_ERROR_SYNTAX);
+        } else {
+            return parent::executeEmulateQuery($stmt, $data);
+        }
+    }
+
+    public function stubModifyQuery($query)
+    {
+        return parent::modifyQuery($query);
+    }
+
+    public function stubModifyLimitQuery($query, $from, $count, $params = [])
+    {
+        return parent::modifyLimitQuery($query, $from, $count, $params);
     }
 }

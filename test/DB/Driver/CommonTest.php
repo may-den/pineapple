@@ -2,6 +2,8 @@
 namespace Pineapple\Test\DB\Driver;
 
 use Pineapple\DB;
+use Pineapple\DB\Row;
+use Pineapple\DB\Result;
 use Pineapple\DB\Error;
 use Pineapple\DB\Driver\Common;
 use Pineapple\Test\DB\Driver\TestDriver;
@@ -143,6 +145,22 @@ class CommonTest extends TestCase
         $this->assertEquals('DB Error: unknown option blumfrub', $result->getMessage());
     }
 
+    public function testGetFetchMode()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $this->assertEquals(DB::DB_FETCHMODE_ORDERED, $dbh->getFetchMode());
+        $dbh->setFetchMode(DB::DB_FETCHMODE_ASSOC);
+        $this->assertEquals(DB::DB_FETCHMODE_ASSOC, $dbh->getFetchMode());
+    }
+
+    public function testGetFetchModeObjectClass()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $this->assertEquals(\stdClass::class, $dbh->getFetchModeObjectClass());
+        $dbh->setFetchMode(DB::DB_FETCHMODE_OBJECT, Row::class);
+        $this->assertEquals(Row::class, $dbh->getFetchModeObjectClass());
+    }
+
     public function testPrepareExecuteEmulateQuery()
     {
         $dbh = DB::connect(TestDriver::class . '://');
@@ -190,5 +208,240 @@ class CommonTest extends TestCase
 
         $this->assertInstanceOf(Error::class, $product);
         $this->assertEquals(DB::DB_ERROR_MISMATCH, $product->getCode());
+    }
+
+    public function testAutoPrepare()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $sth = $dbh->autoPrepare('my_awesome_table', ['good', 'bad', 'ugly']);
+
+        $reflectionClass = new \ReflectionClass($dbh);
+        $reflectionProp = $reflectionClass->getProperty('prepared_queries');
+        $reflectionProp->setAccessible(true);
+
+        $preparedQueries = $reflectionProp->getValue($dbh);
+
+        $this->assertEquals('INSERT INTO my_awesome_table (good,bad,ugly) VALUES ( , , )', $preparedQueries[$sth]);
+    }
+
+    public function testAutoPrepareWithNoFields()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $sth = $dbh->autoPrepare('my_awesome_table', []);
+
+        $this->assertInstanceOf(Error::class, $sth);
+        $this->assertEquals(DB::DB_ERROR_NEED_MORE_DATA, $sth->getCode());
+    }
+
+    public function testAutoPrepareUpdate()
+    {
+        // it's just occurred to me that autoPrepare in update mode is horrific. if your $where clause is empty,
+        // say due to a variable being unexpectedly empty, you end up with an update without a where. UTTER HORRORS.
+        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh->setAcceptConsequencesOfPoorCodingChoices(true);
+
+        $sth = $dbh->autoPrepare('my_awesome_table', ['good', 'bad', 'ugly'], DB::DB_AUTOQUERY_UPDATE);
+
+        $reflectionClass = new \ReflectionClass($dbh);
+        $reflectionProp = $reflectionClass->getProperty('prepared_queries');
+        $reflectionProp->setAccessible(true);
+
+        $preparedQueries = $reflectionProp->getValue($dbh);
+
+        $this->assertEquals('UPDATE my_awesome_table SET good =  ,bad =  ,ugly =  ', $preparedQueries[$sth]);
+    }
+
+    public function testAutoPrepareUpdateWithWhere()
+    {
+        // it's just occurred to me that autoPrepare in update mode is horrific. if your $where clause is empty,
+        // say due to a variable being unexpectedly empty, you end up with an update without a where. UTTER HORRORS.
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $sth = $dbh->autoPrepare('my_awesome_table', ['good', 'bad', 'ugly'], DB::DB_AUTOQUERY_UPDATE, 'id = 123');
+
+        $reflectionClass = new \ReflectionClass($dbh);
+        $reflectionProp = $reflectionClass->getProperty('prepared_queries');
+        $reflectionProp->setAccessible(true);
+
+        $preparedQueries = $reflectionProp->getValue($dbh);
+
+        $this->assertEquals(
+            'UPDATE my_awesome_table SET good =  ,bad =  ,ugly =   WHERE id = 123',
+            $preparedQueries[$sth]
+        );
+    }
+
+    public function testAutoPrepareUpdateWithBadMode()
+    {
+        // it's just occurred to me that autoPrepare in update mode is horrific. if your $where clause is empty,
+        // say due to a variable being unexpectedly empty, you end up with an update without a where. UTTER HORRORS.
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $sth = $dbh->autoPrepare('my_awesome_table', ['good', 'bad', 'ugly'], -99999);
+
+        $this->assertInstanceOf(Error::class, $sth);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $sth->getCode());
+    }
+
+    public function testAutoExecute()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $sth = $dbh->autoExecute('my_awesome_table', [
+            'good' => 'yes',
+            'bad' => 'no',
+            'ugly' => 'of course',
+        ]);
+
+        $this->assertEquals(
+            'INSERT INTO my_awesome_table (good,bad,ugly) VALUES (\'yes\',\'no\',\'of course\')',
+            $dbh->last_query
+        );
+    }
+
+    public function testAutoExecuteWithTriggeredError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $sth = $dbh->autoExecute('my_awesome_table', [
+            'good' => 'yes',
+            'bad' => 'no',
+            'ugly' => 'of course',
+        ], DB::DB_AUTOQUERY_UPDATE);
+
+        $this->assertInstanceof(Error::class, $sth);
+    }
+
+    public function testExecute()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        // insert gives an OK, not a result set
+        $sth = $dbh->prepare('INSERT INTO things SET stuff = 1');
+        $this->assertEquals(DB::DB_OK, $dbh->execute($sth));
+
+        // select gives a result set, not a constant
+        $sth = $dbh->prepare('SELECT foo FROM bar');
+        $this->assertInstanceOf(Result::class, $dbh->execute($sth));
+
+        // a failure at executeEmulateQuery time fails early
+        $sth = $dbh->prepare('FAILURE');
+        $result = $dbh->execute($sth);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
+
+        // a failure at simpleQuery time happens as expected
+        $sth = $dbh->prepare('ERULIAF');
+        $result = $dbh->execute($sth);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_NOSUCHTABLE, $result->getCode());
+    }
+
+    public function testExecuteMultiple()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        // insert gives an OK, not a result set
+        $sth = $dbh->prepare('INSERT INTO things SET stuff = ?');
+        $this->assertEquals(DB::DB_OK, $dbh->executeMultiple($sth, [['foo'], ['bar'], ['baz']]));
+    }
+
+    public function testExecuteMultipleWithFailure()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        // insert gives an OK, not a result set
+        $sth = $dbh->prepare('INSERT INTO things SET stuff = 1');
+        $result = $dbh->executeMultiple($sth, [['foo'], ['bar'], ['baz']]);
+        $this->assertInstanceof(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_MISMATCH, $result->getCode());
+    }
+
+    public function testFreePrepared()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->prepare('INSERT INTO things SET stuff = 1');
+        $this->assertTrue($dbh->freePrepared($sth));
+    }
+
+    public function testFreePreparedHandlesErrors()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $sth = $dbh->prepare('INSERT INTO things SET stuff = 1');
+        $this->assertTrue($dbh->freePrepared($sth));
+        $this->assertFalse($dbh->freePrepared($sth));
+    }
+
+    public function testModifyQuery()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $this->assertEquals('foobar', $dbh->stubModifyQuery('foobar'));
+    }
+
+    public function testModifyLimitQuery()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $this->assertEquals('foobar', $dbh->stubModifyLimitQuery('foobar', 2, 3));
+    }
+
+    public function testQuery()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->query('SELECT things FROM stuff');
+        $this->assertEquals(
+            [
+                'id' => 1,
+                'data' => 'test1',
+            ],
+            $result->fetchRow(DB::DB_FETCHMODE_ASSOC)
+        );
+    }
+
+    public function testQueryWithBadQuery()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->query('FAILURE');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_NOSUCHTABLE, $result->getCode());
+    }
+
+    public function testQueryWithParameters()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->query('SELECT things FROM stuff WHERE foo = ?', ['bar']);
+        $this->assertEquals(
+            [
+                'id' => 1,
+                'data' => 'test1',
+            ],
+            $result->fetchRow(DB::DB_FETCHMODE_ASSOC)
+        );
+    }
+
+    public function testQueryWithParametersWithBadParameterCount()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        // @todo there's a crazy bit of code in Common::query where it decides that the query tokenisation routine
+        // should not be run if count($data) == 0, which means a query that _shouldn't_ get through to the dbms does
+        // actually get through.
+        $result = $dbh->query('SELECT things FROM stuff WHERE foo = ?', ['bar', 'bonzo']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_MISMATCH, $result->getCode());
+    }
+
+    public function testQueryWithParametersWithBadQuery()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        // @todo there's a crazy bit of code in Common::query where it decides that the query tokenisation routine
+        // should not be run if count($data) == 0, which means a query that _shouldn't_ get through to the dbms does
+        // actually get through.
+        $result = $dbh->query('FAILURE', ['bar', 'bonzo']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
     }
 }
