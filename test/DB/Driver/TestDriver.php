@@ -122,7 +122,7 @@ class TestDriver extends Common
         } elseif (preg_match('/^INSERT/', $query)) {
             // this may not be correct
             $this->lastQueryType = 'INSERT';
-            return DB::OK;
+            return DB::DB_OK;
         } else {
             return $this->myRaiseError();
         }
