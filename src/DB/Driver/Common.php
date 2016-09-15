@@ -75,6 +75,13 @@ abstract class Common extends Util
     public $last_query = '';
 
     /**
+     * A flag to indicate that the author is prepared to make some poor life choices
+     *
+     * @var boolean
+     */
+    protected $acceptConsequencesOfPoorCodingChoices = false;
+
+    /**
      * Run-time configuration options
      *
      * The 'optimize' option has been deprecated.  Use the 'portability'
@@ -209,6 +216,18 @@ abstract class Common extends Util
             $info .= ' [connected]';
         }
         return $info;
+    }
+
+    /**
+     * Accept that your UPDATE without a WHERE is going to update a lot of
+     * data and that you understand the consequences.
+     *
+     * @param boolean $flag true to make UPDATE without WHERE work
+     * @since Method available since Pineapple 0.1.0
+     */
+    public function setAcceptConsequencesOfPoorCodingChoices($flag = false)
+    {
+        $this->acceptConsequencesOfPoorCodingChoices = $flag ? true : false;
     }
 
     /**
@@ -829,7 +848,12 @@ abstract class Common extends Util
                 }
                 return "INSERT INTO $table ($names) VALUES ($values)";
             case DB::DB_AUTOQUERY_UPDATE:
+                if ((empty(trim($where)) || $where == false) && $this->acceptConsequencesOfPoorCodingChoices === false) {
+                    return $this->raiseError(DB::DB_ERROR_POSSIBLE_UNINTENDED_CONSEQUENCES);
+                }
+
                 $set = '';
+
                 foreach ($table_fields as $value) {
                     if ($first) {
                         $first = false;
@@ -839,6 +863,7 @@ abstract class Common extends Util
                     $set .= "$value = ?";
                 }
                 $sql = "UPDATE $table SET $set";
+
                 if ($where) {
                     $sql .= " WHERE $where";
                 }

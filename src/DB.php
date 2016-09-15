@@ -148,6 +148,9 @@ class DB
     // @const Tried to insert a null value into a column that doesn't allow nulls
     const DB_ERROR_CONSTRAINT_NOT_NULL = -29;
 
+    // @const It's possible you are about to do something you didn't realise was stupid
+    const DB_ERROR_POSSIBLE_UNINTENDED_CONSEQUENCES = -30;
+
     /**
      * Placeholder types
      * @see DB\Driver\Common::prepare()
@@ -297,6 +300,7 @@ class DB
         self::DB_ERROR_UNSUPPORTED => 'not supported',
         self::DB_ERROR_TRUNCATED => 'truncated',
         self::DB_ERROR_VALUE_COUNT_ON_ROW => 'value count on row',
+        self::DB_ERROR_POSSIBLE_UNINTENDED_CONSEQUENCES => 'you may be about to do something stupid',
         self::DB_OK => 'no error',
     ];
 
