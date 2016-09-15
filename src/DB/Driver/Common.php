@@ -50,7 +50,7 @@ abstract class Common extends Util
      * The current default fetch mode
      * @var integer
      */
-    var $fetchmode = DB::DB_FETCHMODE_ORDERED;
+    protected $fetchmode = DB::DB_FETCHMODE_ORDERED;
 
     /**
      * The name of the class into which results should be fetched when
@@ -58,20 +58,21 @@ abstract class Common extends Util
      *
      * @var string
      */
-    var $fetchmode_object_class = 'stdClass';
+    protected $fetchmode_object_class = \stdClass::class;
 
     /**
      * Was a connection present when the object was serialized()?
      * @var bool
      * @see Common::__sleep(), Common::__wake()
      */
-    var $was_connected = null;
+    protected $was_connected = null;
 
     /**
      * The most recently executed query
      * @var string
+     * @todo replace with an accessor
      */
-    var $last_query = '';
+    public $last_query = '';
 
     /**
      * Run-time configuration options
@@ -82,7 +83,7 @@ abstract class Common extends Util
      * @var array
      * @see Common::setOption()
      */
-    var $options = array(
+    protected $options = [
         'result_buffering' => 500,
         'persistent' => false,
         'ssl' => false,
@@ -91,39 +92,40 @@ abstract class Common extends Util
         'autofree' => false,
         'portability' => DB::DB_PORTABILITY_NONE,
         'optimize' => 'performance',  // Deprecated.  Use 'portability'.
-    );
+    ];
 
     /**
      * The parameters from the most recently executed query
      * @var array
      * @since Property available since Release 1.7.0
+     * @todo Replace with in accessor
      */
-    var $last_parameters = array();
+    public $last_parameters = [];
 
     /**
      * The elements from each prepared statement
      * @var array
      */
-    var $prepare_tokens = array();
+    protected $prepare_tokens = [];
 
     /**
      * The data types of the various elements in each prepared statement
      * @var array
      */
-    var $prepare_types = array();
+    protected $prepare_types = [];
 
     /**
      * The prepared queries
      * @var array
      */
-    var $prepared_queries = array();
+    protected $prepared_queries = [];
 
     /**
      * Flag indicating that the last query was a manipulation query.
      * @access protected
      * @var boolean
      */
-    var $_last_query_manip = false;
+    protected $_last_query_manip = false;
 
     /**
      * Flag indicating that the next query <em>must</em> be a manipulation
@@ -131,7 +133,7 @@ abstract class Common extends Util
      * @access protected
      * @var boolean
      */
-    var $_next_query_manip = false;
+    protected $_next_query_manip = false;
 
     /**
      * This constructor calls <kbd>$this->PEAR('DB_Error')</kbd>
@@ -183,7 +185,7 @@ abstract class Common extends Util
      *
      * @return void
      */
-    function __wakeup()
+    public function __wakeup()
     {
         if ($this->was_connected) {
             $this->connect($this->dsn, $this->options['persistent']);
@@ -422,7 +424,7 @@ abstract class Common extends Util
      *
      * @return bool  whether this driver supports $feature
      */
-    function provides($feature)
+    public function provides($feature)
     {
         return $this->features[$feature];
     }
@@ -455,6 +457,32 @@ abstract class Common extends Util
             default:
                 return $this->raiseError('invalid fetchmode mode');
         }
+    }
+
+    /**
+     * Gets the fetch mode that is used by default for query result
+     *
+     * @return integer A value representing DB::DB_FETCHMODE_* constant
+     * @see DB::DB_FETCHMODE_ASSOC
+     * @see DB::DB_FETCHMODE_ORDERED
+     * @see DB::DB_FETCHMODE_OBJECT
+     * @see DB::DB_FETCHMODE_DEFAULT
+     * @see DB::DB_FETCHMODE_FLIPPED
+     */
+    public function getFetchMode()
+    {
+        return $this->fetchmode;
+    }
+
+    /**
+     * Gets the class used to map rows into objects for DB::DB_FETCHMODE_OBJECT
+     *
+     * @return string The class used to map rows
+     * @see Pineapple\DB\Row
+     */
+    public function getFetchModeObjectClass()
+    {
+        return $this->fetchmode_object_class;
     }
 
     /**
@@ -637,11 +665,11 @@ abstract class Common extends Util
      * Example 1.
      * <code>
      * $sth = $db->prepare('INSERT INTO tbl (a, b, c) VALUES (?, !, &)');
-     * $data = array(
+     * $data = [
      *     "John's text",
      *     "'it''s good'",
      *     'filename.txt'
-     * );
+     * ];
      * $res = $db->execute($sth, $data);
      * </code>
      *
@@ -662,13 +690,12 @@ abstract class Common extends Util
      *
      * @see Common::execute()
      */
-    function prepare($query)
+    public function prepare($query)
     {
-        $tokens   = preg_split('/((?<!\\\)[&?!])/', $query, -1,
-                               PREG_SPLIT_DELIM_CAPTURE);
-        $token     = 0;
-        $types     = array();
-        $newtokens = array();
+        $tokens = preg_split('/((?<!\\\)[&?!])/', $query, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $token = 0;
+        $types = [];
+        $newtokens = [];
 
         foreach ($tokens as $val) {
             switch ($val) {
@@ -711,8 +738,7 @@ abstract class Common extends Util
      *
      * @uses Common::prepare(), Common::buildManipSQL()
      */
-    function autoPrepare($table, $table_fields, $mode = DB::DB_AUTOQUERY_INSERT,
-                         $where = false)
+    public function autoPrepare($table, $table_fields, $mode = DB::DB_AUTOQUERY_INSERT, $where = false)
     {
         $query = $this->buildManipSQL($table, $table_fields, $mode, $where);
         if (DB::isError($query)) {
@@ -740,7 +766,7 @@ abstract class Common extends Util
      *
      * @uses Common::autoPrepare(), Common::execute()
      */
-    function autoExecute($table, $fields_values, $mode = DB::DB_AUTOQUERY_INSERT, $where = false)
+    public function autoExecute($table, $fields_values, $mode = DB::DB_AUTOQUERY_INSERT, $where = false)
     {
         $sth = $this->autoPrepare($table, array_keys($fields_values), $mode, $where);
         if (DB::isError($sth)) {
@@ -756,7 +782,7 @@ abstract class Common extends Util
      *
      * Example:
      * <pre>
-     * buildManipSQL('table_sql', array('field1', 'field2', 'field3'),
+     * buildManipSQL('table_sql', ['field1', 'field2', 'field3'],
      *               DB_AUTOQUERY_INSERT);
      * </pre>
      *
@@ -781,7 +807,7 @@ abstract class Common extends Util
      *
      * @return string  the sql query for autoPrepare()
      */
-    function buildManipSQL($table, $table_fields, $mode, $where = false)
+    public function buildManipSQL($table, $table_fields, $mode, $where = false)
     {
         if (count($table_fields) == 0) {
             return $this->raiseError(DB::DB_ERROR_NEED_MORE_DATA);
@@ -828,11 +854,11 @@ abstract class Common extends Util
      * Example 1.
      * <code>
      * $sth = $db->prepare('INSERT INTO tbl (a, b, c) VALUES (?, !, &)');
-     * $data = array(
+     * $data = [
      *     "John's text",
      *     "'it''s good'",
      *     'filename.txt'
-     * );
+     * ];
      * $res = $db->execute($sth, $data);
      * </code>
      *
@@ -851,7 +877,7 @@ abstract class Common extends Util
      *
      * @see Common::prepare()
      */
-    public function execute($stmt, $data = array())
+    public function execute($stmt, $data = [])
     {
         $realquery = $this->executeEmulateQuery($stmt, $data);
         if (DB::isError($realquery)) {
@@ -883,7 +909,7 @@ abstract class Common extends Util
      * @access protected
      * @see Common::execute()
      */
-    protected function executeEmulateQuery($stmt, $data = array())
+    protected function executeEmulateQuery($stmt, $data = [])
     {
         $stmt = (int)$stmt;
         $data = (array)$data;
@@ -937,7 +963,7 @@ abstract class Common extends Util
      *
      * @see Common::prepare(), Common::execute()
      */
-    function executeMultiple($stmt, $data)
+    public function executeMultiple($stmt, $data)
     {
         foreach ($data as $value) {
             $res = $this->execute($stmt, $value);
@@ -960,7 +986,7 @@ abstract class Common extends Util
      *
      * @see Common::prepare()
      */
-    function freePrepared($stmt, $free_resource = true)
+    public function freePrepared($stmt, $free_resource = true)
     {
         $stmt = (int)$stmt;
         if (isset($this->prepare_tokens[$stmt])) {
@@ -984,7 +1010,7 @@ abstract class Common extends Util
      * @access protected
      * @see DB\Driver\DoctrineDbal::modifyQuery()
      */
-    function modifyQuery($query)
+    protected function modifyQuery($query)
     {
         return $query;
     }
@@ -1008,7 +1034,7 @@ abstract class Common extends Util
      *
      * @access protected
      */
-    function modifyLimitQuery($query, $from, $count, $params = array())
+    protected function modifyLimitQuery($query, $from, $count, $params = [])
     {
         return $query;
     }
@@ -1033,7 +1059,7 @@ abstract class Common extends Util
      *
      * @see Result, Common::prepare(), Common::execute()
      */
-    function query($query, $params = array())
+    public function query($query, $params = [])
     {
         if (sizeof($params) > 0) {
             $sth = $this->prepare($query);
@@ -1044,7 +1070,7 @@ abstract class Common extends Util
             $this->freePrepared($sth, false);
             return $ret;
         } else {
-            $this->last_parameters = array();
+            $this->last_parameters = [];
             $result = $this->simpleQuery($query);
             if ($result === DB::DB_OK || DB::isError($result)) {
                 return $result;
@@ -1071,10 +1097,10 @@ abstract class Common extends Util
      *                 or DB_OK for successul data manipulation queries.
      *                 A DB_Error object on failure.
      */
-    function limitQuery($query, $from, $count, $params = array())
+    public function limitQuery($query, $from, $count, $params = [])
     {
         $query = $this->modifyLimitQuery($query, $from, $count, $params);
-        if (DB::isError($query)){
+        if (DB::isError($query)) {
             return $query;
         }
         $result = $this->query($query, $params);
@@ -1100,7 +1126,7 @@ abstract class Common extends Util
      * @return mixed  the returned value of the query.
      *                 A DB_Error object on failure.
      */
-    function getOne($query, $params = array())
+    public function getOne($query, $params = [])
     {
         $params = (array)$params;
         // modifyLimitQuery() would be nice here, but it causes BC issues
@@ -1145,7 +1171,7 @@ abstract class Common extends Util
      * @return array  the first row of results as an array.
      *                 A DB_Error object on failure.
      */
-    function getRow($query, $params = array(), $fetchmode = DB::DB_FETCHMODE_DEFAULT)
+    public function getRow($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
         // compat check, the params and fetchmode parameters used to
         // have the opposite order
@@ -1160,7 +1186,7 @@ abstract class Common extends Util
                 $fetchmode = $tmp;
             } elseif ($params !== null) {
                 $fetchmode = $params;
-                $params = array();
+                $params = [];
             }
         }
         // modifyLimitQuery() would be nice here, but it causes BC issues
@@ -1207,7 +1233,7 @@ abstract class Common extends Util
      *
      * @see Common::query()
      */
-    function getCol($query, $col = 0, $params = array())
+    public function getCol($query, $col = 0, $params = [])
     {
         $params = (array)$params;
         if (sizeof($params) > 0) {
@@ -1230,12 +1256,12 @@ abstract class Common extends Util
         $fetchmode = is_int($col) ? DB::DB_FETCHMODE_ORDERED : DB::DB_FETCHMODE_ASSOC;
 
         if (!is_array($row = $res->fetchRow($fetchmode))) {
-            $ret = array();
+            $ret = [];
         } else {
             if (!array_key_exists($col, $row)) {
                 $ret = $this->raiseError(DB::DB_ERROR_NOSUCHFIELD);
             } else {
-                $ret = array($row[$col]);
+                $ret = [$row[$col]];
                 while (is_array($row = $res->fetchRow($fetchmode))) {
                     $ret[] = $row[$col];
                 }
@@ -1275,20 +1301,20 @@ abstract class Common extends Util
      *
      * Then the call getAssoc('SELECT id,text FROM mytable') returns:
      * <pre>
-     *   array(
+     *   [
      *     '1' => 'one',
      *     '2' => 'two',
      *     '3' => 'three',
-     *   )
+     *   ]
      * </pre>
      *
      * ...while the call getAssoc('SELECT id,text,date FROM mytable') returns:
      * <pre>
-     *   array(
-     *     '1' => array('one', '944679408'),
-     *     '2' => array('two', '944679408'),
-     *     '3' => array('three', '944679408')
-     *   )
+     *   [
+     *     '1' => ['one', '944679408'],
+     *     '2' => ['two', '944679408'],
+     *     '3' => ['three', '944679408']
+     *   ]
      * </pre>
      *
      * If the more than one row occurs with the same value in the
@@ -1300,14 +1326,14 @@ abstract class Common extends Util
      * getAssoc('SELECT category,id,name FROM mytable', false, null,
      *          DB_FETCHMODE_ASSOC, true) returns:
      *
-     *   array(
-     *     '1' => array(array('id' => '4', 'name' => 'number four'),
-     *                  array('id' => '6', 'name' => 'number six')
-     *            ),
-     *     '9' => array(array('id' => '4', 'name' => 'number four'),
-     *                  array('id' => '6', 'name' => 'number six')
-     *            )
-     *   )
+     *   [
+     *     '1' => [['id' => '4', 'name' => 'number four'],
+     *             ['id' => '6', 'name' => 'number six']
+     *            ],
+     *     '9' => [['id' => '4', 'name' => 'number four'],
+     *             ['id' => '6', 'name' => 'number six']
+     *            ]
+     *   ]
      * </pre>
      *
      * Keep in mind that database functions in PHP usually return string
@@ -1335,10 +1361,14 @@ abstract class Common extends Util
      * @return array  the associative array containing the query results.
      *                A DB_Error object on failure.
      */
-    function getAssoc($query, $force_array = false, $params = array(),
-                      $fetchmode = DB::DB_FETCHMODE_DEFAULT, $group = false)
-    {
-        $params = (array)$params;
+    public function getAssoc(
+        $query,
+        $force_array = false,
+        $params = [],
+        $fetchmode = DB::DB_FETCHMODE_DEFAULT,
+        $group = false
+    ) {
+        $params = (array) $params;
         if (sizeof($params) > 0) {
             $sth = $this->prepare($query);
 
@@ -1365,7 +1395,7 @@ abstract class Common extends Util
             return $tmp;
         }
 
-        $results = array();
+        $results = [];
 
         if ($cols > 2 || $force_array) {
             // return array values
@@ -1443,7 +1473,7 @@ abstract class Common extends Util
      *
      * @return array  the nested array.  A DB_Error object on failure.
      */
-    function getAll($query, $params = array(), $fetchmode = DB::DB_FETCHMODE_DEFAULT)
+    public function getAll($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
         // compat check, the params and fetchmode parameters used to
         // have the opposite order
@@ -1458,7 +1488,7 @@ abstract class Common extends Util
                 $fetchmode = $tmp;
             } elseif ($params !== null) {
                 $fetchmode = $params;
-                $params = array();
+                $params = [];
             }
         }
 
@@ -1479,7 +1509,7 @@ abstract class Common extends Util
             return $res;
         }
 
-        $results = array();
+        $results = [];
         while (DB::DB_OK === $res->fetchInto($row, $fetchmode)) {
             if ($fetchmode & DB::DB_FETCHMODE_FLIPPED) {
                 foreach ($row as $key => $val) {
@@ -1507,7 +1537,7 @@ abstract class Common extends Util
      * @return int  DB_OK on success.  A DB_Error object if the driver
      *               doesn't support auto-committing transactions.
      */
-    function autoCommit($onoff = false)
+    public function autoCommit($onoff = false)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1517,7 +1547,7 @@ abstract class Common extends Util
      *
      * @return int  DB_OK on success.  A DB_Error object on failure.
      */
-    function commit()
+    public function commit()
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1527,7 +1557,7 @@ abstract class Common extends Util
      *
      * @return int  DB_OK on success.  A DB_Error object on failure.
      */
-    function rollback()
+    public function rollback()
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1539,7 +1569,7 @@ abstract class Common extends Util
      *
      * @return int  the number of rows.  A DB_Error object on failure.
      */
-    function numRows($result)
+    public function numRows($result)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1551,7 +1581,7 @@ abstract class Common extends Util
      *
      * @return int  the number of rows.  A DB_Error object on failure.
      */
-    function affectedRows()
+    public function affectedRows()
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1570,7 +1600,7 @@ abstract class Common extends Util
      * @see Common::createSequence(), Common::dropSequence(),
      *      Common::nextID(), Common::setOption()
      */
-    function getSequenceName($sqn)
+    public function getSequenceName($sqn)
     {
         return sprintf($this->getOption('seqname_format'), preg_replace('/[^a-z0-9_.]/i', '_', $sqn));
     }
@@ -1588,7 +1618,7 @@ abstract class Common extends Util
      * @see Common::createSequence(), Common::dropSequence(),
      *      Common::getSequenceName()
      */
-    function nextId($seq_name, $ondemand = true)
+    public function nextId($seq_name, $ondemand = true)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1610,7 +1640,7 @@ abstract class Common extends Util
      * @see Common::dropSequence(), Common::getSequenceName(),
      *      Common::nextID()
      */
-    function createSequence($seq_name)
+    public function createSequence($seq_name)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1625,7 +1655,7 @@ abstract class Common extends Util
      * @see Common::createSequence(), Common::getSequenceName(),
      *      Common::nextID()
      */
-    function dropSequence($seq_name)
+    public function dropSequence($seq_name)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1658,10 +1688,15 @@ abstract class Common extends Util
      *
      * @see PEAR_Error
      */
-    public function raiseError($code = DB::DB_ERROR, $mode = null, $options = null,
-                               $userinfo = null, $nativecode = null, $dummy1 = null,
-                               $dummy2 = null)
-    {
+    public function raiseError(
+        $code = DB::DB_ERROR,
+        $mode = null,
+        $options = null,
+        $userinfo = null,
+        $nativecode = null,
+        $dummy1 = null,
+        $dummy2 = null
+    ) {
         // The error is yet a DB error object
         if (is_object($code)) {
             $tmp = Util::raiseError($code, null, $mode, $options, null, null, true);
@@ -1687,7 +1722,7 @@ abstract class Common extends Util
      *
      * @return mixed  the DBMS' error code.  A DB_Error object on failure.
      */
-    function errorNative()
+    public function errorNative()
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1703,7 +1738,7 @@ abstract class Common extends Util
      *               current driver doesn't have a mapping for the
      *               $nativecode submitted.
      */
-    function errorCode($nativecode)
+    public function errorCode($nativecode)
     {
         if (isset($this->errorcode_map[$nativecode])) {
             return $this->errorcode_map[$nativecode];
@@ -1722,7 +1757,7 @@ abstract class Common extends Util
      *
      * @see DB::errorMessage()
      */
-    function errorMessage($dbcode)
+    public function errorMessage($dbcode)
     {
         return DB::errorMessage($this->errorcode_map[$dbcode]);
     }
@@ -1847,7 +1882,7 @@ abstract class Common extends Util
      *
      * @see Common::setOption()
      */
-    function tableInfo($result, $mode = null)
+    public function tableInfo($result, $mode = null)
     {
         /**
          * If the DB_<driver> class has a tableInfo() method, that one
@@ -1868,7 +1903,7 @@ abstract class Common extends Util
      * @return array  an array listing the items sought.
      *                 A DB DB_Error object on failure.
      */
-    function getListOf($type)
+    public function getListOf($type)
     {
         $sql = $this->getSpecialQuery($type);
         if ($sql === null) {
@@ -1896,7 +1931,7 @@ abstract class Common extends Util
      * @access protected
      * @see Common::getListOf()
      */
-    function getSpecialQuery($type)
+    protected function getSpecialQuery($type)
     {
         return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
     }
@@ -1912,7 +1947,7 @@ abstract class Common extends Util
      *
      * @access public
      */
-    function nextQueryIsManip($manip)
+    public function nextQueryIsManip($manip)
     {
         $this->_next_query_manip = $manip;
     }
@@ -1929,7 +1964,7 @@ abstract class Common extends Util
      *
      * @access protected
      */
-    function _checkManip($query)
+    protected function _checkManip($query)
     {
         if ($this->_next_query_manip || DB::isManip($query)) {
             $this->_last_query_manip = true;
@@ -1950,7 +1985,7 @@ abstract class Common extends Util
      *
      * @access protected
      */
-    function _rtrimArrayValues(&$array)
+    protected function _rtrimArrayValues(&$array)
     {
         foreach ($array as $key => $value) {
             if (is_string($value)) {
@@ -1968,7 +2003,7 @@ abstract class Common extends Util
      *
      * @access protected
      */
-    function _convertNullArrayValuesToEmpty(&$array)
+    protected function _convertNullArrayValuesToEmpty(&$array)
     {
         foreach ($array as $key => $value) {
             if (is_null($value)) {
