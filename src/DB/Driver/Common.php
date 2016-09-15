@@ -903,7 +903,10 @@ abstract class Common extends Util
             } elseif ($this->prepare_types[$stmt][$i] == DB::DB_PARAM_OPAQUE) {
                 $fp = @fopen($value, 'rb');
                 if (!$fp) {
+                    // @codeCoverageIgnoreStart
+                    // @todo this is a pain to test without vfsStream, so skip for now
                     return $this->raiseError(DB::DB_ERROR_ACCESS_VIOLATION);
+                    // @codeCoverageIgnoreEnd
                 }
                 $realquery .= $this->quoteSmart(fread($fp, filesize($value)));
                 fclose($fp);
