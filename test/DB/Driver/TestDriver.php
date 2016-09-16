@@ -94,6 +94,13 @@ class TestDriver extends Common
     {
         // this is a very specific name relied upon by neighbouring classes.
         $this->last_query = $query;
+
+        // Common::prepare doesn't inspect for errors, but query checks for errors
+        // post prepare, so watch for syntax markers
+        if (preg_match('/PREPFAIL/', $query)) {
+            return $this->raiseError(DB::DB_ERROR_SYNTAX);
+        }
+
         return parent::prepare($query);
     }
 
@@ -119,6 +126,8 @@ class TestDriver extends Common
                 ];
             }
             return $results;
+        } elseif (preg_match('/^EMPTYSEL/', $query)) {
+            return [];
         } elseif (preg_match('/^INSERT/', $query)) {
             // this may not be correct
             $this->lastQueryType = 'INSERT';
@@ -324,6 +333,14 @@ class TestDriver extends Common
 
     public function stubModifyLimitQuery($query, $from, $count, $params = [])
     {
+        return parent::modifyLimitQuery($query, $from, $count, $params);
+    }
+
+    public function modifyLimitQuery($query, $from, $count, $params = [])
+    {
+        if (preg_match('/FAILURE/', $query)) {
+            return $this->raiseError(DB::DB_ERROR_SYNTAX);
+        }
         return parent::modifyLimitQuery($query, $from, $count, $params);
     }
 }
