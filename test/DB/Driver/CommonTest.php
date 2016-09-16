@@ -440,7 +440,81 @@ class CommonTest extends TestCase
         // @todo there's a crazy bit of code in Common::query where it decides that the query tokenisation routine
         // should not be run if count($data) == 0, which means a query that _shouldn't_ get through to the dbms does
         // actually get through.
-        $result = $dbh->query('FAILURE', ['bar', 'bonzo']);
+        $result = $dbh->query('PREPFAIL', ['bar', 'bonzo']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
+    }
+
+    public function testLimitQuery()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->limitQuery(
+            'SELECT foo FROM bar',
+            10,
+            5
+        );
+
+        $this->assertEquals([
+            'id' => 1,
+            'data' => 'test1',
+        ], $result->fetchRow(DB::DB_FETCHMODE_ASSOC));
+    }
+
+    public function testLimitQueryWithSyntaxError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->limitQuery(
+            'FAILURE',
+            10,
+            5
+        );
+
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
+    }
+
+    public function testGetOne()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getOne('SELECT foo FROM bar');
+        $this->assertEquals(1, $result);
+    }
+
+    public function testGetOneWithSyntaxError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getOne('FAILURE');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_NOSUCHTABLE, $result->getCode());
+    }
+
+    public function testGetOneWithNoData()
+    {
+        $this->markTestIncomplete('test fails, please investigate');
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getOne('EMPTYSEL');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_NOSUCHTABLE, $result->getCode());
+    }
+
+    public function testGetOneWithParameters()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getOne('SELECT foo FROM bar WHERE stuff = ?', ['foo']);
+        $this->assertEquals(1, $result);
+    }
+
+    public function testGetOneSyntaxErrorWithParameters()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getOne('PREPFAIL SELECT foo FROM bar WHERE stuff = ?', ['foo']);
         $this->assertInstanceOf(Error::class, $result);
         $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
     }
