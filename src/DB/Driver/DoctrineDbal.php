@@ -480,7 +480,7 @@ class DoctrineDbal extends Common
                 // Sequence table must be empty for some reason,
                 // so fill it and return 1
                 // Obtain a user-level lock
-                $result = $this->getOne("SELECT GET_LOCK('${$seqName}_lock', 10)");
+                $result = $this->getOne("SELECT GET_LOCK('${seqName}_lock', 10)");
                 if (DB::isError($result)) {
                     return $this->raiseError($result);
                 }
@@ -495,7 +495,7 @@ class DoctrineDbal extends Common
                 }
 
                 // Release the lock
-                $result = $this->getOne("SELECT RELEASE_LOCK('${$seqName}_lock')");
+                $result = $this->getOne("SELECT RELEASE_LOCK('${seqName}_lock')");
                 if (DB::isError($result)) {
                     return $this->raiseError($result);
                 }
@@ -547,7 +547,7 @@ class DoctrineDbal extends Common
             return $res;
         }
         // insert yields value 1, nextId call will generate ID 2
-        return $this->query("INSERT INTO ${$seqName} (id) VALUES (0)");
+        return $this->query("INSERT INTO ${seqName} (id) VALUES (0)");
     }
 
     /**
@@ -580,7 +580,7 @@ class DoctrineDbal extends Common
         // Obtain a user-level lock... this will release any previous
         // application locks, but unlike LOCK TABLES, it does not abort
         // the current transaction and is much less frequently used.
-        $result = $this->getOne("SELECT GET_LOCK('${$seqName}_lock',10)");
+        $result = $this->getOne("SELECT GET_LOCK('${seqName}_lock',10)");
         if (DB::isError($result)) {
             return $result;
         }
@@ -590,7 +590,7 @@ class DoctrineDbal extends Common
             return $this->myRaiseError(DB::DB_ERROR_NOT_LOCKED);
         }
 
-        $highest_id = $this->getOne("SELECT MAX(id) FROM ${$seqName}");
+        $highest_id = $this->getOne("SELECT MAX(id) FROM ${seqName}");
         if (DB::isError($highest_id)) {
             return $highest_id;
         }
@@ -606,7 +606,7 @@ class DoctrineDbal extends Common
         // If another thread has been waiting for this lock,
         // it will go thru the above procedure, but will have no
         // real effect
-        $result = $this->getOne("SELECT RELEASE_LOCK('${$seqName}_lock')");
+        $result = $this->getOne("SELECT RELEASE_LOCK('${seqName}_lock')");
         if (DB::isError($result)) {
             return $result;
         }
