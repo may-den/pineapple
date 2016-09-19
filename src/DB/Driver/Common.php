@@ -47,6 +47,18 @@ use Pineapple\DB\Error;
 abstract class Common extends Util
 {
     /**
+     * The DB driver type (mysql, oci8, odbc, etc.)
+     * @var string
+     */
+    protected $phptype;
+
+    /**
+     * The database syntax variant to be used (db2, access, etc.), if any
+     * @var string
+     */
+    protected $dbsyntax;
+
+    /**
      * The current default fetch mode
      * @var integer
      */
@@ -86,7 +98,6 @@ abstract class Common extends Util
      * @var array
      */
     protected $dsn = [];
-
 
     /**
      * Run-time configuration options

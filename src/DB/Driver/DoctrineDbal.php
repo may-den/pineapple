@@ -20,13 +20,13 @@ class DoctrineDbal extends Common
      * The DB driver type (mysql, oci8, odbc, etc.)
      * @var string
      */
-    var $phptype = 'doctrinedbal';
+    protected $phptype = 'doctrinedbal';
 
     /**
      * The database syntax variant to be used (db2, access, etc.), if any
      * @var string
      */
-    var $dbsyntax = 'doctrinedbal';
+    protected $dbsyntax = 'doctrinedbal';
 
     /**
      * The capabilities of this DB implementation
