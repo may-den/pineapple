@@ -112,12 +112,16 @@ class TestDriver extends Common
         $this->last_query = $query;
         $this->last_parameters = [];
 
-        if (preg_match('/^SELECT/', $query)) {
+        if (preg_match('/^(SELECT|BREAKINGSEL)/', $query)) {
+            // SELECT: a regular SELECT that returns data successfully
+            // BREAKINGSEL: a SELECT that returns data but breaks on first fetch
             $this->lastQueryType = 'SELECT';
             $results = [
                 'type' => 'resultResource',
+                'breaksEasily' => preg_match('/^BREAKINGSEL/', $query) ? true : false,
                 'results' => [],
             ];
+
             // generate 20 test results
             for ($i = 1; $i <= 20; $i++) {
                 $results['results'][] = [
@@ -127,7 +131,11 @@ class TestDriver extends Common
             }
             return $results;
         } elseif (preg_match('/^EMPTYSEL/', $query)) {
-            return [];
+            return [
+                'type' => 'resultResource',
+                'breaksEasily' => false,
+                'results' => [],
+            ];
         } elseif (preg_match('/^INSERT/', $query)) {
             // this may not be correct
             $this->lastQueryType = 'INSERT';
@@ -146,6 +154,10 @@ class TestDriver extends Common
     {
         if ($this->lastResult !== $result) {
             $this->lastResult = $result;
+        }
+
+        if (is_array($result) && isset($result['breaksEasily']) && $result['breaksEasily']) {
+            return $this->raiseError(DB::DB_ERROR_TRUNCATED);
         }
 
         if (!is_null($rownum)) {
