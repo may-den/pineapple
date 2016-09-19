@@ -198,8 +198,16 @@ class Util
      * @see PEAR::setErrorHandling
      * @since PHP 4.0.5
      */
-    protected static function staticRaiseError($object, $message = null, $code = null, $mode = null, $options = null, $userInfo = null, $errorClass = null, $skipMessage = false)
-    {
+    protected static function staticRaiseError(
+        $object,
+        $message = null,
+        $code = null,
+        $mode = null,
+        $options = null,
+        $userInfo = null,
+        $errorClass = null,
+        $skipMessage = false
+    ) {
         // The error is yet a PEAR error object
         if (is_object($message)) {
             $code = $message->getCode();
