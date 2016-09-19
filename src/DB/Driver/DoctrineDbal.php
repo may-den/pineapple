@@ -823,7 +823,7 @@ class DoctrineDbal extends Common
      * @access protected
      * @see DB_common::getListOf()
      */
-    function getSpecialQuery($type)
+    protected function getSpecialQuery($type)
     {
         switch ($type) {
             case 'tables':
