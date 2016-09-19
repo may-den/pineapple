@@ -1970,7 +1970,7 @@ abstract class Common extends Util
      */
     public function nextQueryIsManip($manip)
     {
-        $this->_next_query_manip = $manip;
+        $this->_next_query_manip = $manip ? true : false;
     }
 
     /**
