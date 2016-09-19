@@ -1264,4 +1264,36 @@ class CommonTest extends TestCase
 
         $this->assertEquals(['', '', ''], $toConvert);
     }
+
+    public function testGetListOf()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $this->assertEquals(['thing', 'stuff'], $dbh->getListOf('thing'));
+    }
+
+    public function testGetListOfWithQuery()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $this->assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], $dbh->getListOf('query'));
+    }
+
+    public function testGetListOfWithNull()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getListOf('returnnull');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $result->getCode());
+    }
+
+    public function testGetListOfWithError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getListOf('blumfrub');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_DIVZERO, $result->getCode());
+    }
 }

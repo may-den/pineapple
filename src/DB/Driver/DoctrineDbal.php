@@ -8,8 +8,11 @@ use Doctrine\DBAL\Driver\PDOStatement;
 use PDO;
 
 /**
+ * @codeCoverageIgnore
  * A PEAR DB driver that uses Doctrine's DBAL as an underlying database
  * layer.
+ *
+ * @todo Integration test for this would mean we can get code coverage
  */
 class DoctrineDbal extends Common
 {
