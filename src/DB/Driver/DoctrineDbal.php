@@ -93,12 +93,6 @@ class DoctrineDbal extends Common
     var $lastStatement = null;
 
     /**
-     * The DSN information for connecting to a database
-     * @var array
-     */
-    var $dsn = [];
-
-    /**
      * Should data manipulation queries be committed automatically?
      * @var bool
      * @access private

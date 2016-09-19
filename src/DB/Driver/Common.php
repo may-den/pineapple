@@ -82,6 +82,13 @@ abstract class Common extends Util
     protected $acceptConsequencesOfPoorCodingChoices = false;
 
     /**
+     * The DSN information for connecting to a database
+     * @var array
+     */
+    protected $dsn = [];
+
+
+    /**
      * Run-time configuration options
      *
      * The 'optimize' option has been deprecated.  Use the 'portability'
