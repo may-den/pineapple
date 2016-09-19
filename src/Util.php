@@ -85,8 +85,6 @@ class Util
      */
     public function __construct($errorClass = null)
     {
-        $classname = strtolower(get_class($this));
-
         if ($errorClass !== null) {
             $this->errorClass = $errorClass;
         }
