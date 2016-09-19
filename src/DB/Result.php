@@ -24,20 +24,20 @@ class Result
      * @var boolean
      * @see DB\Common::$options
      */
-    var $autofree;
+    public $autofree;
 
     /**
      * A reference to the DB_<driver> object
      * @var object
      */
-    var $dbh;
+    public $dbh;
 
     /**
      * The current default fetch mode
      * @var integer
      * @see DB\Common::$fetchmode
      */
-    var $fetchmode;
+    public $fetchmode;
 
     /**
      * The name of the class into which results should be fetched when
@@ -46,26 +46,26 @@ class Result
      * @var string
      * @see DB\Common::$fetchModeObjectClass
      */
-    var $fetchModeObjectClass;
+    public $fetchModeObjectClass;
 
     /**
      * The number of rows to fetch from a limit query
      * @var integer
      */
-    var $limit_count = null;
+    public $limit_count = null;
 
     /**
      * The row to start fetching from in limit queries
      * @var integer
      */
-    var $limit_from = null;
+    public $limit_from = null;
 
     /**
      * The execute parameters that created this result
      * @var array
      * @since Property available since Release 1.7.0
      */
-    var $parameters;
+    public $parameters;
 
     /**
      * The query string that created this result
@@ -75,19 +75,19 @@ class Result
      * @var string
      * @since Property available since Release 1.7.0
      */
-    var $query;
+    public $query;
 
     /**
      * The query result resource id created by PHP
      * @var resource
      */
-    var $result;
+    public $result;
 
     /**
      * The present row being dealt with
      * @var integer
      */
-    var $row_counter = null;
+    public $row_counter = null;
 
     /**
      * The prepared statement resource id created by PHP in $dbh
@@ -104,7 +104,7 @@ class Result
      * @var resource
      * @since Property available since Release 1.7.0
      */
-    var $statement;
+    public $statement;
 
     /**
      * This constructor sets the object's properties
