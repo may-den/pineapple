@@ -199,6 +199,7 @@ class Result
 
             $this->row_counter++;
         }
+        $arr = [];
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
         if ($res === DB::DB_OK) {
             if (isset($object_class)) {
@@ -312,6 +313,7 @@ class Result
             if (DB::isError($res)) {
                 return $res;
             }
+            $tmp = null;
             $i = 0;
             while ($res->fetchInto($tmp, DB::DB_FETCHMODE_ORDERED)) {
                 $i++;
