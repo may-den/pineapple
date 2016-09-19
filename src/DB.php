@@ -495,7 +495,7 @@ class DB
     /**
      * Return a textual error message for a DB error code
      *
-     * @param integer $value  the DB error code
+     * @param integer|DB\Error $value  the DB error code
      *
      * @return string  the error message or false if the error code was
      *                  not recognized
