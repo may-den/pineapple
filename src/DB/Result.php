@@ -27,7 +27,7 @@ class Result
     public $autofree;
 
     /**
-     * A reference to the DB_<driver> object
+     * A reference to the Pineapple\DB\Driver\<driver> object
      * @var object
      */
     public $dbh;
@@ -131,7 +131,7 @@ class Result
     }
 
     /**
-     * Set options for the DB_result object
+     * Set options for the Pineapple\DB\Result object
      *
      * @param string $key    the option to set
      * @param mixed  $value  the value to set the option to
@@ -172,7 +172,7 @@ class Result
      *
      * @return mixed  an array or object containing the row's data,
      *                 NULL when the end of the result set is reached
-     *                 or a DB_Error object on failure.
+     *                 or a Pineapple\DB\Error object on failure.
      *
      * @see DB\Common::setOption(), DB\Common::setFetchMode()
      */
@@ -242,7 +242,7 @@ class Result
      * @param int   $rownum     the row number to fetch (index starts at 0)
      *
      * @return mixed  DB_OK if a row is processed, NULL when the end of the
-     *                 result set is reached or a DB_Error object on failure
+     *                result set is reached or a Pineapple\DB\Error object on failure
      *
      * @see DB\Common::setOption(), DB\Common::setFetchMode()
      */
@@ -290,7 +290,7 @@ class Result
     /**
      * Get the the number of columns in a result set
      *
-     * @return int  the number of columns.  A DB_Error object on failure.
+     * @return int  the number of columns.  A Pineapple\DB\Error object on failure.
      */
     public function numCols()
     {
@@ -300,7 +300,7 @@ class Result
     /**
      * Get the number of rows in a result set
      *
-     * @return int  the number of rows.  A DB_Error object on failure.
+     * @return int  the number of rows.  A Pineapple\DB\Error object on failure.
      */
     public function numRows()
     {
@@ -339,7 +339,7 @@ class Result
     /**
      * Frees the resources allocated for this result set
      *
-     * @return bool  true on success.  A DB_Error object on failure.
+     * @return bool  true on success.  A Pineapple\DB\Error object on failure.
      */
     public function free()
     {

@@ -20,7 +20,7 @@ use Pineapple\Error as PineappleError;
 class Error extends PineappleError
 {
     /**
-     * DB_Error constructor
+     * Error constructor
      *
      * @param mixed $code       DB error code, or string with error message
      * @param int   $mode       what "error mode" to operate in
@@ -35,8 +35,7 @@ class Error extends PineappleError
         $mode = Util::PEAR_ERROR_RETURN,
         $level = E_USER_NOTICE,
         $debuginfo = null
-    )
-    {
+    ) {
         if (is_int($code)) {
             parent::__construct(
                 'DB Error: ' . DB::errorMessage($code),

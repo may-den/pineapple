@@ -166,7 +166,7 @@ abstract class Common extends Util
     protected $nextQueryManip = false;
 
     /**
-     * This constructor calls <kbd>parent::__construct('DB_Error')</kbd>
+     * This constructor calls <kbd>parent::__construct('Pineapple\DB\Error')</kbd>
      *
      * @return void
      */
@@ -482,7 +482,7 @@ abstract class Common extends Util
      *                               If no class is specified by default a cast
      *                               to object from the assoc array row will be
      *                               done.  There is also the posibility to use
-     *                               and extend the 'DB_row' class.
+     *                               and extend the 'Pineapple\DB\Row' class.
      *
      * @see DB_FETCHMODE_ORDERED, DB_FETCHMODE_ASSOC, DB_FETCHMODE_OBJECT
      */
@@ -661,7 +661,7 @@ abstract class Common extends Util
      * @param string $option option name
      * @param mixed  $value value for the option
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::$options
      */
@@ -727,8 +727,8 @@ abstract class Common extends Util
      *
      * @param string $query  the query to be prepared
      *
-     * @return mixed  DB statement resource on success. A DB_Error object
-     *                 on failure.
+     * @return mixed  DB statement resource on success. A Pineapple\DB\Error
+     *                object on failure.
      *
      * @see Common::execute()
      */
@@ -795,16 +795,16 @@ abstract class Common extends Util
      *
      * @param string $table         the table name
      * @param array  $fields_values the associative array where $key is a
-     *                               field name and $value its value
+     *                              field name and $value its value
      * @param int    $mode          a type of query to make:
-     *                               DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
+     *                              DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
      * @param string $where         for update queries: the WHERE clause to
-     *                               append to the SQL statement.  Don't
-     *                               include the "WHERE" keyword.
+     *                              append to the SQL statement.  Don't
+     *                              include the "WHERE" keyword.
      *
      * @return mixed  a new Result object for successful SELECT queries
-     *                 or DB_OK for successul data manipulation queries.
-     *                 A DB_Error object on failure.
+     *                or DB_OK for successul data manipulation queries.
+     *                A Pineapple\DB\Error object on failure.
      *
      * @uses Common::autoPrepare(), Common::execute()
      */
@@ -912,14 +912,14 @@ abstract class Common extends Util
      *
      * @param resource $stmt  a DB statement resource returned from prepare()
      * @param mixed    $data  array, string or numeric data to be used in
-     *                         execution of the statement.  Quantity of items
-     *                         passed must match quantity of placeholders in
-     *                         query:  meaning 1 placeholder for non-array
-     *                         parameters or 1 placeholder per array element.
+     *                        execution of the statement.  Quantity of items
+     *                        passed must match quantity of placeholders in
+     *                        query:  meaning 1 placeholder for non-array
+     *                        parameters or 1 placeholder per array element.
      *
      * @return mixed  a new Result object for successful SELECT queries
-     *                 or DB_OK for successul data manipulation queries.
-     *                 A DB_Error object on failure.
+     *                or DB_OK for successul data manipulation queries.
+     *                A Pineapple\DB\Error object on failure.
      *
      * {@internal ibase and oci8 have their own execute() methods.}}
      *
@@ -954,7 +954,7 @@ abstract class Common extends Util
      *                         parameters or 1 placeholder per array element.
      *
      * @return mixed  a string containing the real query run when emulating
-     *                 prepare/execute.  A DB_Error object on failure.
+     *                 prepare/execute.  A Pineapple\DB\Error object on failure.
      *
      * @access protected
      * @see Common::execute()
@@ -1009,7 +1009,7 @@ abstract class Common extends Util
      * @param array    $data  numeric array containing the
      *                         data to insert into the query
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::prepare(), Common::execute()
      */
@@ -1105,7 +1105,7 @@ abstract class Common extends Util
      *
      * @return mixed  a new Result object for successful SELECT queries
      *                 or DB_OK for successul data manipulation queries.
-     *                 A DB_Error object on failure.
+     *                 A Pineapple\DB\Error object on failure.
      *
      * @see Result, Common::prepare(), Common::execute()
      */
@@ -1145,7 +1145,7 @@ abstract class Common extends Util
      *
      * @return mixed  a new Result object for successful SELECT queries
      *                 or DB_OK for successul data manipulation queries.
-     *                 A DB_Error object on failure.
+     *                 A Pineapple\DB\Error object on failure.
      */
     public function limitQuery($query, $from, $count, $params = [])
     {
@@ -1174,7 +1174,7 @@ abstract class Common extends Util
      *                         parameters or 1 placeholder per array element.
      *
      * @return mixed  the returned value of the query.
-     *                 A DB_Error object on failure.
+     *                 A Pineapple\DB\Error object on failure.
      */
     public function getOne($query, $params = [])
     {
@@ -1220,7 +1220,7 @@ abstract class Common extends Util
      * @param int $fetchmode  the fetch mode to use
      *
      * @return array  the first row of results as an array.
-     *                 A DB_Error object on failure.
+     *                 A Pineapple\DB\Error object on failure.
      */
     public function getRow($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
@@ -1281,7 +1281,7 @@ abstract class Common extends Util
      *                         query:  meaning 1 placeholder for non-array
      *                         parameters or 1 placeholder per array element.
      *
-     * @return array  the results as an array.  A DB_Error object on failure.
+     * @return array  the results as an array.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::query()
      */
@@ -1411,7 +1411,7 @@ abstract class Common extends Util
      *                              existing values.
      *
      * @return array  the associative array containing the query results.
-     *                A DB_Error object on failure.
+     *                A Pineapple\DB\Error object on failure.
      */
     public function getAssoc(
         $query,
@@ -1524,7 +1524,7 @@ abstract class Common extends Util
      *                            + DB_FETCHMODE_ORDERED | DB_FETCHMODE_FLIPPED
      *                            + DB_FETCHMODE_ASSOC | DB_FETCHMODE_FLIPPED
      *
-     * @return array  the nested array.  A DB_Error object on failure.
+     * @return array  the nested array.  A Pineapple\DB\Error object on failure.
      */
     public function getAll($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
@@ -1584,7 +1584,7 @@ abstract class Common extends Util
      *
      * @param bool $onoff  true turns it on, false turns it off
      *
-     * @return int  DB_OK on success.  A DB_Error object if the driver
+     * @return int  DB_OK on success.  A Pineapple\DB\Error object if the driver
      *               doesn't support auto-committing transactions.
      */
     public function autoCommit($onoff = false)
@@ -1595,7 +1595,7 @@ abstract class Common extends Util
     /**
      * Commits the current transaction
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
      */
     public function commit()
     {
@@ -1605,7 +1605,7 @@ abstract class Common extends Util
     /**
      * Reverts the current transaction
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
      */
     public function rollback()
     {
@@ -1617,7 +1617,7 @@ abstract class Common extends Util
      *
      * @param resource $result  the query result idenifier produced by PHP
      *
-     * @return int  the number of rows.  A DB_Error object on failure.
+     * @return int  the number of rows.  A Pineapple\DB\Error object on failure.
      */
     public function numRows($result)
     {
@@ -1629,7 +1629,7 @@ abstract class Common extends Util
      *
      * 0 is returned for queries that don't manipulate data.
      *
-     * @return int  the number of rows.  A DB_Error object on failure.
+     * @return int  the number of rows.  A Pineapple\DB\Error object on failure.
      */
     public function affectedRows()
     {
@@ -1663,7 +1663,7 @@ abstract class Common extends Util
      *                            created if it does not exist
      *
      * @return int  the next id number in the sequence.
-     *               A DB_Error object on failure.
+     *               A Pineapple\DB\Error object on failure.
      *
      * @see Common::createSequence(), Common::dropSequence(),
      *      Common::getSequenceName()
@@ -1685,7 +1685,7 @@ abstract class Common extends Util
      *
      * @param string $seq_name  name of the new sequence
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::dropSequence(), Common::getSequenceName(),
      *      Common::nextID()
@@ -1700,7 +1700,7 @@ abstract class Common extends Util
      *
      * @param string $seq_name  name of the sequence to be deleted
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::createSequence(), Common::getSequenceName(),
      *      Common::nextID()
@@ -1770,7 +1770,7 @@ abstract class Common extends Util
     /**
      * Gets the DBMS' native error code produced by the last query
      *
-     * @return mixed  the DBMS' error code.  A DB_Error object on failure.
+     * @return mixed  the DBMS' error code.  A Pineapple\DB\Error object on failure.
      */
     public function errorNative()
     {
@@ -1928,7 +1928,7 @@ abstract class Common extends Util
      *                     combined using <kbd>|</kbd>.
      *
      * @return array  an associative array with the information requested.
-     *                 A DB_Error object on failure.
+     *                 A Pineapple\DB\Error object on failure.
      *
      * @see Common::setOption()
      */
@@ -1951,7 +1951,7 @@ abstract class Common extends Util
      *                       Each DBMS's has its own capabilities.
      *
      * @return array  an array listing the items sought.
-     *                 A DB DB_Error object on failure.
+     *                 A DB Pineapple\DB\Error object on failure.
      */
     public function getListOf($type)
     {
