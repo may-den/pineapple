@@ -158,7 +158,7 @@ abstract class Common extends Util
      * @access protected
      * @var boolean
      */
-    protected $_next_query_manip = false;
+    protected $nextQueryManip = false;
 
     /**
      * This constructor calls <kbd>$this->PEAR('DB_Error')</kbd>
@@ -1988,13 +1988,13 @@ abstract class Common extends Util
      */
     public function nextQueryIsManip($manip)
     {
-        $this->_next_query_manip = $manip ? true : false;
+        $this->nextQueryManip = $manip ? true : false;
     }
 
     /**
      * Checks if the given query is a manipulation query. This also takes into
-     * account the _next_query_manip flag and sets the lastQueryManip flag
-     * (and resets _next_query_manip) according to the result.
+     * account the nextQueryManip flag and sets the lastQueryManip flag
+     * (and resets nextQueryManip) according to the result.
      *
      * @param string The query to check.
      *
@@ -2005,12 +2005,12 @@ abstract class Common extends Util
      */
     protected function _checkManip($query)
     {
-        if ($this->_next_query_manip || DB::isManip($query)) {
+        if ($this->nextQueryManip || DB::isManip($query)) {
             $this->lastQueryManip = true;
         } else {
             $this->lastQueryManip = false;
         }
-        $this->_next_query_manip = false;
+        $this->nextQueryManip = false;
         return $this->lastQueryManip;
     }
 

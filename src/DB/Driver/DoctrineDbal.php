@@ -676,7 +676,7 @@ class DoctrineDbal extends Common
      */
     function modifyLimitQuery($query, $from, $count, $params = [])
     {
-        if (DB::isManip($query) || $this->_next_query_manip) {
+        if (DB::isManip($query) || $this->nextQueryManip) {
             return $query . " LIMIT $count";
         } else {
             return $query . " LIMIT $from, $count";

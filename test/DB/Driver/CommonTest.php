@@ -1207,7 +1207,7 @@ class CommonTest extends TestCase
     {
         $dbh = DB::connect(TestDriver::class . '://');
         $reflectionClass = new \ReflectionClass($dbh);
-        $reflectionProp = $reflectionClass->getProperty('_next_query_manip');
+        $reflectionProp = $reflectionClass->getProperty('nextQueryManip');
         $reflectionProp->setAccessible(true);
 
         $dbh->nextQueryIsManip(true);
