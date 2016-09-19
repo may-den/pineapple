@@ -494,12 +494,11 @@ class CommonTest extends TestCase
 
     public function testGetOneWithNoData()
     {
-        $this->markTestIncomplete('test fails, please investigate');
+        // $this->markTestIncomplete('test fails, please investigate');
         $dbh = DB::connect(TestDriver::class . '://');
 
         $result = $dbh->getOne('EMPTYSEL');
-        $this->assertInstanceOf(Error::class, $result);
-        $this->assertEquals(DB::DB_ERROR_NOSUCHTABLE, $result->getCode());
+        $this->assertNull($result);
     }
 
     public function testGetOneWithParameters()
@@ -517,5 +516,178 @@ class CommonTest extends TestCase
         $result = $dbh->getOne('PREPFAIL SELECT foo FROM bar WHERE stuff = ?', ['foo']);
         $this->assertInstanceOf(Error::class, $result);
         $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
+    }
+
+    public function testGetOneThatFailsWhenDataIsPulled()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getOne('BREAKINGSEL foo FROM bar');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_TRUNCATED, $result->getCode());
+    }
+
+    public function testGetRow()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getRow('SELECT foo FROM bar');
+        $this->assertEquals([1, 'test1'], $result);
+    }
+
+    public function testGetRowWithSyntaxError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getRow('FAILURE');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_NOSUCHTABLE, $result->getCode());
+    }
+
+    public function testGetRowWithNoData()
+    {
+        // $this->markTestIncomplete('test fails, please investigate');
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getRow('EMPTYSEL');
+        $this->assertNull($result);
+    }
+
+    public function testGetRowWithParameters()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getRow('SELECT foo FROM bar WHERE stuff = ?', ['foo']);
+        $this->assertEquals([1, 'test1'], $result);
+    }
+
+    public function testGetRowWithNonArrayParameter()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getRow('SELECT foo FROM bar WHERE stuff = ?', 'foo');
+        $this->assertEquals([1, 'test1'], $result);
+    }
+
+    public function testGetRowWithWackyParameters()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        // if my eyes aren't deceiving me, it appears that the first decision tree in getRow allows you
+        // to transpose the params and fetchmode parameters. to what end i'm not sure.
+        $result = $dbh->getRow('SELECT foo FROM bar WHERE foo = ?', null, ['bar']);
+        $this->assertEquals([1, 'test1'], $result);
+    }
+
+    public function testGetRowWithWackyParametersAndAFetchMode()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        // if my eyes aren't deceiving me, it appears that the first decision tree in getRow allows you
+        // to transpose the params and fetchmode parameters. to what end i'm not sure.
+        $result = $dbh->getRow('SELECT foo FROM bar WHERE foo = ?', DB::DB_FETCHMODE_ASSOC, ['bar']);
+        $this->assertEquals([
+            'id' => 1,
+            'data' => 'test1',
+        ], $result);
+    }
+
+    public function testGetRowWithParametersAndSyntaxError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getRow('PREPFAIL foo FROM bar WHERE foo = ?', ['bar']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
+    }
+
+    public function testGetRowWithParametersAndMismatchParameters()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getRow('SELECT foo FROM bar WHERE stuff = ?', ['foo', 'bar']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_MISMATCH, $result->getCode());
+    }
+
+    public function testGetCol()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getCol('SELECT foo FROM bar');
+        $this->assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], $result);
+    }
+
+    public function testGetColByName()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getCol('SELECT foo FROM bar', 'data');
+        $this->assertEquals([
+            'test1',
+            'test2',
+            'test3',
+            'test4',
+            'test5',
+            'test6',
+            'test7',
+            'test8',
+            'test9',
+            'test10',
+            'test11',
+            'test12',
+            'test13',
+            'test14',
+            'test15',
+            'test16',
+            'test17',
+            'test18',
+            'test19',
+            'test20',
+        ], $result);
+    }
+
+    public function testGetColWithParams()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getCol('SELECT foo FROM bar WHERE foo = ?', 0, ['bar']);
+        $this->assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], $result);
+    }
+
+    public function testGetColWithParamsAndSyntaxError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getCol('PREPFAIL SELECT foo FROM bar WHERE foo = ?', 0, ['bar']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
+    }
+
+    public function testGetColWithParamsAndExecutionError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getCol('FAILURE WHERE foo = ?', 0, ['bar']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
+    }
+
+    public function testGetColWithNonExistentColumn()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getCol('SELECT foo FROM bar', 3);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_NOSUCHFIELD, $result->getCode());
+    }
+
+    public function testGetColThatFailsWhenDataIsPulled()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getCol('BREAKINGSEL foo FROM bar');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_TRUNCATED, $result->getCode());
     }
 }
