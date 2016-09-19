@@ -25,7 +25,7 @@ class Error
     private $level = E_USER_NOTICE;
     private $code = -1;
     private $message = '';
-    private $userinfo = '';
+    private $userInfo = '';
     private $backtrace = null;
 
     /**
@@ -40,11 +40,11 @@ class Error
      *                        PEAR_ERROR_CALLBACK, the callback function or object/method
      *                        tuple.
      *
-     * @param string $userinfo (optional) additional user/debug info
+     * @param string $userInfo (optional) additional user/debug info
      *
      * @access public
      */
-    public function __construct($message = null, $code = null, $mode = null, $options = null, $userinfo = null)
+    public function __construct($message = null, $code = null, $mode = null, $options = null, $userInfo = null)
     {
         if ($mode === null) {
             $mode = Util::PEAR_ERROR_RETURN;
@@ -52,7 +52,7 @@ class Error
         $this->message = isset($message) ? $message : 'unknown error';
         $this->code = $code;
         $this->mode = $mode;
-        $this->userinfo = $userinfo;
+        $this->userInfo = $userInfo;
 
         $this->backtrace = debug_backtrace();
         if (isset($this->backtrace[0]) && isset($this->backtrace[0]['object'])) {
@@ -107,7 +107,7 @@ class Error
 
         if ($this->mode & Util::PEAR_ERROR_EXCEPTION) {
             trigger_error(
-                "PEAR_ERROR_EXCEPTION is obsolete, use class Pineapple\Exception for exceptions",
+                'PEAR_ERROR_EXCEPTION is obsolete, use class Pineapple\Exception for exceptions',
                 E_USER_WARNING
             );
             $e = new Exception($this->message, $this->code);
@@ -178,7 +178,7 @@ class Error
      */
     public function getUserInfo()
     {
-        return $this->userinfo;
+        return $this->userInfo;
     }
 
     /**
@@ -210,10 +210,10 @@ class Error
 
     public function addUserInfo($info)
     {
-        if (empty($this->userinfo)) {
-            $this->userinfo = $info;
+        if (empty($this->userInfo)) {
+            $this->userInfo = $info;
         } else {
-            $this->userinfo .= " ** $info";
+            $this->userInfo .= " ** $info";
         }
     }
 
@@ -253,7 +253,7 @@ class Error
                 $this->code,
                 $callback,
                 $this->error_message_prefix,
-                $this->userinfo
+                $this->userInfo
             );
         }
         if ($this->mode & Util::PEAR_ERROR_PRINT) {
@@ -279,7 +279,7 @@ class Error
             implode('|', $modes),
             $levels[$this->level],
             $this->error_message_prefix,
-            $this->userinfo
+            $this->userInfo
         );
     }
 }
