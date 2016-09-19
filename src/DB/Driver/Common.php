@@ -198,7 +198,7 @@ abstract class Common extends Util
             'fetchModeObjectClass',
             'options',
             'wasConnected',
-            'error_class',
+            'errorClass',
         ];
         if (isset($this->autocommit)) {
             $toSerialize = array_merge(['autocommit'], $toSerialize);
@@ -1742,7 +1742,7 @@ abstract class Common extends Util
         $code = DB::DB_ERROR,
         $mode = null,
         $options = null,
-        $userinfo = null,
+        $userInfo = null,
         $nativecode = null,
         $dummy1 = null,
         $dummy2 = null
@@ -1753,17 +1753,17 @@ abstract class Common extends Util
             return $tmp;
         }
 
-        if ($userinfo === null) {
-            $userinfo = $this->lastQuery;
+        if ($userInfo === null) {
+            $userInfo = $this->lastQuery;
         }
 
         if ($nativecode) {
-            $userinfo .= ' [nativecode=' . trim($nativecode) . ']';
+            $userInfo .= ' [nativecode=' . trim($nativecode) . ']';
         } else {
-            $userinfo .= ' [DB Error: ' . DB::errorMessage($code) . ']';
+            $userInfo .= ' [DB Error: ' . DB::errorMessage($code) . ']';
         }
 
-        $tmp = Util::raiseError(null, $code, $mode, $options, $userinfo, Error::class, true);
+        $tmp = Util::raiseError(null, $code, $mode, $options, $userInfo, Error::class, true);
         return $tmp;
     }
 

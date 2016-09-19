@@ -71,24 +71,24 @@ class Util
      * @var     string
      * @access  protected
      */
-    protected $error_class = Error::class;
+    protected $errorClass = Error::class;
 
     /**
      * Constructor.  Registers this object in
      * $_PEAR_destructor_object_list for destructor emulation if a
      * destructor object exists.
      *
-     * @param string $error_class  (optional) which class to use for
+     * @param string $errorClass  (optional) which class to use for
      *        error objects, defaults to PEAR_Error.
      * @access public
      * @return void
      */
-    public function __construct($error_class = null)
+    public function __construct($errorClass = null)
     {
         $classname = strtolower(get_class($this));
 
-        if ($error_class !== null) {
-            $this->error_class = $error_class;
+        if ($errorClass !== null) {
+            $this->errorClass = $errorClass;
         }
     }
 
@@ -187,10 +187,10 @@ class Util
      *                  method.  In other error modes this parameter
      *                  is ignored.
      *
-     * @param string $userinfo If you need to pass along for example debug
+     * @param string $userInfo If you need to pass along for example debug
      *                  information, this parameter is meant for that.
      *
-     * @param string $error_class The returned error object will be
+     * @param string $errorClass The returned error object will be
      *                  instantiated from this class, if specified.
      *
      * @param bool $skipmsg If true, raiseError will only pass error codes,
@@ -200,29 +200,29 @@ class Util
      * @see PEAR::setErrorHandling
      * @since PHP 4.0.5
      */
-    protected static function staticRaiseError($object, $message = null, $code = null, $mode = null, $options = null, $userinfo = null, $error_class = null, $skipmsg = false)
+    protected static function staticRaiseError($object, $message = null, $code = null, $mode = null, $options = null, $userInfo = null, $errorClass = null, $skipmsg = false)
     {
         // The error is yet a PEAR error object
         if (is_object($message)) {
             $code = $message->getCode();
-            $userinfo = $message->getUserInfo();
-            $error_class = $message->getType();
+            $userInfo = $message->getUserInfo();
+            $errorClass = $message->getType();
             $message->error_message_prefix = '';
             $message = $message->getMessage();
         }
 
-        if ($error_class !== null) {
-            $ec = $error_class;
-        } elseif ($object !== null && isset($object->error_class)) {
-            $ec = $object->error_class;
+        if ($errorClass !== null) {
+            $ec = $errorClass;
+        } elseif ($object !== null && isset($object->errorClass)) {
+            $ec = $object->errorClass;
         } else {
             $ec = Error::class;
         }
 
         if ($skipmsg) {
-            $a = new $ec($code, self::PEAR_ERROR_RETURN, $options, $userinfo);
+            $a = new $ec($code, self::PEAR_ERROR_RETURN, $options, $userInfo);
         } else {
-            $a = new $ec($message, $code, self::PEAR_ERROR_RETURN, $options, $userinfo);
+            $a = new $ec($message, $code, self::PEAR_ERROR_RETURN, $options, $userInfo);
         }
 
         return $a;
@@ -230,27 +230,27 @@ class Util
 
     /**
      * Simpler form of raiseError with fewer options.  In most cases
-     * message, code and userinfo are enough.
+     * message, code and userInfo are enough.
      *
      * @param mixed $message a text error message or a PEAR error object
      *
      * @param int $code      a numeric error code (it is up to your class
      *                  to define these if you want to use codes)
      *
-     * @param string $userinfo If you need to pass along for example debug
+     * @param string $userInfo If you need to pass along for example debug
      *                  information, this parameter is meant for that.
      *
      * @return object   a PEAR error object
      * @see PEAR::raiseError
      */
-    protected static function staticThrowError($object, $message = null, $code = null, $userinfo = null)
+    protected static function staticThrowError($object, $message = null, $code = null, $userInfo = null)
     {
         if ($object !== null) {
-            $a = $object->raiseError($message, $code, null, null, $userinfo);
+            $a = $object->raiseError($message, $code, null, null, $userInfo);
             return $a;
         }
 
-        $a = self::raiseError($message, $code, null, null, $userinfo);
+        $a = self::raiseError($message, $code, null, null, $userInfo);
         return $a;
     }
 }
