@@ -137,7 +137,7 @@ abstract class Common extends Util
      * The data types of the various elements in each prepared statement
      * @var array
      */
-    protected $prepare_types = [];
+    protected $prepareTypes = [];
 
     /**
      * The prepared queries
@@ -754,7 +754,7 @@ abstract class Common extends Util
         end($this->prepareTokens);
 
         $k = key($this->prepareTokens);
-        $this->prepare_types[$k] = $types;
+        $this->prepareTypes[$k] = $types;
         $this->prepared_queries[$k] = implode(' ', $newtokens);
 
         return $k;
@@ -958,7 +958,7 @@ abstract class Common extends Util
         $data = (array)$data;
         $this->lastParameters = $data;
 
-        if (count($this->prepare_types[$stmt]) != count($data)) {
+        if (count($this->prepareTypes[$stmt]) != count($data)) {
             $this->lastQuery = $this->prepared_queries[$stmt];
             return $this->raiseError(DB::DB_ERROR_MISMATCH);
         }
@@ -967,9 +967,9 @@ abstract class Common extends Util
 
         $i = 0;
         foreach ($data as $value) {
-            if ($this->prepare_types[$stmt][$i] == DB::DB_PARAM_SCALAR) {
+            if ($this->prepareTypes[$stmt][$i] == DB::DB_PARAM_SCALAR) {
                 $realquery .= $this->quoteSmart($value);
-            } elseif ($this->prepare_types[$stmt][$i] == DB::DB_PARAM_OPAQUE) {
+            } elseif ($this->prepareTypes[$stmt][$i] == DB::DB_PARAM_OPAQUE) {
                 $fp = @fopen($value, 'rb');
                 if (!$fp) {
                     // @codeCoverageIgnoreStart
@@ -1034,7 +1034,7 @@ abstract class Common extends Util
         $stmt = (int)$stmt;
         if (isset($this->prepareTokens[$stmt])) {
             unset($this->prepareTokens[$stmt]);
-            unset($this->prepare_types[$stmt]);
+            unset($this->prepareTypes[$stmt]);
             unset($this->prepared_queries[$stmt]);
             return true;
         }
