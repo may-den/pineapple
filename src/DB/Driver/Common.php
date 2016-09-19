@@ -1547,10 +1547,6 @@ abstract class Common extends Util
 
         $res->free();
 
-        if (DB::isError($row)) {
-            $tmp = $this->raiseError($row);
-            return $tmp;
-        }
         return $results;
     }
 
