@@ -1037,7 +1037,169 @@ class CommonTest extends TestCase
         $result = $dbh->getAll('SELECT foo FROM bar', [], DB::DB_FETCHMODE_FLIPPED);
         $this->assertEquals([
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-            ['test1', 'test2', 'test3', 'test4', 'test5', 'test6', 'test7', 'test8', 'test9', 'test10', 'test11', 'test12', 'test13', 'test14', 'test15', 'test16', 'test17', 'test18', 'test19', 'test20'],
+            [
+                'test1',
+                'test2',
+                'test3',
+                'test4',
+                'test5',
+                'test6',
+                'test7',
+                'test8',
+                'test9',
+                'test10',
+                'test11',
+                'test12',
+                'test13',
+                'test14',
+                'test15',
+                'test16',
+                'test17',
+                'test18',
+                'test19',
+                'test20',
+            ],
         ], $result);
+    }
+
+    public function testAutoCommit()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $res = $dbh->autoCommit(true);
+        $this->assertInstanceOf(Error::class, $res);
+        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
+    }
+
+    public function testCommit()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $res = $dbh->commit();
+        $this->assertInstanceOf(Error::class, $res);
+        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
+    }
+
+    public function testRollback()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $res = $dbh->rollback();
+        $this->assertInstanceOf(Error::class, $res);
+        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
+    }
+
+    public function testNumRows()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $result = $dbh->getAll('SELECT foo FROM bar');
+        $res = $dbh->stubNumRows($result);
+        $this->assertInstanceOf(Error::class, $res);
+        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
+    }
+
+    public function testAffectedRows()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $result = $dbh->getAll('SELECT foo FROM bar');
+        $res = $dbh->affectedRows($result);
+        $this->assertInstanceOf(Error::class, $res);
+        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
+    }
+
+    public function testGetSequenceName()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $seq = $dbh->getSequenceName('foo');
+        $this->assertEquals('foo_seq', $seq);
+    }
+
+    public function testNextId()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $res = $dbh->nextId('foo');
+        $this->assertInstanceOf(Error::class, $res);
+        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
+    }
+
+    public function testCreateSequence()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $res = $dbh->createSequence('foo');
+        $this->assertInstanceOf(Error::class, $res);
+        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
+    }
+
+    public function testDropSequence()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $res = $dbh->dropSequence('foo');
+        $this->assertInstanceOf(Error::class, $res);
+        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
+    }
+
+    public function testRaiseError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $error = $dbh->raiseError();
+        $this->assertInstanceOf(Error::class, $error);
+        $this->assertEquals(DB::DB_ERROR, $error->getCode());
+    }
+
+    public function testRaiseErrorWithNestedError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $error1 = $dbh->raiseError(DB::DB_ERROR_TRUNCATED);
+        $error2 = $dbh->raiseError($error1);
+        $this->assertInstanceOf(Error::class, $error2);
+        $this->assertEquals(DB::DB_ERROR_TRUNCATED, $error2->getCode());
+    }
+
+    public function testErrorNative()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $result = $dbh->errorNative();
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $result->getCode());
+    }
+
+    public function testErrorCode()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $this->assertEquals(DB::DB_OK, $dbh->errorCode(1000));
+        $this->assertEquals(DB::DB_ERROR, $dbh->errorCode(54321));
+    }
+
+    public function testErrorMessage()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $this->assertEquals('unknown error', $dbh->errorMessage(1001));
+    }
+
+    public function testTableInfo()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $result = $dbh->getAll('SELECT foo FROM bar');
+        $res = $dbh->stubTableInfo($result);
+        $this->assertInstanceOf(Error::class, $res);
+        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
+    }
+
+    public function testGetSpecialQuery()
+    {
+        // this is a stub method intended to fail
+        $dbh = DB::connect(TestDriver::class . '://');
+        $result = $dbh->stubGetSpecialQuery('things');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $result->getCode());
     }
 }
