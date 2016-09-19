@@ -941,6 +941,8 @@ abstract class Common extends Util
         }
     }
 
+    abstract public function simpleQuery($query);
+
     /**
      * Emulates executing prepared statements if the DBMS not support them
      *
