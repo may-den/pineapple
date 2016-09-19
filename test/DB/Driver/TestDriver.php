@@ -321,7 +321,7 @@ class TestDriver extends Common
 
     protected function executeEmulateQuery($stmt, $data = [])
     {
-        if (preg_match('/FAILURE/', $this->prepared_queries[$stmt])) {
+        if (preg_match('/FAILURE/', $this->preparedQueries[$stmt])) {
             return $this->raiseError(DB::DB_ERROR_SYNTAX);
         } else {
             return parent::executeEmulateQuery($stmt, $data);

@@ -143,7 +143,7 @@ abstract class Common extends Util
      * The prepared queries
      * @var array
      */
-    protected $prepared_queries = [];
+    protected $preparedQueries = [];
 
     /**
      * Flag indicating that the last query was a manipulation query.
@@ -755,7 +755,7 @@ abstract class Common extends Util
 
         $k = key($this->prepareTokens);
         $this->prepareTypes[$k] = $types;
-        $this->prepared_queries[$k] = implode(' ', $newtokens);
+        $this->preparedQueries[$k] = implode(' ', $newtokens);
 
         return $k;
     }
@@ -959,7 +959,7 @@ abstract class Common extends Util
         $this->lastParameters = $data;
 
         if (count($this->prepareTypes[$stmt]) != count($data)) {
-            $this->lastQuery = $this->prepared_queries[$stmt];
+            $this->lastQuery = $this->preparedQueries[$stmt];
             return $this->raiseError(DB::DB_ERROR_MISMATCH);
         }
 
@@ -1035,7 +1035,7 @@ abstract class Common extends Util
         if (isset($this->prepareTokens[$stmt])) {
             unset($this->prepareTokens[$stmt]);
             unset($this->prepareTypes[$stmt]);
-            unset($this->prepared_queries[$stmt]);
+            unset($this->preparedQueries[$stmt]);
             return true;
         }
         return false;

@@ -286,7 +286,7 @@ class CommonTest extends TestCase
         $sth = $dbh->autoPrepare('my_awesome_table', ['good', 'bad', 'ugly']);
 
         $reflectionClass = new \ReflectionClass($dbh);
-        $reflectionProp = $reflectionClass->getProperty('prepared_queries');
+        $reflectionProp = $reflectionClass->getProperty('preparedQueries');
         $reflectionProp->setAccessible(true);
 
         $preparedQueries = $reflectionProp->getValue($dbh);
@@ -314,7 +314,7 @@ class CommonTest extends TestCase
         $sth = $dbh->autoPrepare('my_awesome_table', ['good', 'bad', 'ugly'], DB::DB_AUTOQUERY_UPDATE);
 
         $reflectionClass = new \ReflectionClass($dbh);
-        $reflectionProp = $reflectionClass->getProperty('prepared_queries');
+        $reflectionProp = $reflectionClass->getProperty('preparedQueries');
         $reflectionProp->setAccessible(true);
 
         $preparedQueries = $reflectionProp->getValue($dbh);
@@ -331,7 +331,7 @@ class CommonTest extends TestCase
         $sth = $dbh->autoPrepare('my_awesome_table', ['good', 'bad', 'ugly'], DB::DB_AUTOQUERY_UPDATE, 'id = 123');
 
         $reflectionClass = new \ReflectionClass($dbh);
-        $reflectionProp = $reflectionClass->getProperty('prepared_queries');
+        $reflectionProp = $reflectionClass->getProperty('preparedQueries');
         $reflectionProp->setAccessible(true);
 
         $preparedQueries = $reflectionProp->getValue($dbh);
