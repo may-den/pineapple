@@ -67,7 +67,7 @@ class DB
     // @const The code returned by many methods upon success
     const DB_OK = 1;
 
-    // @const Unkown error
+    // @const Unknown error
     const DB_ERROR = -1;
 
     // @const Syntax error
@@ -139,7 +139,7 @@ class DB
     // @const The PHP extension needed for this DBMS could not be found
     const DB_ERROR_EXTENSION_NOT_FOUND = -25;
 
-    // @const The present user has inadequate permissions to perform the task requestd
+    // @const The present user has inadequate permissions to perform the task requested
     const DB_ERROR_ACCESS_VIOLATION = -26;
 
     // @const The database requested does not exist
