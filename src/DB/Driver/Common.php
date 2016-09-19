@@ -100,6 +100,11 @@ abstract class Common extends Util
     protected $dsn = [];
 
     /**
+     * @var mixed Database connection handle
+     */
+    protected $connection = null;
+
+    /**
      * Run-time configuration options
      *
      * The 'optimize' option has been deprecated.  Use the 'portability'
@@ -1171,6 +1176,7 @@ abstract class Common extends Util
      */
     public function getOne($query, $params = [])
     {
+        $row = null;
         $params = (array)$params;
         // modifyLimitQuery() would be nice here, but it causes BC issues
         if (sizeof($params) > 0) {
@@ -1218,6 +1224,7 @@ abstract class Common extends Util
     {
         // compat check, the params and fetchmode parameters used to
         // have the opposite order
+        $row = null;
         if (!is_array($params)) {
             if (is_array($fetchmode)) {
                 if ($params === null) {
@@ -1411,6 +1418,7 @@ abstract class Common extends Util
         $fetchmode = DB::DB_FETCHMODE_DEFAULT,
         $group = false
     ) {
+        $row = null;
         $params = (array) $params;
         if (sizeof($params) > 0) {
             $sth = $this->prepare($query);
@@ -1520,6 +1528,7 @@ abstract class Common extends Util
     {
         // compat check, the params and fetchmode parameters used to
         // have the opposite order
+        $row = null;
         if (!is_array($params)) {
             if (is_array($fetchmode)) {
                 if ($params === null) {
