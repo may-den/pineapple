@@ -130,6 +130,21 @@ class TestDriver extends Common
                 ];
             }
             return $results;
+        } elseif (preg_match('/^(BREAKING)?SINGLECOLSEL/', $query)) {
+            $this->lastQueryType = 'SELECT';
+            $results = [
+                'type' => 'resultResource',
+                'breaksEasily' => preg_match('/^BREAKINGSINGLECOLSEL/', $query) ? true : false,
+                'results' => [],
+            ];
+
+            // generate 20 test results
+            for ($i = 1; $i <= 20; $i++) {
+                $results['results'][] = [
+                    'id' => $i,
+                ];
+            }
+            return $results;
         } elseif (preg_match('/^EMPTYSEL/', $query)) {
             return [
                 'type' => 'resultResource',
