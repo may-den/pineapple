@@ -690,4 +690,387 @@ class CommonTest extends TestCase
         $this->assertInstanceOf(Error::class, $result);
         $this->assertEquals(DB::DB_ERROR_TRUNCATED, $result->getCode());
     }
+
+    public function testGetAssoc()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('SELECT foo FROM bar');
+        $this->assertEquals([
+            1 => 'test1',
+            2 => 'test2',
+            3 => 'test3',
+            4 => 'test4',
+            5 => 'test5',
+            6 => 'test6',
+            7 => 'test7',
+            8 => 'test8',
+            9 => 'test9',
+            10 => 'test10',
+            11 => 'test11',
+            12 => 'test12',
+            13 => 'test13',
+            14 => 'test14',
+            15 => 'test15',
+            16 => 'test16',
+            17 => 'test17',
+            18 => 'test18',
+            19 => 'test19',
+            20 => 'test20'
+        ], $result);
+    }
+
+    public function testGetAssocScalarWithGroup()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('SELECT foo FROM bar', false, [], DB::DB_FETCHMODE_DEFAULT, true);
+        $this->assertEquals([
+            1 => ['test1'],
+            2 => ['test2'],
+            3 => ['test3'],
+            4 => ['test4'],
+            5 => ['test5'],
+            6 => ['test6'],
+            7 => ['test7'],
+            8 => ['test8'],
+            9 => ['test9'],
+            10 => ['test10'],
+            11 => ['test11'],
+            12 => ['test12'],
+            13 => ['test13'],
+            14 => ['test14'],
+            15 => ['test15'],
+            16 => ['test16'],
+            17 => ['test17'],
+            18 => ['test18'],
+            19 => ['test19'],
+            20 => ['test20']
+        ], $result);
+    }
+
+    public function testGetAssocWithFailingFetch()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('BREAKINGSEL foo FROM bar');
+        $this->assertInstanceOf(Error::class, $result);
+    }
+
+    public function testGetAssocWithParameters()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('SELECT foo FROM bar WHERE foo = ?', false, ['bar']);
+        $this->assertEquals([
+            1 => 'test1',
+            2 => 'test2',
+            3 => 'test3',
+            4 => 'test4',
+            5 => 'test5',
+            6 => 'test6',
+            7 => 'test7',
+            8 => 'test8',
+            9 => 'test9',
+            10 => 'test10',
+            11 => 'test11',
+            12 => 'test12',
+            13 => 'test13',
+            14 => 'test14',
+            15 => 'test15',
+            16 => 'test16',
+            17 => 'test17',
+            18 => 'test18',
+            19 => 'test19',
+            20 => 'test20'
+        ], $result);
+    }
+
+    public function testGetAssocWithParametersAndSyntaxError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('FAILURE WHERE foo = ?', false, ['bar']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
+    }
+
+    public function testGetAssocWithParametersAndPrepareTimeSyntaxError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('PREPFAIL WHERE foo = ?', false, ['bar']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
+    }
+
+    public function testGetAssocWithTooFewColumns()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('SINGLECOLSEL WHERE foo = ?', false, ['bar']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_TRUNCATED, $result->getCode());
+    }
+
+    public function testGetAssocAndForceArray()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('SELECT foo FROM bar', true);
+        $this->assertEquals([
+            1 => ['test1'],
+            2 => ['test2'],
+            3 => ['test3'],
+            4 => ['test4'],
+            5 => ['test5'],
+            6 => ['test6'],
+            7 => ['test7'],
+            8 => ['test8'],
+            9 => ['test9'],
+            10 => ['test10'],
+            11 => ['test11'],
+            12 => ['test12'],
+            13 => ['test13'],
+            14 => ['test14'],
+            15 => ['test15'],
+            16 => ['test16'],
+            17 => ['test17'],
+            18 => ['test18'],
+            19 => ['test19'],
+            20 => ['test20']
+        ], $result);
+    }
+
+    public function testGetAssocAndForceArrayAndGroup()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('SELECT foo FROM bar', true, [], DB::DB_FETCHMODE_DEFAULT, true);
+        $this->assertEquals([
+            1 => [['test1']],
+            2 => [['test2']],
+            3 => [['test3']],
+            4 => [['test4']],
+            5 => [['test5']],
+            6 => [['test6']],
+            7 => [['test7']],
+            8 => [['test8']],
+            9 => [['test9']],
+            10 => [['test10']],
+            11 => [['test11']],
+            12 => [['test12']],
+            13 => [['test13']],
+            14 => [['test14']],
+            15 => [['test15']],
+            16 => [['test16']],
+            17 => [['test17']],
+            18 => [['test18']],
+            19 => [['test19']],
+            20 => [['test20']]
+        ], $result);
+    }
+
+    public function testGetAssocAndForceArrayWithAssoc()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('SELECT foo FROM bar', true, [], DB::DB_FETCHMODE_ASSOC);
+        $this->assertEquals([
+            1 => ['data' => 'test1'],
+            2 => ['data' => 'test2'],
+            3 => ['data' => 'test3'],
+            4 => ['data' => 'test4'],
+            5 => ['data' => 'test5'],
+            6 => ['data' => 'test6'],
+            7 => ['data' => 'test7'],
+            8 => ['data' => 'test8'],
+            9 => ['data' => 'test9'],
+            10 => ['data' => 'test10'],
+            11 => ['data' => 'test11'],
+            12 => ['data' => 'test12'],
+            13 => ['data' => 'test13'],
+            14 => ['data' => 'test14'],
+            15 => ['data' => 'test15'],
+            16 => ['data' => 'test16'],
+            17 => ['data' => 'test17'],
+            18 => ['data' => 'test18'],
+            19 => ['data' => 'test19'],
+            20 => ['data' => 'test20']
+        ], $result);
+    }
+
+    public function testGetAssocAndForceArrayWithAssocAndGroup()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('SELECT foo FROM bar', true, [], DB::DB_FETCHMODE_ASSOC, true);
+        $this->assertEquals([
+            1 => [['data' => 'test1']],
+            2 => [['data' => 'test2']],
+            3 => [['data' => 'test3']],
+            4 => [['data' => 'test4']],
+            5 => [['data' => 'test5']],
+            6 => [['data' => 'test6']],
+            7 => [['data' => 'test7']],
+            8 => [['data' => 'test8']],
+            9 => [['data' => 'test9']],
+            10 => [['data' => 'test10']],
+            11 => [['data' => 'test11']],
+            12 => [['data' => 'test12']],
+            13 => [['data' => 'test13']],
+            14 => [['data' => 'test14']],
+            15 => [['data' => 'test15']],
+            16 => [['data' => 'test16']],
+            17 => [['data' => 'test17']],
+            18 => [['data' => 'test18']],
+            19 => [['data' => 'test19']],
+            20 => [['data' => 'test20']]
+        ], $result);
+    }
+
+    public function testGetAssocAndForceArrayWithObject()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('SELECT foo FROM bar', true, [], DB::DB_FETCHMODE_OBJECT);
+        $this->assertEquals([
+            1 => (object) [ 'id' => 1, 'data' => 'test1'],
+            2 => (object) [ 'id' => 2, 'data' => 'test2'],
+            3 => (object) [ 'id' => 3, 'data' => 'test3'],
+            4 => (object) [ 'id' => 4, 'data' => 'test4'],
+            5 => (object) [ 'id' => 5, 'data' => 'test5'],
+            6 => (object) [ 'id' => 6, 'data' => 'test6'],
+            7 => (object) [ 'id' => 7, 'data' => 'test7'],
+            8 => (object) [ 'id' => 8, 'data' => 'test8'],
+            9 => (object) [ 'id' => 9, 'data' => 'test9'],
+            10 => (object) [ 'id' => 10, 'data' => 'test10'],
+            11 => (object) [ 'id' => 11, 'data' => 'test11'],
+            12 => (object) [ 'id' => 12, 'data' => 'test12'],
+            13 => (object) [ 'id' => 13, 'data' => 'test13'],
+            14 => (object) [ 'id' => 14, 'data' => 'test14'],
+            15 => (object) [ 'id' => 15, 'data' => 'test15'],
+            16 => (object) [ 'id' => 16, 'data' => 'test16'],
+            17 => (object) [ 'id' => 17, 'data' => 'test17'],
+            18 => (object) [ 'id' => 18, 'data' => 'test18'],
+            19 => (object) [ 'id' => 19, 'data' => 'test19'],
+            20 => (object) [ 'id' => 20, 'data' => 'test20']
+        ], $result);
+    }
+
+    public function testGetAssocAndForceArrayWithObjectAndGroup()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAssoc('SELECT foo FROM bar', true, [], DB::DB_FETCHMODE_OBJECT, true);
+        $this->assertEquals([
+            1 => [(object) ['id' => 1, 'data' => 'test1']],
+            2 => [(object) ['id' => 2, 'data' => 'test2']],
+            3 => [(object) ['id' => 3, 'data' => 'test3']],
+            4 => [(object) ['id' => 4, 'data' => 'test4']],
+            5 => [(object) ['id' => 5, 'data' => 'test5']],
+            6 => [(object) ['id' => 6, 'data' => 'test6']],
+            7 => [(object) ['id' => 7, 'data' => 'test7']],
+            8 => [(object) ['id' => 8, 'data' => 'test8']],
+            9 => [(object) ['id' => 9, 'data' => 'test9']],
+            10 => [(object) ['id' => 10, 'data' => 'test10']],
+            11 => [(object) ['id' => 11, 'data' => 'test11']],
+            12 => [(object) ['id' => 12, 'data' => 'test12']],
+            13 => [(object) ['id' => 13, 'data' => 'test13']],
+            14 => [(object) ['id' => 14, 'data' => 'test14']],
+            15 => [(object) ['id' => 15, 'data' => 'test15']],
+            16 => [(object) ['id' => 16, 'data' => 'test16']],
+            17 => [(object) ['id' => 17, 'data' => 'test17']],
+            18 => [(object) ['id' => 18, 'data' => 'test18']],
+            19 => [(object) ['id' => 19, 'data' => 'test19']],
+            20 => [(object) ['id' => 20, 'data' => 'test20']]
+        ], $result);
+    }
+
+    public function testGetAll()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAll('SELECT foo FROM bar');
+        $this->assertEquals([
+            [1, 'test1'],
+            [2, 'test2'],
+            [3, 'test3'],
+            [4, 'test4'],
+            [5, 'test5'],
+            [6, 'test6'],
+            [7, 'test7'],
+            [8, 'test8'],
+            [9, 'test9'],
+            [10, 'test10'],
+            [11, 'test11'],
+            [12, 'test12'],
+            [13, 'test13'],
+            [14, 'test14'],
+            [15, 'test15'],
+            [16, 'test16'],
+            [17, 'test17'],
+            [18, 'test18'],
+            [19, 'test19'],
+            [20, 'test20'],
+        ], $result);
+    }
+
+    public function testGetAllWithParams()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = ?', ['bar']);
+        $this->assertEquals([
+            [1, 'test1'],
+            [2, 'test2'],
+            [3, 'test3'],
+            [4, 'test4'],
+            [5, 'test5'],
+            [6, 'test6'],
+            [7, 'test7'],
+            [8, 'test8'],
+            [9, 'test9'],
+            [10, 'test10'],
+            [11, 'test11'],
+            [12, 'test12'],
+            [13, 'test13'],
+            [14, 'test14'],
+            [15, 'test15'],
+            [16, 'test16'],
+            [17, 'test17'],
+            [18, 'test18'],
+            [19, 'test19'],
+            [20, 'test20'],
+        ], $result);
+    }
+
+    public function testGetAllWithScalarParam()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = ?', 'bar');
+        $this->assertEquals([
+            [1, 'test1'],
+            [2, 'test2'],
+            [3, 'test3'],
+            [4, 'test4'],
+            [5, 'test5'],
+            [6, 'test6'],
+            [7, 'test7'],
+            [8, 'test8'],
+            [9, 'test9'],
+            [10, 'test10'],
+            [11, 'test11'],
+            [12, 'test12'],
+            [13, 'test13'],
+            [14, 'test14'],
+            [15, 'test15'],
+            [16, 'test16'],
+            [17, 'test17'],
+            [18, 'test18'],
+            [19, 'test19'],
+            [20, 'test20'],
+        ], $result);
+    }
 }
