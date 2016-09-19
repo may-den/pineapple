@@ -1202,4 +1202,66 @@ class CommonTest extends TestCase
         $this->assertInstanceOf(Error::class, $result);
         $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $result->getCode());
     }
+
+    public function testManipQuery()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+        $reflectionClass = new \ReflectionClass($dbh);
+        $reflectionProp = $reflectionClass->getProperty('_next_query_manip');
+        $reflectionProp->setAccessible(true);
+
+        $dbh->nextQueryIsManip(true);
+        $this->assertEquals(true, $reflectionProp->getValue($dbh));
+
+        $dbh->nextQueryIsManip(false);
+        $this->assertEquals(false, $reflectionProp->getValue($dbh));
+    }
+
+    public function testCheckManip()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $this->assertTrue($dbh->stubCheckManip('INSERT INTO foo SET bar = 1'));
+        $this->assertFalse($dbh->stubCheckManip('SELECT foo FROM bar'));
+    }
+
+    public function testCheckManipWithForcedIsManip()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $dbh->nextQueryIsManip(true);
+        $this->assertTrue($dbh->stubCheckManip('SELECT foo FROM bar'));
+    }
+
+    public function testRtrimArrayValues()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $toTrim = [
+            'foo    ',
+            'bar  ',
+            'baz ',
+            ' stoat ',
+        ];
+
+        $dbh->stubRtrimArrayValues($toTrim);
+
+        $this->assertEquals([
+            'foo',
+            'bar',
+            'baz',
+            ' stoat',
+        ], $toTrim);
+    }
+
+    public function testConvertNullArrayValuesToEmpty()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $toConvert = [null, null, null];
+
+        $dbh->stubConvertNullArrayValuesToEmpty($toConvert);
+
+        $this->assertEquals(['', '', ''], $toConvert);
+    }
 }
