@@ -121,7 +121,7 @@ class Result
         $this->dbh = $dbh;
         $this->fetchmode = $dbh->getFetchmode();
         $this->fetchModeObjectClass = $dbh->getFetchModeObjectClass();
-        $this->parameters = $dbh->last_parameters;
+        $this->parameters = $dbh->lastParameters;
         $this->query = $dbh->lastQuery;
         $this->result = $result;
         $this->statement = empty($dbh->last_stmt) ? null : $dbh->last_stmt;

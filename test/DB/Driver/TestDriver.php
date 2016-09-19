@@ -110,7 +110,7 @@ class TestDriver extends Common
 
         // this is a very specific name relied upon by neighbouring classes.
         $this->lastQuery = $query;
-        $this->last_parameters = [];
+        $this->lastParameters = [];
 
         if (preg_match('/^(SELECT|BREAKINGSEL)/', $query)) {
             // SELECT: a regular SELECT that returns data successfully

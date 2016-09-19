@@ -453,7 +453,7 @@ class DoctrineDbal extends Common
             $this->myRaiseError();
         }
 
-        if ($this->_last_query_manip) {
+        if ($this->lastQueryManip) {
             return $this->lastStatement->rowCount();
         } else {
             return 0;

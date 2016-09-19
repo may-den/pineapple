@@ -125,7 +125,7 @@ abstract class Common extends Util
      * @since Property available since Release 1.7.0
      * @todo Replace with in accessor
      */
-    public $last_parameters = [];
+    public $lastParameters = [];
 
     /**
      * The elements from each prepared statement
@@ -150,7 +150,7 @@ abstract class Common extends Util
      * @access protected
      * @var boolean
      */
-    protected $_last_query_manip = false;
+    protected $lastQueryManip = false;
 
     /**
      * Flag indicating that the next query <em>must</em> be a manipulation
@@ -956,7 +956,7 @@ abstract class Common extends Util
     {
         $stmt = (int)$stmt;
         $data = (array)$data;
-        $this->last_parameters = $data;
+        $this->lastParameters = $data;
 
         if (count($this->prepare_types[$stmt]) != count($data)) {
             $this->lastQuery = $this->prepared_queries[$stmt];
@@ -1113,7 +1113,7 @@ abstract class Common extends Util
             $this->freePrepared($sth, false);
             return $ret;
         } else {
-            $this->last_parameters = [];
+            $this->lastParameters = [];
             $result = $this->simpleQuery($query);
             if ($result === DB::DB_OK || DB::isError($result)) {
                 return $result;
@@ -1993,7 +1993,7 @@ abstract class Common extends Util
 
     /**
      * Checks if the given query is a manipulation query. This also takes into
-     * account the _next_query_manip flag and sets the _last_query_manip flag
+     * account the _next_query_manip flag and sets the lastQueryManip flag
      * (and resets _next_query_manip) according to the result.
      *
      * @param string The query to check.
@@ -2006,12 +2006,12 @@ abstract class Common extends Util
     protected function _checkManip($query)
     {
         if ($this->_next_query_manip || DB::isManip($query)) {
-            $this->_last_query_manip = true;
+            $this->lastQueryManip = true;
         } else {
-            $this->_last_query_manip = false;
+            $this->lastQueryManip = false;
         }
         $this->_next_query_manip = false;
-        return $this->_last_query_manip;
+        return $this->lastQueryManip;
     }
 
     /**
