@@ -191,14 +191,14 @@ class Util
      * @param string $errorClass The returned error object will be
      *                  instantiated from this class, if specified.
      *
-     * @param bool $skipmsg If true, raiseError will only pass error codes,
+     * @param bool $skipMessage If true, raiseError will only pass error codes,
      *                  the error message parameter will be dropped.
      *
      * @return object   a PEAR error object
      * @see PEAR::setErrorHandling
      * @since PHP 4.0.5
      */
-    protected static function staticRaiseError($object, $message = null, $code = null, $mode = null, $options = null, $userInfo = null, $errorClass = null, $skipmsg = false)
+    protected static function staticRaiseError($object, $message = null, $code = null, $mode = null, $options = null, $userInfo = null, $errorClass = null, $skipMessage = false)
     {
         // The error is yet a PEAR error object
         if (is_object($message)) {
@@ -217,7 +217,7 @@ class Util
             $ec = Error::class;
         }
 
-        if ($skipmsg) {
+        if ($skipMessage) {
             $a = new $ec($code, self::PEAR_ERROR_RETURN, $options, $userInfo);
         } else {
             $a = new $ec($message, $code, self::PEAR_ERROR_RETURN, $options, $userInfo);
