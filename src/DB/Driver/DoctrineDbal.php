@@ -1,7 +1,6 @@
 <?php
 namespace Pineapple\DB\Driver;
 
-use Pineapple\Util;
 use Pineapple\DB;
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\PDOStatement;
@@ -20,13 +19,13 @@ class DoctrineDbal extends Common
      * The DB driver type (mysql, oci8, odbc, etc.)
      * @var string
      */
-    var $phptype = 'doctrinedbal';
+    public $phptype = 'doctrinedbal';
 
     /**
      * The database syntax variant to be used (db2, access, etc.), if any
      * @var string
      */
-    var $dbsyntax = 'doctrinedbal';
+    public $dbsyntax = 'doctrinedbal';
 
     /**
      * The capabilities of this DB implementation
@@ -41,7 +40,7 @@ class DoctrineDbal extends Common
      *
      * @var array
      */
-    var $features = [
+    public $features = [
         'limit' => 'alter',
         'new_link' => false,
         'numrows' => true,
@@ -55,7 +54,7 @@ class DoctrineDbal extends Common
      * A mapping of native error codes to DB error codes
      * @var array
      */
-    var $errorcode_map = [
+    public $errorcode_map = [
         1004 => DB::DB_ERROR_CANNOT_CREATE,
         1005 => DB::DB_ERROR_CANNOT_CREATE,
         1006 => DB::DB_ERROR_CANNOT_CREATE,
@@ -90,20 +89,20 @@ class DoctrineDbal extends Common
     /**
      * A copy of the last pdostatement object
      */
-    var $lastStatement = null;
+    public $lastStatement = null;
 
     /**
      * The DSN information for connecting to a database
      * @var array
      */
-    var $dsn = [];
+    public $dsn = [];
 
     /**
      * Should data manipulation queries be committed automatically?
      * @var bool
      * @access private
      */
-    var $autocommit = true;
+    public $autocommit = true;
 
     /**
      * The quantity of transactions begun
@@ -114,7 +113,7 @@ class DoctrineDbal extends Common
      * @var integer
      * @access private
      */
-    var $transaction_opcount = 0;
+    public $transaction_opcount = 0;
 
     /**
      * The database specified in the DSN
@@ -124,17 +123,7 @@ class DoctrineDbal extends Common
      * @var string
      * @access private
      */
-    var $_db = '';
-
-    /**
-     * This constructor calls <kbd>$this->DB_common()</kbd>
-     *
-     * @return void
-     */
-    function __construct()
-    {
-        parent::__construct();
-    }
+    private $db = '';
 
     /**
      * Connect to the database server, log in and open the database
@@ -182,7 +171,7 @@ class DoctrineDbal extends Common
      *
      * @return int  DB_OK on success. A DB_Error object on failure.
      */
-    function connect($dsn, $persistent = false)
+    public function connect($dsn, $persistent = false)
     {
         return DB::DB_OK;
     }
@@ -190,8 +179,9 @@ class DoctrineDbal extends Common
     /**
      * Set the DBAL connection handle in the object
      *
-     * @param DBALConnection $connection A constructed DBAL connection handle
-     * @return DB_doctrinedbal The constructed DB_doctrinedbal object
+     * @param DBALConnection   $connection A constructed DBAL connection handle
+     * @param array            $dsn        A valid PEAR DB DSN
+     * @return DB_DoctrineDbal The constructed DB_DoctrineDbal object
      */
     public function setConnectionHandle(DBALConnection $connection, array $dsn)
     {
@@ -203,7 +193,7 @@ class DoctrineDbal extends Common
         }
 
         if ($dsn['database']) {
-            $this->_db = $dsn['database'];
+            $this->db = $dsn['database'];
         }
 
         return $this;
@@ -214,7 +204,7 @@ class DoctrineDbal extends Common
      *
      * @return bool  TRUE on success, FALSE on failure
      */
-    function disconnect()
+    public function disconnect()
     {
         $this->connection = null;
         return true;
@@ -229,7 +219,7 @@ class DoctrineDbal extends Common
      *                + the DB_OK constant for other successful queries
      *                + a DB_Error object on failure
      */
-    function simpleQuery($query)
+    public function simpleQuery($query)
     {
         $ismanip = $this->_checkManip($query);
         $this->last_query = $query;
@@ -275,7 +265,7 @@ class DoctrineDbal extends Common
      * @return false
      * @access public
      */
-    function nextResult($result)
+    public function nextResult($result)
     {
         return false;
     }
@@ -300,7 +290,7 @@ class DoctrineDbal extends Common
      *
      * @see DB_result::fetchInto()
      */
-    function fetchInto($result, &$arr, $fetchmode, $rownum = null)
+    public function fetchInto($result, &$arr, $fetchmode, $rownum = null)
     {
         if ($fetchmode & DB::DB_FETCHMODE_ASSOC) {
             $arr = @$result->fetch(PDO::FETCH_ASSOC, null, $rownum);
@@ -340,7 +330,7 @@ class DoctrineDbal extends Common
      *
      * @see DB_result::free()
      */
-    function freeResult($result)
+    public function freeResult($result)
     {
         $result = null;
         return is_resource($result) ? true : false;
@@ -359,7 +349,7 @@ class DoctrineDbal extends Common
      *
      * @see DB_result::numCols()
      */
-    function numCols($result)
+    public function numCols($result)
     {
         $cols = @$result->columnCount();
         if (!$cols) {
@@ -381,7 +371,7 @@ class DoctrineDbal extends Common
      *
      * @see DB_result::numRows()
      */
-    function numRows($result)
+    public function numRows($result)
     {
         $rows = @$result->rowCount();
         if ($rows === null) {
@@ -398,7 +388,7 @@ class DoctrineDbal extends Common
      * @return int  DB_OK on success.  A DB_Error object if the driver
      *               doesn't support auto-committing transactions.
      */
-    function autoCommit($onoff = false)
+    public function autoCommit($onoff = false)
     {
         // XXX if $this->transaction_opcount > 0, we should probably
         // issue a warning here.
@@ -411,7 +401,7 @@ class DoctrineDbal extends Common
      *
      * @return int  DB_OK on success.  A DB_Error object on failure.
      */
-    function commit()
+    public function commit()
     {
         if ($this->transaction_opcount > 0) {
             if (!$this->connection) {
@@ -431,7 +421,7 @@ class DoctrineDbal extends Common
      *
      * @return int  DB_OK on success.  A DB_Error object on failure.
      */
-    function rollback()
+    public function rollback()
     {
         if ($this->transaction_opcount > 0) {
             if (!$this->connection) {
@@ -453,9 +443,9 @@ class DoctrineDbal extends Common
      *
      * @return int  the number of rows.  A DB_Error object on failure.
      */
-    function affectedRows()
+    public function affectedRows()
     {
-        if (($this->lastStatement === null) || !is_object($this->lastStatement)) {
+        if ($this->lastStatement === null || !is_object($this->lastStatement)) {
             $this->myRaiseError();
         }
 
@@ -469,8 +459,8 @@ class DoctrineDbal extends Common
     /**
      * Returns the next free id in a sequence
      *
-     * @param string  $seq_name  name of the sequence
-     * @param boolean $ondemand  when true, the seqence is automatically
+     * @param string  $seqName  name of the sequence
+     * @param boolean $onDemand when true, the seqence is automatically
      *                            created if it does not exist
      *
      * @return int  the next id number in the sequence.
@@ -479,12 +469,12 @@ class DoctrineDbal extends Common
      * @see DB_common::nextID(), DB_common::getSequenceName(),
      *      DB_mysqli::createSequence(), DB_mysqli::dropSequence()
      */
-    function nextId($seq_name, $ondemand = true)
+    public function nextId($seqName, $onDemand = true)
     {
-        $seqname = $this->getSequenceName($seq_name);
+        $seqName = $this->getSequenceName($seqName);
         do {
             $repeat = 0;
-            $result = $this->query("UPDATE {$seqname} SET id = LAST_INSERT_ID(id + 1)");
+            $result = $this->query("UPDATE {$seqName} SET id = LAST_INSERT_ID(id + 1)");
             if ($result === DB::DB_OK) {
                 // COMMON CASE
                 $id = @$this->connection->lastInsertId();
@@ -496,7 +486,7 @@ class DoctrineDbal extends Common
                 // Sequence table must be empty for some reason,
                 // so fill it and return 1
                 // Obtain a user-level lock
-                $result = $this->getOne("SELECT GET_LOCK('${seqname}_lock', 10)");
+                $result = $this->getOne("SELECT GET_LOCK('${$seqName}_lock', 10)");
                 if (DB::isError($result)) {
                     return $this->raiseError($result);
                 }
@@ -505,22 +495,22 @@ class DoctrineDbal extends Common
                 }
 
                 // add the default value
-                $result = $this->query("REPLACE INTO {$seqname} (id) VALUES (0)");
+                $result = $this->query("REPLACE INTO {$seqName} (id) VALUES (0)");
                 if (DB::isError($result)) {
                     return $this->raiseError($result);
                 }
 
                 // Release the lock
-                $result = $this->getOne("SELECT RELEASE_LOCK('${seqname}_lock')");
+                $result = $this->getOne("SELECT RELEASE_LOCK('${$seqName}_lock')");
                 if (DB::isError($result)) {
                     return $this->raiseError($result);
                 }
                 // We know what the result will be, so no need to try again
                 return 1;
-            } elseif ($ondemand && DB::isError($result) &&
+            } elseif ($onDemand && DB::isError($result) &&
                 $result->getCode() == DB::DB_ERROR_NOSUCHTABLE) {
                 // ONDEMAND TABLE CREATION
-                $result = $this->createSequence($seq_name);
+                $result = $this->createSequence($seqName);
 
                 // Since createSequence initializes the ID to be 1,
                 // we do not need to retrieve the ID again (or we will get 2)
@@ -530,12 +520,11 @@ class DoctrineDbal extends Common
                     // First ID of a newly created sequence is 1
                     return 1;
                 }
-
             } elseif (DB::isError($result) &&
                       $result->getCode() == DB::DB_ERROR_ALREADY_EXISTS) {
                 // BACKWARDS COMPAT
-                // see _BCsequence() comment
-                $result = $this->_BCsequence($seqname);
+                // see BCsequence() comment
+                $result = $this->BCsequence($seqName);
                 if (DB::isError($result)) {
                     return $this->raiseError($result);
                 }
@@ -549,55 +538,55 @@ class DoctrineDbal extends Common
     /**
      * Creates a new sequence
      *
-     * @param string $seq_name  name of the new sequence
+     * @param string $seqName  name of the new sequence
      *
      * @return int  DB_OK on success.  A DB_Error object on failure.
      *
      * @see DB_common::createSequence(), DB_common::getSequenceName(),
      *      DB_mysqli::nextID(), DB_mysqli::dropSequence()
      */
-    function createSequence($seq_name)
+    public function createSequence($seqName)
     {
-        $seqname = $this->getSequenceName($seq_name);
-        $res = $this->query("CREATE TABLE {$seqname} (id INTEGER UNSIGNED AUTO_INCREMENT NOT NULL, PRIMARY KEY(id))");
+        $seqName = $this->getSequenceName($seqName);
+        $res = $this->query("CREATE TABLE {$seqName} (id INTEGER UNSIGNED AUTO_INCREMENT NOT NULL, PRIMARY KEY(id))");
         if (DB::isError($res)) {
             return $res;
         }
         // insert yields value 1, nextId call will generate ID 2
-        return $this->query("INSERT INTO ${seqname} (id) VALUES (0)");
+        return $this->query("INSERT INTO ${$seqName} (id) VALUES (0)");
     }
 
     /**
      * Deletes a sequence
      *
-     * @param string $seq_name  name of the sequence to be deleted
+     * @param string $seqName  name of the sequence to be deleted
      *
      * @return int  DB_OK on success.  A DB_Error object on failure.
      *
      * @see DB_common::dropSequence(), DB_common::getSequenceName(),
      *      DB_mysql::nextID(), DB_mysql::createSequence()
      */
-    function dropSequence($seq_name)
+    public function dropSequence($seqName)
     {
-        return $this->query('DROP TABLE ' . $this->getSequenceName($seq_name));
+        return $this->query('DROP TABLE ' . $this->getSequenceName($seqName));
     }
 
     /**
      * Backwards compatibility with old sequence emulation implementation
      * (clean up the dupes)
      *
-     * @param string $seqname  the sequence name to clean up
+     * @param string $seqName  the sequence name to clean up
      *
      * @return bool  true on success.  A DB_Error object on failure.
      *
      * @access private
      */
-    function _BCsequence($seqname)
+    private function BCsequence($seqName)
     {
         // Obtain a user-level lock... this will release any previous
         // application locks, but unlike LOCK TABLES, it does not abort
         // the current transaction and is much less frequently used.
-        $result = $this->getOne("SELECT GET_LOCK('${seqname}_lock',10)");
+        $result = $this->getOne("SELECT GET_LOCK('${$seqName}_lock',10)");
         if (DB::isError($result)) {
             return $result;
         }
@@ -607,7 +596,7 @@ class DoctrineDbal extends Common
             return $this->myRaiseError(DB::DB_ERROR_NOT_LOCKED);
         }
 
-        $highest_id = $this->getOne("SELECT MAX(id) FROM ${seqname}");
+        $highest_id = $this->getOne("SELECT MAX(id) FROM ${$seqName}");
         if (DB::isError($highest_id)) {
             return $highest_id;
         }
@@ -615,7 +604,7 @@ class DoctrineDbal extends Common
         // This should kill all rows except the highest
         // We should probably do something if $highest_id isn't
         // numeric, but I'm at a loss as how to handle that...
-        $result = $this->query("DELETE FROM {$seqname} WHERE id <> $highest_id");
+        $result = $this->query("DELETE FROM {$seqName} WHERE id <> $highest_id");
         if (DB::isError($result)) {
             return $result;
         }
@@ -623,7 +612,7 @@ class DoctrineDbal extends Common
         // If another thread has been waiting for this lock,
         // it will go thru the above procedure, but will have no
         // real effect
-        $result = $this->getOne("SELECT RELEASE_LOCK('${seqname}_lock')");
+        $result = $this->getOne("SELECT RELEASE_LOCK('${$seqName}_lock')");
         if (DB::isError($result)) {
             return $result;
         }
@@ -644,7 +633,7 @@ class DoctrineDbal extends Common
      * @see DB_common::quoteIdentifier()
      * @since Method available since Release 1.6.0
      */
-    function quoteIdentifier($str)
+    public function quoteIdentifier($str)
     {
         return '`' . str_replace('`', '``', $str) . '`';
     }
@@ -659,7 +648,7 @@ class DoctrineDbal extends Common
      * @see DB_common::quoteSmart()
      * @since Method available since Release 1.6.0
      */
-    function escapeSimple($str)
+    public function escapeSimple($str)
     {
         return @preg_replace('/^(.)(.*)\g1$/', '$2', $this->connection->quote($str));
     }
@@ -680,7 +669,7 @@ class DoctrineDbal extends Common
      *
      * @access protected
      */
-    function modifyLimitQuery($query, $from, $count, $params = [])
+    public function modifyLimitQuery($query, $from, $count, $params = [])
     {
         if (DB::isManip($query) || $this->_next_query_manip) {
             return $query . " LIMIT $count";
@@ -701,21 +690,8 @@ class DoctrineDbal extends Common
      * @see DB_common::raiseError(),
      *      DB_mysqli::errorNative(), DB_common::errorCode()
      */
-    function myRaiseError($errno = null)
+    public function myRaiseError($errno = null)
     {
-        // if ($errno === null) {
-        //     if ($this->options['portability'] & DB_PORTABILITY_ERRORS) {
-        //         $this->errorcode_map[1022] = DB_ERROR_CONSTRAINT;
-        //         $this->errorcode_map[1048] = DB_ERROR_CONSTRAINT_NOT_NULL;
-        //         $this->errorcode_map[1062] = DB_ERROR_CONSTRAINT;
-        //     } else {
-        //         // Doing this in case mode changes during runtime.
-        //         $this->errorcode_map[1022] = DB_ERROR_ALREADY_EXISTS;
-        //         $this->errorcode_map[1048] = DB_ERROR_CONSTRAINT;
-        //         $this->errorcode_map[1062] = DB_ERROR_ALREADY_EXISTS;
-        //     }
-        //     $errno = $this->errorCode($this->connection->errorCode());
-        // }
         $error = $this->connection->errorInfo();
         return $this->raiseError(
             $errno,
@@ -731,7 +707,7 @@ class DoctrineDbal extends Common
      *
      * @return int  the DBMS' error code
      */
-    function errorNative()
+    public function errorNative()
     {
         return $this->connection->errorCode();
     }
@@ -751,7 +727,7 @@ class DoctrineDbal extends Common
      *
      * @see DB_common::setOption()
      */
-    function tableInfo($result, $mode = null)
+    public function tableInfo($result, $mode = null)
     {
         if (is_string($result)) {
             // Fix for bug #11580.
