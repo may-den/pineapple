@@ -14,6 +14,75 @@ use PHPUnit\Framework\TestCase;
 
 class CommonTest extends TestCase
 {
+    private static $orderedAllData = [
+        [1, 'test1'],
+        [2, 'test2'],
+        [3, 'test3'],
+        [4, 'test4'],
+        [5, 'test5'],
+        [6, 'test6'],
+        [7, 'test7'],
+        [8, 'test8'],
+        [9, 'test9'],
+        [10, 'test10'],
+        [11, 'test11'],
+        [12, 'test12'],
+        [13, 'test13'],
+        [14, 'test14'],
+        [15, 'test15'],
+        [16, 'test16'],
+        [17, 'test17'],
+        [18, 'test18'],
+        [19, 'test19'],
+        [20, 'test20'],
+    ];
+
+    private static $orderedArrayData = [
+        1 => ['test1'],
+        2 => ['test2'],
+        3 => ['test3'],
+        4 => ['test4'],
+        5 => ['test5'],
+        6 => ['test6'],
+        7 => ['test7'],
+        8 => ['test8'],
+        9 => ['test9'],
+        10 => ['test10'],
+        11 => ['test11'],
+        12 => ['test12'],
+        13 => ['test13'],
+        14 => ['test14'],
+        15 => ['test15'],
+        16 => ['test16'],
+        17 => ['test17'],
+        18 => ['test18'],
+        19 => ['test19'],
+        20 => ['test20']
+    ];
+
+    private static $assocData = [
+        1 => 'test1',
+        2 => 'test2',
+        3 => 'test3',
+        4 => 'test4',
+        5 => 'test5',
+        6 => 'test6',
+        7 => 'test7',
+        8 => 'test8',
+        9 => 'test9',
+        10 => 'test10',
+        11 => 'test11',
+        12 => 'test12',
+        13 => 'test13',
+        14 => 'test14',
+        15 => 'test15',
+        16 => 'test16',
+        17 => 'test17',
+        18 => 'test18',
+        19 => 'test19',
+        20 => 'test20'
+    ];
+
     public function testConstruct()
     {
         $dbh = DB::connect(TestDriver::class . '://');
@@ -696,28 +765,7 @@ class CommonTest extends TestCase
         $dbh = DB::connect(TestDriver::class . '://');
 
         $result = $dbh->getAssoc('SELECT foo FROM bar');
-        $this->assertEquals([
-            1 => 'test1',
-            2 => 'test2',
-            3 => 'test3',
-            4 => 'test4',
-            5 => 'test5',
-            6 => 'test6',
-            7 => 'test7',
-            8 => 'test8',
-            9 => 'test9',
-            10 => 'test10',
-            11 => 'test11',
-            12 => 'test12',
-            13 => 'test13',
-            14 => 'test14',
-            15 => 'test15',
-            16 => 'test16',
-            17 => 'test17',
-            18 => 'test18',
-            19 => 'test19',
-            20 => 'test20'
-        ], $result);
+        $this->assertEquals(self::$assocData, $result);
     }
 
     public function testGetAssocScalarWithGroup()
@@ -725,28 +773,7 @@ class CommonTest extends TestCase
         $dbh = DB::connect(TestDriver::class . '://');
 
         $result = $dbh->getAssoc('SELECT foo FROM bar', false, [], DB::DB_FETCHMODE_DEFAULT, true);
-        $this->assertEquals([
-            1 => ['test1'],
-            2 => ['test2'],
-            3 => ['test3'],
-            4 => ['test4'],
-            5 => ['test5'],
-            6 => ['test6'],
-            7 => ['test7'],
-            8 => ['test8'],
-            9 => ['test9'],
-            10 => ['test10'],
-            11 => ['test11'],
-            12 => ['test12'],
-            13 => ['test13'],
-            14 => ['test14'],
-            15 => ['test15'],
-            16 => ['test16'],
-            17 => ['test17'],
-            18 => ['test18'],
-            19 => ['test19'],
-            20 => ['test20']
-        ], $result);
+        $this->assertEquals(self::$orderedArrayData, $result);
     }
 
     public function testGetAssocWithFailingFetch()
@@ -762,28 +789,7 @@ class CommonTest extends TestCase
         $dbh = DB::connect(TestDriver::class . '://');
 
         $result = $dbh->getAssoc('SELECT foo FROM bar WHERE foo = ?', false, ['bar']);
-        $this->assertEquals([
-            1 => 'test1',
-            2 => 'test2',
-            3 => 'test3',
-            4 => 'test4',
-            5 => 'test5',
-            6 => 'test6',
-            7 => 'test7',
-            8 => 'test8',
-            9 => 'test9',
-            10 => 'test10',
-            11 => 'test11',
-            12 => 'test12',
-            13 => 'test13',
-            14 => 'test14',
-            15 => 'test15',
-            16 => 'test16',
-            17 => 'test17',
-            18 => 'test18',
-            19 => 'test19',
-            20 => 'test20'
-        ], $result);
+        $this->assertEquals(self::$assocData, $result);
     }
 
     public function testGetAssocWithParametersAndSyntaxError()
@@ -818,28 +824,7 @@ class CommonTest extends TestCase
         $dbh = DB::connect(TestDriver::class . '://');
 
         $result = $dbh->getAssoc('SELECT foo FROM bar', true);
-        $this->assertEquals([
-            1 => ['test1'],
-            2 => ['test2'],
-            3 => ['test3'],
-            4 => ['test4'],
-            5 => ['test5'],
-            6 => ['test6'],
-            7 => ['test7'],
-            8 => ['test8'],
-            9 => ['test9'],
-            10 => ['test10'],
-            11 => ['test11'],
-            12 => ['test12'],
-            13 => ['test13'],
-            14 => ['test14'],
-            15 => ['test15'],
-            16 => ['test16'],
-            17 => ['test17'],
-            18 => ['test18'],
-            19 => ['test19'],
-            20 => ['test20']
-        ], $result);
+        $this->assertEquals(self::$orderedArrayData, $result);
     }
 
     public function testGetAssocAndForceArrayAndGroup()
@@ -992,28 +977,7 @@ class CommonTest extends TestCase
         $dbh = DB::connect(TestDriver::class . '://');
 
         $result = $dbh->getAll('SELECT foo FROM bar');
-        $this->assertEquals([
-            [1, 'test1'],
-            [2, 'test2'],
-            [3, 'test3'],
-            [4, 'test4'],
-            [5, 'test5'],
-            [6, 'test6'],
-            [7, 'test7'],
-            [8, 'test8'],
-            [9, 'test9'],
-            [10, 'test10'],
-            [11, 'test11'],
-            [12, 'test12'],
-            [13, 'test13'],
-            [14, 'test14'],
-            [15, 'test15'],
-            [16, 'test16'],
-            [17, 'test17'],
-            [18, 'test18'],
-            [19, 'test19'],
-            [20, 'test20'],
-        ], $result);
+        $this->assertEquals(self::$orderedAllData, $result);
     }
 
     public function testGetAllWithParams()
@@ -1021,28 +985,7 @@ class CommonTest extends TestCase
         $dbh = DB::connect(TestDriver::class . '://');
 
         $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = ?', ['bar']);
-        $this->assertEquals([
-            [1, 'test1'],
-            [2, 'test2'],
-            [3, 'test3'],
-            [4, 'test4'],
-            [5, 'test5'],
-            [6, 'test6'],
-            [7, 'test7'],
-            [8, 'test8'],
-            [9, 'test9'],
-            [10, 'test10'],
-            [11, 'test11'],
-            [12, 'test12'],
-            [13, 'test13'],
-            [14, 'test14'],
-            [15, 'test15'],
-            [16, 'test16'],
-            [17, 'test17'],
-            [18, 'test18'],
-            [19, 'test19'],
-            [20, 'test20'],
-        ], $result);
+        $this->assertEquals(self::$orderedAllData, $result);
     }
 
     public function testGetAllWithScalarParam()
@@ -1050,27 +993,51 @@ class CommonTest extends TestCase
         $dbh = DB::connect(TestDriver::class . '://');
 
         $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = ?', 'bar');
+        $this->assertEquals(self::$orderedAllData, $result);
+    }
+
+    public function testGetAllWithScalarParamsAndNullModeTransposed()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = ?', null, ['bar']);
+        $this->assertEquals(self::$orderedAllData, $result);
+    }
+
+    public function testGetAllWithScalarParamsAndModeTransposed()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = ?', DB::DB_FETCHMODE_ORDERED, ['bar']);
+        $this->assertEquals(self::$orderedAllData, $result);
+    }
+
+    public function testGetAllWithParamsAndSyntaxError()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAll('PREPFAIL SELECT foo FROM bar WHERE foo = ?', ['bar']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_SYNTAX, $result->getCode());
+    }
+
+    public function testGetAllWithParamsAndFailDuringFetch()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAll('FAILINGSEL foo FROM bar WHERE foo = ?', ['bar']);
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_NOSUCHTABLE, $result->getCode());
+    }
+
+    public function testGetAllTransposed()
+    {
+        $dbh = DB::connect(TestDriver::class . '://');
+
+        $result = $dbh->getAll('SELECT foo FROM bar', [], DB::DB_FETCHMODE_FLIPPED);
         $this->assertEquals([
-            [1, 'test1'],
-            [2, 'test2'],
-            [3, 'test3'],
-            [4, 'test4'],
-            [5, 'test5'],
-            [6, 'test6'],
-            [7, 'test7'],
-            [8, 'test8'],
-            [9, 'test9'],
-            [10, 'test10'],
-            [11, 'test11'],
-            [12, 'test12'],
-            [13, 'test13'],
-            [14, 'test14'],
-            [15, 'test15'],
-            [16, 'test16'],
-            [17, 'test17'],
-            [18, 'test18'],
-            [19, 'test19'],
-            [20, 'test20'],
+            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+            ['test1', 'test2', 'test3', 'test4', 'test5', 'test6', 'test7', 'test8', 'test9', 'test10', 'test11', 'test12', 'test13', 'test14', 'test15', 'test16', 'test17', 'test18', 'test19', 'test20'],
         ], $result);
     }
 }
