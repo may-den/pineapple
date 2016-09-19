@@ -131,7 +131,7 @@ abstract class Common extends Util
      * The elements from each prepared statement
      * @var array
      */
-    protected $prepare_tokens = [];
+    protected $prepareTokens = [];
 
     /**
      * The data types of the various elements in each prepared statement
@@ -750,10 +750,10 @@ abstract class Common extends Util
             }
         }
 
-        $this->prepare_tokens[] = &$newtokens;
-        end($this->prepare_tokens);
+        $this->prepareTokens[] = &$newtokens;
+        end($this->prepareTokens);
 
-        $k = key($this->prepare_tokens);
+        $k = key($this->prepareTokens);
         $this->prepare_types[$k] = $types;
         $this->prepared_queries[$k] = implode(' ', $newtokens);
 
@@ -963,7 +963,7 @@ abstract class Common extends Util
             return $this->raiseError(DB::DB_ERROR_MISMATCH);
         }
 
-        $realquery = $this->prepare_tokens[$stmt][0];
+        $realquery = $this->prepareTokens[$stmt][0];
 
         $i = 0;
         foreach ($data as $value) {
@@ -983,7 +983,7 @@ abstract class Common extends Util
                 $realquery .= $value;
             }
 
-            $realquery .= $this->prepare_tokens[$stmt][++$i];
+            $realquery .= $this->prepareTokens[$stmt][++$i];
         }
 
         return $realquery;
@@ -1032,8 +1032,8 @@ abstract class Common extends Util
     public function freePrepared($stmt, $free_resource = true)
     {
         $stmt = (int)$stmt;
-        if (isset($this->prepare_tokens[$stmt])) {
-            unset($this->prepare_tokens[$stmt]);
+        if (isset($this->prepareTokens[$stmt])) {
+            unset($this->prepareTokens[$stmt]);
             unset($this->prepare_types[$stmt]);
             unset($this->prepared_queries[$stmt]);
             return true;
