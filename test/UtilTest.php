@@ -14,7 +14,7 @@ class UtilTest extends TestCase
 
         // ugly, but it's this or add methods to util which won't be used
         $reflectionClass = new \ReflectionClass($util);
-        $reflectionProp = $reflectionClass->getProperty('error_class');
+        $reflectionProp = $reflectionClass->getProperty('errorClass');
         $reflectionProp->setAccessible(true);
 
         $this->assertEquals(Error::class, $reflectionProp->getValue($util));
@@ -27,7 +27,7 @@ class UtilTest extends TestCase
 
         // ugly, but it's this or add methods to util which won't be used
         $reflectionClass = new \ReflectionClass($util);
-        $reflectionProp = $reflectionClass->getProperty('error_class');
+        $reflectionProp = $reflectionClass->getProperty('errorClass');
         $reflectionProp->setAccessible(true);
 
         $this->assertEquals(PseudoError::class, $reflectionProp->getValue($util));
