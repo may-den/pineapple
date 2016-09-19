@@ -299,6 +299,21 @@ class TestDriver extends Common
         return parent::getSpecialQuery($type);
     }
 
+    public function stubCheckManip($query)
+    {
+        return parent::_checkManip($query);
+    }
+
+    public function stubRtrimArrayValues(&$array)
+    {
+        return $this->_rtrimArrayValues($array);
+    }
+
+    public function stubConvertNullArrayValuesToEmpty(&$array)
+    {
+        return $this->_convertNullArrayValuesToEmpty($array);
+    }
+
     public function buildDetokenisedQuery($stmt, $data = [])
     {
         return $this->executeEmulateQuery($stmt, $data);
