@@ -85,7 +85,7 @@ class DoctrineDbal extends Common
     ];
 
     // @var DBALConnection Our Doctrine DBAL connection
-    private $connection = null;
+    protected $connection = null;
 
     /**
      * A copy of the last pdostatement object
