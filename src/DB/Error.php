@@ -30,7 +30,12 @@ class Error extends PineappleError
      *
      * @see PEAR_Error
      */
-    public function __construct($code = DB::DB_ERROR, $mode = Util::PEAR_ERROR_RETURN, $level = E_USER_NOTICE, $debuginfo = null)
+    public function __construct(
+        $code = DB::DB_ERROR,
+        $mode = Util::PEAR_ERROR_RETURN,
+        $level = E_USER_NOTICE,
+        $debuginfo = null
+    )
     {
         if (is_int($code)) {
             parent::__construct(
