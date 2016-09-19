@@ -84,7 +84,7 @@ abstract class Common extends Util
      * @var string
      * @todo replace with an accessor
      */
-    public $last_query = '';
+    public $lastQuery = '';
 
     /**
      * A flag to indicate that the author is prepared to make some poor life choices
@@ -959,7 +959,7 @@ abstract class Common extends Util
         $this->last_parameters = $data;
 
         if (count($this->prepare_types[$stmt]) != count($data)) {
-            $this->last_query = $this->prepared_queries[$stmt];
+            $this->lastQuery = $this->prepared_queries[$stmt];
             return $this->raiseError(DB::DB_ERROR_MISMATCH);
         }
 
@@ -1743,7 +1743,7 @@ abstract class Common extends Util
         }
 
         if ($userinfo === null) {
-            $userinfo = $this->last_query;
+            $userinfo = $this->lastQuery;
         }
 
         if ($nativecode) {
@@ -1946,7 +1946,7 @@ abstract class Common extends Util
     {
         $sql = $this->getSpecialQuery($type);
         if ($sql === null) {
-            $this->last_query = '';
+            $this->lastQuery = '';
             return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
         } elseif (is_int($sql) || DB::isError($sql)) {
             // Previous error

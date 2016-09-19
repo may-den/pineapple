@@ -226,7 +226,7 @@ class DoctrineDbal extends Common
     function simpleQuery($query)
     {
         $ismanip = $this->_checkManip($query);
-        $this->last_query = $query;
+        $this->lastQuery = $query;
         $query = $this->modifyQuery($query);
         if (!$this->connection) {
             return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);

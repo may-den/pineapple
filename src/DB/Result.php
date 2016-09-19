@@ -122,7 +122,7 @@ class Result
         $this->fetchmode = $dbh->getFetchmode();
         $this->fetchModeObjectClass = $dbh->getFetchModeObjectClass();
         $this->parameters = $dbh->last_parameters;
-        $this->query = $dbh->last_query;
+        $this->query = $dbh->lastQuery;
         $this->result = $result;
         $this->statement = empty($dbh->last_stmt) ? null : $dbh->last_stmt;
         foreach ($options as $key => $value) {
