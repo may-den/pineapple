@@ -1,7 +1,5 @@
 <?php
-namespace Mayden\Pineapple;
-
-use Mayden\Pineapple\Util as PEAR;
+namespace Pineapple;
 
 /**
  * Standard PEAR error class for PHP 4
@@ -22,55 +20,46 @@ use Mayden\Pineapple\Util as PEAR;
  */
 class Error
 {
-    var $error_message_prefix = '';
-    var $mode                 = PEAR_ERROR_RETURN;
-    var $level                = E_USER_NOTICE;
-    var $code                 = -1;
-    var $message              = '';
-    var $userinfo             = '';
-    var $backtrace            = null;
+    public $error_message_prefix = '';
+    private $mode = Util::PEAR_ERROR_RETURN;
+    private $level = E_USER_NOTICE;
+    private $code = -1;
+    private $message = '';
+    private $userinfo = '';
+    private $backtrace = null;
 
     /**
      * PEAR_Error constructor
      *
-     * @param string $message  message
-     *
-     * @param int $code     (optional) error code
-     *
-     * @param int $mode     (optional) error mode, one of: PEAR_ERROR_RETURN,
-     * PEAR_ERROR_PRINT, PEAR_ERROR_DIE, PEAR_ERROR_TRIGGER,
-     * PEAR_ERROR_CALLBACK or PEAR_ERROR_EXCEPTION
-     *
-     * @param mixed $options   (optional) error level, _OR_ in the case of
-     * PEAR_ERROR_CALLBACK, the callback function or object/method
-     * tuple.
+     * @param string $message message
+     * @param int    $code    (optional) error code
+     * @param int    $mode    (optional) error mode, one of: PEAR_ERROR_RETURN,
+     *                        PEAR_ERROR_PRINT, PEAR_ERROR_DIE, PEAR_ERROR_TRIGGER,
+     *                        PEAR_ERROR_CALLBACK or PEAR_ERROR_EXCEPTION
+     * @param mixed  $options (optional) error level, _OR_ in the case of
+     *                        PEAR_ERROR_CALLBACK, the callback function or object/method
+     *                        tuple.
      *
      * @param string $userinfo (optional) additional user/debug info
      *
      * @access public
-     *
      */
-    function __construct($message = 'unknown error', $code = null,
-                        $mode = null, $options = null, $userinfo = null)
+    public function __construct($message = null, $code = null, $mode = null, $options = null, $userinfo = null)
     {
         if ($mode === null) {
-            $mode = PEAR_ERROR_RETURN;
+            $mode = Util::PEAR_ERROR_RETURN;
         }
-        $this->message   = $message;
-        $this->code      = $code;
-        $this->mode      = $mode;
-        $this->userinfo  = $userinfo;
+        $this->message = isset($message) ? $message : 'unknown error';
+        $this->code = $code;
+        $this->mode = $mode;
+        $this->userinfo = $userinfo;
 
-        $skiptrace = PEAR::getStaticProperty('PEAR_Error', 'skiptrace');
-
-        if (!$skiptrace) {
-            $this->backtrace = debug_backtrace();
-            if (isset($this->backtrace[0]) && isset($this->backtrace[0]['object'])) {
-                unset($this->backtrace[0]['object']);
-            }
+        $this->backtrace = debug_backtrace();
+        if (isset($this->backtrace[0]) && isset($this->backtrace[0]['object'])) {
+            unset($this->backtrace[0]['object']);
         }
 
-        if ($mode & PEAR_ERROR_CALLBACK) {
+        if ($mode & Util::PEAR_ERROR_CALLBACK) {
             $this->level = E_USER_NOTICE;
             $this->callback = $options;
         } else {
@@ -82,7 +71,7 @@ class Error
             $this->callback = null;
         }
 
-        if ($this->mode & PEAR_ERROR_PRINT) {
+        if ($this->mode & Util::PEAR_ERROR_PRINT) {
             if (is_null($options) || is_int($options)) {
                 $format = "%s";
             } else {
@@ -92,11 +81,13 @@ class Error
             printf($format, $this->getMessage());
         }
 
-        if ($this->mode & PEAR_ERROR_TRIGGER) {
+        if ($this->mode & Util::PEAR_ERROR_TRIGGER) {
             trigger_error($this->getMessage(), $this->level);
         }
 
-        if ($this->mode & PEAR_ERROR_DIE) {
+        // we cannot test something which dies
+        // @codeCoverageIgnoreStart
+        if ($this->mode & Util::PEAR_ERROR_DIE) {
             $msg = $this->getMessage();
             if (is_null($options) || is_int($options)) {
                 $format = "%s";
@@ -108,33 +99,20 @@ class Error
             }
             die(sprintf($format, $msg));
         }
+        // @codeCoverageIgnoreEnd
 
-        if ($this->mode & PEAR_ERROR_CALLBACK && is_callable($this->callback)) {
+        if ($this->mode & Util::PEAR_ERROR_CALLBACK && is_callable($this->callback)) {
             call_user_func($this->callback, $this);
         }
 
-        if ($this->mode & PEAR_ERROR_EXCEPTION) {
-            trigger_error("PEAR_ERROR_EXCEPTION is obsolete, use class PEAR_Exception for exceptions", E_USER_WARNING);
-            eval('$e = new Exception($this->message, $this->code);throw($e);');
+        if ($this->mode & Util::PEAR_ERROR_EXCEPTION) {
+            trigger_error(
+                "PEAR_ERROR_EXCEPTION is obsolete, use class Pineapple\Exception for exceptions",
+                E_USER_WARNING
+            );
+            $e = new Exception($this->message, $this->code);
+            throw($e);
         }
-    }
-
-    /**
-     * Only here for backwards compatibility.
-     *
-     * Class "Cache_Error" still uses it, among others.
-     *
-     * @param string $message  Message
-     * @param int    $code     Error code
-     * @param int    $mode     Error mode
-     * @param mixed  $options  See __construct()
-     * @param string $userinfo Additional user/debug info
-     */
-    public function PEAR_Error(
-        $message = 'unknown error', $code = null, $mode = null,
-        $options = null, $userinfo = null
-    ) {
-        self::__construct($message, $code, $mode, $options, $userinfo);
     }
 
     /**
@@ -143,7 +121,7 @@ class Error
      * @return int error mode
      * @access public
      */
-    function getMode()
+    public function getMode()
     {
         return $this->mode;
     }
@@ -154,7 +132,7 @@ class Error
      * @return mixed callback function or object/method array
      * @access public
      */
-    function getCallback()
+    public function getCallback()
     {
         return $this->callback;
     }
@@ -165,9 +143,9 @@ class Error
      * @return  string  full error message
      * @access public
      */
-    function getMessage()
+    public function getMessage()
     {
-        return ($this->error_message_prefix . $this->message);
+        return $this->error_message_prefix . $this->message;
     }
 
     /**
@@ -176,10 +154,10 @@ class Error
      * @return int error code
      * @access public
      */
-     function getCode()
-     {
+    public function getCode()
+    {
         return $this->code;
-     }
+    }
 
     /**
      * Get the name of this error/exception.
@@ -187,7 +165,7 @@ class Error
      * @return string error/exception name (type)
      * @access public
      */
-    function getType()
+    public function getType()
     {
         return get_class($this);
     }
@@ -198,7 +176,7 @@ class Error
      * @return string user-supplied information
      * @access public
      */
-    function getUserInfo()
+    public function getUserInfo()
     {
         return $this->userinfo;
     }
@@ -209,7 +187,7 @@ class Error
      * @return string debug information
      * @access public
      */
-    function getDebugInfo()
+    public function getDebugInfo()
     {
         return $this->getUserInfo();
     }
@@ -222,18 +200,15 @@ class Error
      * @return array Backtrace, or NULL if not available.
      * @access public
      */
-    function getBacktrace($frame = null)
+    public function getBacktrace($frame = null)
     {
-        if (defined('PEAR_IGNORE_BACKTRACE')) {
-            return null;
-        }
         if ($frame === null) {
             return $this->backtrace;
         }
         return $this->backtrace[$frame];
     }
 
-    function addUserInfo($info)
+    public function addUserInfo($info)
     {
         if (empty($this->userinfo)) {
             $this->userinfo = $info;
@@ -242,7 +217,7 @@ class Error
         }
     }
 
-    function __toString()
+    public function __toString()
     {
         return $this->getMessage();
     }
@@ -253,13 +228,16 @@ class Error
      * @return string a string with an object summary
      * @access public
      */
-    function toString()
+    public function toString()
     {
-        $modes = array();
-        $levels = array(E_USER_NOTICE  => 'notice',
-                        E_USER_WARNING => 'warning',
-                        E_USER_ERROR   => 'error');
-        if ($this->mode & PEAR_ERROR_CALLBACK) {
+        $modes = [];
+        $levels = [
+            E_USER_NOTICE => 'notice',
+            E_USER_WARNING => 'warning',
+            E_USER_ERROR => 'error'
+        ];
+
+        if ($this->mode & Util::PEAR_ERROR_CALLBACK) {
             if (is_array($this->callback)) {
                 $callback = (is_object($this->callback[0]) ?
                     strtolower(get_class($this->callback[0])) :
@@ -268,29 +246,40 @@ class Error
             } else {
                 $callback = $this->callback;
             }
-            return sprintf('[%s: message="%s" code=%d mode=callback '.
-                           'callback=%s prefix="%s" info="%s"]',
-                           strtolower(get_class($this)), $this->message, $this->code,
-                           $callback, $this->error_message_prefix,
-                           $this->userinfo);
+            return sprintf(
+                '[%s: message="%s" code=%d mode=callback callback=%s prefix="%s" info="%s"]',
+                strtolower(get_class($this)),
+                $this->message,
+                $this->code,
+                $callback,
+                $this->error_message_prefix,
+                $this->userinfo
+            );
         }
-        if ($this->mode & PEAR_ERROR_PRINT) {
+        if ($this->mode & Util::PEAR_ERROR_PRINT) {
             $modes[] = 'print';
         }
-        if ($this->mode & PEAR_ERROR_TRIGGER) {
+        if ($this->mode & Util::PEAR_ERROR_TRIGGER) {
             $modes[] = 'trigger';
         }
-        if ($this->mode & PEAR_ERROR_DIE) {
+        // untestable because we can't trigger a die
+        // @codeCoverageIgnoreStart
+        if ($this->mode & Util::PEAR_ERROR_DIE) {
             $modes[] = 'die';
         }
-        if ($this->mode & PEAR_ERROR_RETURN) {
+        // @codeCoverageIgnoreEnd
+        if ($this->mode & Util::PEAR_ERROR_RETURN) {
             $modes[] = 'return';
         }
-        return sprintf('[%s: message="%s" code=%d mode=%s level=%s '.
-                       'prefix="%s" info="%s"]',
-                       strtolower(get_class($this)), $this->message, $this->code,
-                       implode("|", $modes), $levels[$this->level],
-                       $this->error_message_prefix,
-                       $this->userinfo);
+        return sprintf(
+            '[%s: message="%s" code=%d mode=%s level=%s prefix="%s" info="%s"]',
+            strtolower(get_class($this)),
+            $this->message,
+            $this->code,
+            implode('|', $modes),
+            $levels[$this->level],
+            $this->error_message_prefix,
+            $this->userinfo
+        );
     }
 }

@@ -1,2 +1,4 @@
 /vendor/
-connectionParams.php
+/composer.lock
+/coverage/
+.DS_Store

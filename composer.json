@@ -1,15 +1,21 @@
 {
-    "name": "borb/pineapple",
+    "name": "wethersherbs/pineapple",
     "description": "A stripped PEAR and DB that removes unused code from legacy and adds Doctrine DBAL support",
+    "license": "BSD-2-Clause, PHP License",
     "require": {
         "doctrine/dbal": "^2.5"
     },
+    "scripts": {
+        "test": "phpunit --coverage-html='coverage/' --coverage-text='php://stdout' --colors=auto test/"
+    },
     "autoload": {
         "psr-4": {
-            "Mayden\\Pineapple\\": "src/"
+            "Pineapple\\": "src/",
+            "Pineapple\\Test\\": "test/"
         }
     },
     "require-dev": {
-        "crysalead/kahlan": "^2.5"
+        "phpunit/phpunit": "^5.4",
+        "diablomedia/phpunit-pretty-printer": "^1.0"
     }
 }

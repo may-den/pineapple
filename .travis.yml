@@ -1,0 +1,25 @@
+language: php
+php:
+  - 7.0
+  - 5.6
+# - hhvm
+
+before_script:
+  - composer self-update
+  - composer install --dev
+
+script:
+  - ./vendor/bin/phpunit --verbose
+
+matrix:
+  fast_finish: true
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+notifications:
+  slack:
+    secure: iTfqG4Vb13RfUqq9qF0k8Pc+igJpc2cTJPYySDCPZNjqWU4AbiiH6O1iNtdOYSvVwmsxdERI7hcbi6NxuM0tJ97OAr3D0DDPtmEqnpbTSzQp2o7390vStOiuM2lYB2sCCDwjx3qnU8HRpJWFP+qxv4YCzKI7xT7yN+kxfCU7jRCjDWicQvOivbYZ+1PRrsUTIAfTQkL0yafEsHrSgTFUGX0PyqPtscZd/YWGGyUOX/XvtNTHg5b6r8rO52QQxjo3f9beAmzdIQ/UPVOB1rbSrrUX3E3w9XjbBQ8VPVReRDMKmxoxZInNe9mIAvM6+Qk0z+Bt4PT95hQd/TRnJSsIWhvWPyUnCqqhRDh0maefx1SGsVf1fmdvGaIsJnShWIMJzjAdJ4Cl5drK7QlzXE6O0yUab91mtwdH0nCQmCODzHMFhC+G5UUbhs1cDSy85gHnMs0nOcnP04/GBtqoTeD/9zB9JMlgGY484AsYsH2VPH+8C8gMoQ/vnVJVbJPWeEuFtYswcdA2zcGTbswGvHtcrseYSh21grHr0oPLgIwwoCW8IAlMSgyi4iHVx4Wd34a44uUlSGJSz/DjbJyEZzCU4TVZKF3Fl7Jpb46S05t08NQYXekePCNmrCWiAW0MgOJ6zXjKd2v420W0A/sBaZ+iAANp+5eas8XhCoNhi9uFKLA=

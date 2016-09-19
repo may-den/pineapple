@@ -1,7 +1,7 @@
 <?php
-namespace Mayden\Pineapple\DB;
+namespace Pineapple\DB;
 
-use Mayden\Pineapple\DB;
+use Pineapple\DB;
 
 /**
  * This class implements a wrapper for a DB result set
@@ -115,16 +115,16 @@ class Result
      *
      * @return void
      */
-    function __construct(&$dbh, $result, $options = array())
+    public function __construct($dbh, $result, $options = array())
     {
-        $this->autofree    = $dbh->options['autofree'];
-        $this->dbh         = &$dbh;
-        $this->fetchmode   = $dbh->fetchmode;
-        $this->fetchmode_object_class = $dbh->fetchmode_object_class;
-        $this->parameters  = $dbh->last_parameters;
-        $this->query       = $dbh->last_query;
-        $this->result      = $result;
-        $this->statement   = empty($dbh->last_stmt) ? null : $dbh->last_stmt;
+        $this->autofree = $dbh->getOption('autofree');
+        $this->dbh = $dbh;
+        $this->fetchmode = $dbh->getFetchmode();
+        $this->fetchmode_object_class = $dbh->getFetchmodeObjectClass();
+        $this->parameters = $dbh->last_parameters;
+        $this->query = $dbh->last_query;
+        $this->result = $result;
+        $this->statement = empty($dbh->last_stmt) ? null : $dbh->last_stmt;
         foreach ($options as $key => $value) {
             $this->setOption($key, $value);
         }
@@ -138,7 +138,7 @@ class Result
      *
      * @return void
      */
-    function setOption($key, $value = null)
+    public function setOption($key, $value = null)
     {
         switch ($key) {
             case 'limit_from':
@@ -176,41 +176,31 @@ class Result
      *
      * @see DB\Common::setOption(), DB\Common::setFetchMode()
      */
-    function &fetchRow($fetchmode = DB_FETCHMODE_DEFAULT, $rownum = null)
+    public function fetchRow($fetchmode = DB::DB_FETCHMODE_DEFAULT, $rownum = null)
     {
-        if ($fetchmode === DB_FETCHMODE_DEFAULT) {
+        if ($fetchmode === DB::DB_FETCHMODE_DEFAULT) {
             $fetchmode = $this->fetchmode;
         }
-        if ($fetchmode === DB_FETCHMODE_OBJECT) {
-            $fetchmode = DB_FETCHMODE_ASSOC;
+        if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
+            $fetchmode = DB::DB_FETCHMODE_ASSOC;
             $object_class = $this->fetchmode_object_class;
         }
         if (is_null($rownum) && $this->limit_from !== null) {
             if ($this->row_counter === null) {
                 $this->row_counter = $this->limit_from;
-                // Skip rows
-                if ($this->dbh->features['limit'] === false) {
-                    $i = 0;
-                    while ($i++ < $this->limit_from) {
-                        $this->dbh->fetchInto($this->result, $arr, $fetchmode);
-                    }
-                }
             }
-            if ($this->row_counter >= ($this->limit_from + $this->limit_count))
-            {
+            if ($this->row_counter >= ($this->limit_from + $this->limit_count)) {
                 if ($this->autofree) {
                     $this->free();
                 }
                 $tmp = null;
                 return $tmp;
             }
-            if ($this->dbh->features['limit'] === 'emulate') {
-                $rownum = $this->row_counter;
-            }
+
             $this->row_counter++;
         }
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
-        if ($res === DB_OK) {
+        if ($res === DB::DB_OK) {
             if (isset($object_class)) {
                 // The default mode is specified in the
                 // DB\Common::fetchmode_object_class property
@@ -255,42 +245,30 @@ class Result
      *
      * @see DB\Common::setOption(), DB\Common::setFetchMode()
      */
-    function fetchInto(&$arr, $fetchmode = DB_FETCHMODE_DEFAULT, $rownum = null)
+    public function fetchInto(&$arr, $fetchmode = DB::DB_FETCHMODE_DEFAULT, $rownum = null)
     {
-        if ($fetchmode === DB_FETCHMODE_DEFAULT) {
+        if ($fetchmode === DB::DB_FETCHMODE_DEFAULT) {
             $fetchmode = $this->fetchmode;
         }
-        if ($fetchmode === DB_FETCHMODE_OBJECT) {
-            $fetchmode = DB_FETCHMODE_ASSOC;
+        if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
+            $fetchmode = DB::DB_FETCHMODE_ASSOC;
             $object_class = $this->fetchmode_object_class;
         }
         if (is_null($rownum) && $this->limit_from !== null) {
             if ($this->row_counter === null) {
                 $this->row_counter = $this->limit_from;
-                // Skip rows
-                if ($this->dbh->features['limit'] === false) {
-                    $i = 0;
-                    while ($i++ < $this->limit_from) {
-                        $this->dbh->fetchInto($this->result, $arr, $fetchmode);
-                    }
-                }
             }
-            if ($this->row_counter >= (
-                    $this->limit_from + $this->limit_count))
-            {
+            if ($this->row_counter >= ($this->limit_from + $this->limit_count)) {
                 if ($this->autofree) {
                     $this->free();
                 }
                 return null;
             }
-            if ($this->dbh->features['limit'] === 'emulate') {
-                $rownum = $this->row_counter;
-            }
 
             $this->row_counter++;
         }
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
-        if ($res === DB_OK) {
+        if ($res === DB::DB_OK) {
             if (isset($object_class)) {
                 // default mode specified in the
                 // DB\Common::fetchmode_object_class property
@@ -300,7 +278,7 @@ class Result
                     $arr = new $object_class($arr);
                 }
             }
-            return DB_OK;
+            return DB::DB_OK;
         }
         if ($res == null && $this->autofree) {
             $this->free();
@@ -313,7 +291,7 @@ class Result
      *
      * @return int  the number of columns.  A DB_Error object on failure.
      */
-    function numCols()
+    public function numCols()
     {
         return $this->dbh->numCols($this->result);
     }
@@ -323,11 +301,9 @@ class Result
      *
      * @return int  the number of rows.  A DB_Error object on failure.
      */
-    function numRows()
+    public function numRows()
     {
-        if ($this->dbh->features['numrows'] === 'emulate'
-            && $this->dbh->options['portability'] & DB_PORTABILITY_NUMROWS)
-        {
+        if ($this->dbh->getOption('portability') & DB::DB_PORTABILITY_NUMROWS) {
             if ($this->dbh->features['prepare']) {
                 $res = $this->dbh->query($this->query, $this->parameters);
             } else {
@@ -337,33 +313,12 @@ class Result
                 return $res;
             }
             $i = 0;
-            while ($res->fetchInto($tmp, DB_FETCHMODE_ORDERED)) {
+            while ($res->fetchInto($tmp, DB::DB_FETCHMODE_ORDERED)) {
                 $i++;
             }
             $count = $i;
         } else {
             $count = $this->dbh->numRows($this->result);
-        }
-
-        /* fbsql is checked for here because limit queries are implemented
-         * using a TOP() function, which results in fbsql_num_rows still
-         * returning the total number of rows that would have been returned,
-         * rather than the real number. As a result, we'll just do the limit
-         * calculations for fbsql in the same way as a database with emulated
-         * limits. Unfortunately, we can't just do this in DB_fbsql::numRows()
-         * because that only gets the result resource, rather than the full
-         * DB_Result object. */
-        if (($this->dbh->features['limit'] === 'emulate'
-             && $this->limit_from !== null)
-            || $this->dbh->phptype == 'fbsql') {
-            $limit_count = is_null($this->limit_count) ? $count : $this->limit_count;
-            if ($count < $this->limit_from) {
-                $count = 0;
-            } elseif ($count < ($this->limit_from + $limit_count)) {
-                $count -= $this->limit_from;
-            } else {
-                $count = $limit_count;
-            }
         }
 
         return $count;
@@ -374,7 +329,7 @@ class Result
      *
      * @return bool  true if a new result is available or false if not
      */
-    function nextResult()
+    public function nextResult()
     {
         return $this->dbh->nextResult($this->result);
     }
@@ -384,7 +339,7 @@ class Result
      *
      * @return bool  true on success.  A DB_Error object on failure.
      */
-    function free()
+    public function free()
     {
         $err = $this->dbh->freeResult($this->result);
         if (DB::isError($err)) {
@@ -399,10 +354,10 @@ class Result
      * @see DB\Common::tableInfo()
      * @deprecated Method deprecated some time before Release 1.2
      */
-    function tableInfo($mode = null)
+    public function tableInfo($mode = null)
     {
         if (is_string($mode)) {
-            return $this->dbh->raiseError(DB_ERROR_NEED_MORE_DATA);
+            return $this->dbh->raiseError(DB::DB_ERROR_NEED_MORE_DATA);
         }
         return $this->dbh->tableInfo($this, $mode);
     }
@@ -414,7 +369,7 @@ class Result
      *
      * @since Method available since Release 1.7.0
      */
-    function getQuery()
+    public function getQuery()
     {
         return $this->query;
     }
@@ -424,7 +379,7 @@ class Result
      *
      * @return integer  the current row being looked at.  Starts at 1.
      */
-    function getRowCounter()
+    public function getRowCounter()
     {
         return $this->row_counter;
     }
