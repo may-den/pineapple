@@ -4,10 +4,10 @@ namespace Pineapple;
 /**
  * Standard PEAR error class for PHP 4
  *
- * This class is supserseded by {@link PEAR_Exception} in PHP 5
+ * This class is supserseded by {@link Pineapple\Exception} in PHP 5
  *
  * @category   pear
- * @package    PEAR
+ * @package    Pineapple
  * @author     Stig Bakken <ssb@php.net>
  * @author     Tomas V.V. Cox <cox@idecnet.com>
  * @author     Gregory Beaver <cellog@php.net>
@@ -15,7 +15,7 @@ namespace Pineapple;
  * @license    http://opensource.org/licenses/bsd-license.php New BSD License
  * @version    Release: 1.10.1
  * @link       http://pear.php.net/manual/en/core.pear.pear-error.php
- * @see        PEAR::raiseError(), PEAR::throwError()
+ * @see        Pineapple\Util::raiseError(), Pineapple\Util::throwError()
  * @since      Class available since PHP 4.0.2
  */
 class Error
@@ -29,7 +29,7 @@ class Error
     private $backtrace = null;
 
     /**
-     * PEAR_Error constructor
+     * Pineapple\Error constructor
      *
      * @param string $message message
      * @param int    $code    (optional) error code

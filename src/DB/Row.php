@@ -2,7 +2,7 @@
 namespace Pineapple\DB;
 
 /**
- * PEAR DB Row Object
+ * Pineapple\DB Row Object
  *
  * The object contains a row of data from a result set.  Each column's data
  * is placed in a property named for the column.

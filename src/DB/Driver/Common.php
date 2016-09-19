@@ -166,7 +166,7 @@ abstract class Common extends Util
     protected $nextQueryManip = false;
 
     /**
-     * This constructor calls <kbd>$this->PEAR('DB_Error')</kbd>
+     * This constructor calls <kbd>parent::__construct('DB_Error')</kbd>
      *
      * @return void
      */
@@ -1713,30 +1713,30 @@ abstract class Common extends Util
     /**
      * Communicates an error and invoke error callbacks, etc
      *
-     * Basically a wrapper for PEAR::raiseError without the message string.
+     * Basically a wrapper for Pineapple\Util::raiseError without the message string.
      *
-     * @param mixed   integer error code, or a PEAR error object (all
-     *                 other parameters are ignored if this parameter is
-     *                 an object
-     * @param int     error mode, see PEAR_Error docs
+     * @param mixed   integer error code, or a Pineapple\Error object (all
+     *                other parameters are ignored if this parameter is
+     *                an object
+     * @param int     error mode, see Pineapple\Error docs
      * @param mixed   if error mode is PEAR_ERROR_TRIGGER, this is the
-     *                 error level (E_USER_NOTICE etc).  If error mode is
-     *                 PEAR_ERROR_CALLBACK, this is the callback function,
-     *                 either as a function name, or as an array of an
-     *                 object and method name.  For other error modes this
-     *                 parameter is ignored.
+     *                error level (E_USER_NOTICE etc).  If error mode is
+     *                PEAR_ERROR_CALLBACK, this is the callback function,
+     *                either as a function name, or as an array of an
+     *                object and method name.  For other error modes this
+     *                parameter is ignored.
      * @param string  extra debug information.  Defaults to the last
-     *                 query and native error code.
+     *                query and native error code.
      * @param mixed   native error code, integer or string depending the
-     *                 backend
+     *                backend
      * @param mixed   dummy parameter for E_STRICT compatibility with
-     *                 PEAR::raiseError
+     *                Pineapple\Util::raiseError
      * @param mixed   dummy parameter for E_STRICT compatibility with
-     *                 PEAR::raiseError
+     *                Pineapple\Util::raiseError
      *
-     * @return object  the PEAR_Error object
+     * @return object the Pineapple\Error object
      *
-     * @see PEAR_Error
+     * @see Pineapple\Error
      */
     public function raiseError(
         $code = DB::DB_ERROR,
