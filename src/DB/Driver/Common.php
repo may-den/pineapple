@@ -77,7 +77,7 @@ abstract class Common extends Util
      * @var bool
      * @see Common::__sleep(), Common::__wake()
      */
-    protected $was_connected = null;
+    protected $wasConnected = null;
 
     /**
      * The most recently executed query
@@ -178,11 +178,11 @@ abstract class Common extends Util
      */
     public function __sleep()
     {
-        $this->was_connected = false;
+        $this->wasConnected = false;
 
         if ($this->connection) {
             // Don't disconnect(), people use serialize() for many reasons
-            $this->was_connected = true;
+            $this->wasConnected = true;
         }
 
         $toSerialize = [
@@ -192,7 +192,7 @@ abstract class Common extends Util
             'fetchmode',
             'fetchModeObjectClass',
             'options',
-            'was_connected',
+            'wasConnected',
             'error_class',
         ];
         if (isset($this->autocommit)) {
@@ -212,7 +212,7 @@ abstract class Common extends Util
      */
     public function __wakeup()
     {
-        if ($this->was_connected) {
+        if ($this->wasConnected) {
             $this->connect($this->dsn, $this->options['persistent']);
         }
     }
