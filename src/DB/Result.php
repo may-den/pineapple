@@ -44,9 +44,9 @@ class Result
      * DB_FETCHMODE_OBJECT is in effect
      *
      * @var string
-     * @see DB\Common::$fetchmode_object_class
+     * @see DB\Common::$fetchModeObjectClass
      */
-    var $fetchmode_object_class;
+    var $fetchModeObjectClass;
 
     /**
      * The number of rows to fetch from a limit query
@@ -120,7 +120,7 @@ class Result
         $this->autofree = $dbh->getOption('autofree');
         $this->dbh = $dbh;
         $this->fetchmode = $dbh->getFetchmode();
-        $this->fetchmode_object_class = $dbh->getFetchmodeObjectClass();
+        $this->fetchModeObjectClass = $dbh->getFetchModeObjectClass();
         $this->parameters = $dbh->last_parameters;
         $this->query = $dbh->last_query;
         $this->result = $result;
@@ -183,7 +183,7 @@ class Result
         }
         if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
-            $object_class = $this->fetchmode_object_class;
+            $object_class = $this->fetchModeObjectClass;
         }
         if (is_null($rownum) && $this->limit_from !== null) {
             if ($this->row_counter === null) {
@@ -203,7 +203,7 @@ class Result
         if ($res === DB::DB_OK) {
             if (isset($object_class)) {
                 // The default mode is specified in the
-                // DB\Common::fetchmode_object_class property
+                // DB\Common::fetchModeObjectClass property
                 if ($object_class == 'stdClass') {
                     $arr = (object) $arr;
                 } else {
@@ -252,7 +252,7 @@ class Result
         }
         if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
-            $object_class = $this->fetchmode_object_class;
+            $object_class = $this->fetchModeObjectClass;
         }
         if (is_null($rownum) && $this->limit_from !== null) {
             if ($this->row_counter === null) {
@@ -271,7 +271,7 @@ class Result
         if ($res === DB::DB_OK) {
             if (isset($object_class)) {
                 // default mode specified in the
-                // DB\Common::fetchmode_object_class property
+                // DB\Common::fetchModeObjectClass property
                 if ($object_class == 'stdClass') {
                     $arr = (object) $arr;
                 } else {

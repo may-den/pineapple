@@ -70,7 +70,7 @@ abstract class Common extends Util
      *
      * @var string
      */
-    protected $fetchmode_object_class = \stdClass::class;
+    protected $fetchModeObjectClass = \stdClass::class;
 
     /**
      * Was a connection present when the object was serialized()?
@@ -190,7 +190,7 @@ abstract class Common extends Util
             'dsn',
             'features',
             'fetchmode',
-            'fetchmode_object_class',
+            'fetchModeObjectClass',
             'options',
             'was_connected',
             'error_class',
@@ -485,7 +485,7 @@ abstract class Common extends Util
     {
         switch ($fetchmode) {
             case DB::DB_FETCHMODE_OBJECT:
-                $this->fetchmode_object_class = $object_class;
+                $this->fetchModeObjectClass = $object_class;
                 // no break here deliberately
             case DB::DB_FETCHMODE_ORDERED:
             case DB::DB_FETCHMODE_ASSOC:
@@ -519,7 +519,7 @@ abstract class Common extends Util
      */
     public function getFetchModeObjectClass()
     {
-        return $this->fetchmode_object_class;
+        return $this->fetchModeObjectClass;
     }
 
     /**
