@@ -248,55 +248,10 @@ class TestDriver extends Common
         return count($result['results']);
     }
 
-    public function autoCommit($onoff = false)
+    public function stubNumRows($result)
     {
-        $this->autocommit = $onoff ? true : false;
-        return DB::DB_OK;
-    }
-
-    public function commit()
-    {
-        return DB::DB_OK;
-    }
-
-    public function rollback()
-    {
-        return DB::DB_OK;
-    }
-
-    public function affectedRows()
-    {
-        if ($this->lastQueryType === null) {
-            return $this->myRaiseError();
-        } elseif ($this->lastQueryType === 'INSERT') {
-            return 0;
-        }
-
-        return 2;
-    }
-
-    public function nextId($seq_name, $ondemand = true)
-    {
-        if ($seq_name === 'badsequence') {
-            return $this->myRaiseError();
-        }
-        return $this->sequenceCounter++;
-    }
-
-    public function createSequence($seq_name)
-    {
-        if ($seq_name === 'badsequence') {
-            return $this->myRaiseError();
-        }
-        return DB::DB_OK;
-    }
-
-    public function dropSequence($seq_name)
-    {
-        if ($seq_name === 'badsequence') {
-            return $this->myRaiseError();
-        }
-        return DB::DB_OK;
+        // call the _parent_ numRows because we overrode it above
+        return parent::numRows($result);
     }
 
     private function myRaiseError($errno = null)
@@ -308,11 +263,6 @@ class TestDriver extends Common
             null,
             'b0rked'
         );
-    }
-
-    public function errorNative()
-    {
-        return 54321;
     }
 
     public function tableInfo($result, $mode = null)
@@ -337,6 +287,16 @@ class TestDriver extends Common
                 'flags' => '',
             ]
         ];
+    }
+
+    public function stubTableInfo($result, $mode = null)
+    {
+        return parent::tableInfo($result, $mode);
+    }
+
+    public function stubGetSpecialQuery($type)
+    {
+        return parent::getSpecialQuery($type);
     }
 
     public function buildDetokenisedQuery($stmt, $data = [])
