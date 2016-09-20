@@ -2,10 +2,10 @@
 namespace Pineapple\DB\Driver;
 
 use Pineapple\DB;
+use Pineapple\DB\Error;
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\PDOStatement;
 use PDO;
-use Pineapple\DB\Driver\DoctrineDbal;
 
 /**
  * A PEAR DB driver that uses Doctrine's DBAL as an underlying database
@@ -41,7 +41,7 @@ class DoctrineDbal extends Common
      *
      * @var array
      */
-    public $features = [
+    protected $features = [
         'limit' => 'alter',
         'new_link' => false,
         'numrows' => true,
@@ -55,7 +55,7 @@ class DoctrineDbal extends Common
      * A mapping of native error codes to DB error codes
      * @var array
      */
-    public $errorcode_map = [
+    protected $errorcode_map = [
         1004 => DB::DB_ERROR_CANNOT_CREATE,
         1005 => DB::DB_ERROR_CANNOT_CREATE,
         1006 => DB::DB_ERROR_CANNOT_CREATE,
@@ -139,16 +139,16 @@ class DoctrineDbal extends Common
      * require_once 'DB.php';
      *
      * $dsn = [
-     *     'phptype'  => 'mysqli',
+     *     'phptype' => 'mysqli',
      *     'username' => 'someuser',
      *     'password' => 'apasswd',
      *     'hostspec' => 'localhost',
      *     'database' => 'thedb',
-     *     'key'      => 'client-key.pem',
-     *     'cert'     => 'client-cert.pem',
-     *     'ca'       => 'cacert.pem',
-     *     'capath'   => '/path/to/ca/dir',
-     *     'cipher'   => 'AES',
+     *     'key' => 'client-key.pem',
+     *     'cert' => 'client-cert.pem',
+     *     'ca' => 'cacert.pem',
+     *     'capath' => '/path/to/ca/dir',
+     *     'cipher' => 'AES',
      * ];
      *
      * $options = [
@@ -164,7 +164,8 @@ class DoctrineDbal extends Common
      * @param array $dsn         the data source name
      * @param bool  $persistent  should the connection be persistent?
      *
-     * @return int  DB_OK on success. A Pineapple\DB\Error object on failure.
+     * @return int|Error         DB_OK on success.
+     *                           A Pineapple\DB\Error object on failure.
      */
     public function connect($dsn, $persistent = false)
     {
@@ -280,8 +281,8 @@ class DoctrineDbal extends Common
      * @param int      $fetchmode how the resulting array should be indexed
      * @param int      $rownum    the row number to fetch (0 = first row)
      *
-     * @return mixed  DB_OK on success, NULL when the end of a result set is
-     *                 reached or on failure
+     * @return mixed              DB_OK on success, NULL when the end of a
+     *                            result set is reached or on failure
      *
      * @see Pineapple\DB\Result::fetchInto()
      */
@@ -299,7 +300,7 @@ class DoctrineDbal extends Common
             return null;
         }
         if ($this->options['portability'] & DB::DB_PORTABILITY_RTRIM) {
-            /*
+            /**
              * Even though this DBMS already trims output, we do this because
              * a field might have intentional whitespace at the end that
              * gets removed by DB_PORTABILITY_RTRIM under another driver.
@@ -340,7 +341,8 @@ class DoctrineDbal extends Common
      *
      * @param resource $result  PHP's query result resource
      *
-     * @return int  the number of columns.  A Pineapple\DB\Error object on failure.
+     * @return int|Error        the number of columns. A Pineapple\DB\Error
+     *                          object on failure.
      *
      * @see Pineapple\DB\Result::numCols()
      */
@@ -362,7 +364,8 @@ class DoctrineDbal extends Common
      *
      * @param resource $result  PHP's query result resource
      *
-     * @return int  the number of rows.  A Pineapple\DB\Error object on failure.
+     * @return int|Error        the number of rows. A Pineapple\DB\Error
+     *                          object on failure.
      *
      * @see Pineapple\DB\Result::numRows()
      */
@@ -380,8 +383,9 @@ class DoctrineDbal extends Common
      *
      * @param bool $onoff  true turns it on, false turns it off
      *
-     * @return int  DB_OK on success.  A Pineapple\DB\Error object if the driver
-     *               doesn't support auto-committing transactions.
+     * @return int|Error   DB_OK on success. A Pineapple\DB\Error object if
+     *                     the driver doesn't support auto-committing
+     *                     transactions.
      */
     public function autoCommit($onoff = false)
     {
@@ -394,7 +398,8 @@ class DoctrineDbal extends Common
     /**
      * Commits the current transaction
      *
-     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
+     * @return int|Error  DB_OK on success. A Pineapple\DB\Error object on
+     *                    failure.
      */
     public function commit()
     {
@@ -414,7 +419,8 @@ class DoctrineDbal extends Common
     /**
      * Reverts the current transaction
      *
-     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
+     * @return int|Error  DB_OK on success. A Pineapple\DB\Error object on
+     *                    failure.
      */
     public function rollback()
     {
@@ -436,7 +442,8 @@ class DoctrineDbal extends Common
      *
      * 0 is returned for queries that don't manipulate data.
      *
-     * @return int  the number of rows.  A Pineapple\DB\Error object on failure.
+     * @return int|Error  the number of rows. A Pineapple\DB\Error object
+     *                    on failure.
      */
     public function affectedRows()
     {
@@ -456,10 +463,10 @@ class DoctrineDbal extends Common
      *
      * @param string  $seqName  name of the sequence
      * @param boolean $onDemand when true, the seqence is automatically
-     *                            created if it does not exist
+     *                          created if it does not exist
      *
-     * @return int  the next id number in the sequence.
-     *               A Pineapple\DB\Error object on failure.
+     * @return int|Error  the next id number in the sequence.
+     *                    A Pineapple\DB\Error object on failure.
      *
      * @see Pineapple\DB\Driver\Common::nextID(),
      *      Pineapple\DB\Driver\Common::getSequenceName(),
@@ -537,7 +544,8 @@ class DoctrineDbal extends Common
      *
      * @param string $seqName  name of the new sequence
      *
-     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
+     * @return int|Error       DB_OK on success. A Pineapple\DB\Error
+     *                         object on failure.
      *
      * @see Pineapple\DB\Driver\Common::createSequence(),
      *      Pineapple\DB\Driver\Common::getSequenceName(),
@@ -560,7 +568,8 @@ class DoctrineDbal extends Common
      *
      * @param string $seqName  name of the sequence to be deleted
      *
-     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
+     * @return int|Error       DB_OK on success. A Pineapple\DB\Error object
+     *                         on failure.
      *
      * @see Pineapple\DB\Driver\Common::dropSequence(),
      *      Pineapple\DB\Driver\Common::getSequenceName(),
@@ -578,7 +587,8 @@ class DoctrineDbal extends Common
      *
      * @param string $seqName  the sequence name to clean up
      *
-     * @return bool  true on success.  A Pineapple\DB\Error object on failure.
+     * @return bool|Error      true on success. A Pineapple\DB\Error object
+     *                         on failure.
      *
      * @access private
      */
@@ -629,7 +639,7 @@ class DoctrineDbal extends Common
      *
      * @param string $str  identifier name to be quoted
      *
-     * @return string  quoted identifier string
+     * @return string      quoted identifier string
      *
      * @see Pineapple\DB\Driver\Common::quoteIdentifier()
      * @since Method available since Release 1.6.0
@@ -644,7 +654,7 @@ class DoctrineDbal extends Common
      *
      * @param string $str  the string to be escaped
      *
-     * @return string  the escaped string
+     * @return string      the escaped string
      *
      * @see Pineapple\DB\Driver\Common::quoteSmart()
      * @since Method available since Release 1.6.0
@@ -661,10 +671,10 @@ class DoctrineDbal extends Common
      * @param int    $from    the row to start to fetching (0 = the first row)
      * @param int    $count   the numbers of rows to fetch
      * @param mixed  $params  array, string or numeric data to be used in
-     *                         execution of the statement.  Quantity of items
-     *                         passed must match quantity of placeholders in
-     *                         query:  meaning 1 placeholder for non-array
-     *                         parameters or 1 placeholder per array element.
+     *                        execution of the statement.  Quantity of items
+     *                        passed must match quantity of placeholders in
+     *                        query:  meaning 1 placeholder for non-array
+     *                        parameters or 1 placeholder per array element.
      *
      * @return string  the query string with LIMIT clauses added
      *
@@ -683,8 +693,8 @@ class DoctrineDbal extends Common
      * Produces a Pineapple\DB\Error object regarding the current problem
      *
      * @param int $errno  if the error is being manually raised pass a
-     *                     DB_ERROR* constant here.  If this isn't passed
-     *                     the error information gathered from the DBMS.
+     *                    DB_ERROR* constant here.  If this isn't passed
+     *                    the error information gathered from the DBMS.
      *
      * @return object  the Pineapple\DB\Error object
      *
@@ -717,13 +727,13 @@ class DoctrineDbal extends Common
      * Returns information about a table or a result set
      *
      * @param object|string  $result  Pineapple\DB\Result object from a query or a
-     *                                 string containing the name of a table.
-     *                                 While this also accepts a query result
-     *                                 resource identifier, this behavior is
-     *                                 deprecated.
+     *                                string containing the name of a table.
+     *                                While this also accepts a query result
+     *                                resource identifier, this behavior is
+     *                                deprecated.
      * @param int            $mode    a valid tableInfo mode
      *
-     * @return array  an associative array with the information requested.
+     * @return mixed   an associative array with the information requested.
      *                 A Pineapple\DB\Error object on failure.
      *
      * @see Pineapple\DB\Driver\Common::setOption()
@@ -736,14 +746,14 @@ class DoctrineDbal extends Common
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
 
-            /*
+            /**
              * Probably received a table name.
              * Create a result resource identifier.
              */
             $id = @$this->simpleQuery("SELECT * FROM $result LIMIT 0");
             $got_string = true;
         } elseif (is_object($result)) {
-            /*
+            /**
              * Probably received a result object.
              * Extract the result resource identifier.
              */
@@ -775,9 +785,9 @@ class DoctrineDbal extends Common
 
             $res[$i] = [
                 'table' => $tmp['table'],
-                'name'  => $tmp['name'],
-                'type'  => isset($tmp['native_type']) ? $tmp['native_type'] : 'unknown',
-                'len'   => $tmp['len'],
+                'name' => $tmp['name'],
+                'type' => isset($tmp['native_type']) ? $tmp['native_type'] : 'unknown',
+                'len' => $tmp['len'],
                 'flags' => $tmp['flags'],
             ];
 
@@ -797,10 +807,11 @@ class DoctrineDbal extends Common
      *
      * @param string $type  the kind of objects you want to retrieve
      *
-     * @return string  the SQL query string or null if the driver doesn't
-     *                  support the object type requested
+     * @return string|null  the SQL query string or null if the driver
+     *                      doesn't support the object type requested
      *
      * @access protected
+     * @todo these are mysql specific, and this is a doctrine driver
      * @see Pineapple\DB\Driver\Common::getListOf()
      */
     protected function getSpecialQuery($type)

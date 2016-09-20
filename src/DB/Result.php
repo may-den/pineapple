@@ -79,7 +79,7 @@ class Result
 
     /**
      * The query result resource id created by PHP
-     * @var resource
+     * @var mixed
      */
     public $result;
 

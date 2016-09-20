@@ -91,7 +91,6 @@ namespace Pineapple;
  * @version    Release: 1.10.1
  * @link       http://pear.php.net/package/PEAR
  * @since      Class available since Release 1.3.3
- *
  */
 class Exception extends \Exception
 {
@@ -101,6 +100,7 @@ class Exception extends \Exception
     protected $cause;
     private static $observers = [];
     private static $uniqueid = 0;
+    private $trace;
 
     /**
      * Supported signatures:
@@ -302,10 +302,10 @@ class Exception extends \Exception
      */
     public function getTraceSafe()
     {
-        if (!isset($this->_trace)) {
-            $this->_trace = $this->getTrace();
+        if (!isset($this->trace)) {
+            $this->trace = $this->getTrace();
         }
-        return $this->_trace;
+        return $this->trace;
     }
 
     /**

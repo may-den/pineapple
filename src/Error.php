@@ -27,6 +27,7 @@ class Error
     private $message = '';
     private $userInfo = '';
     private $backtrace = null;
+    private $callback;
 
     /**
      * Pineapple\Error constructor

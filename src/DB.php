@@ -309,7 +309,9 @@ class DB
      * connect to the database
      *
      * @param string $type     the database type (eg "mysql")
-     * @param array  $options  an associative array of option names and values
+     * @param mixed  $options  an associative array of option names and values,
+     *                         or a true/false value for the 'persistent'
+     *                         option
      *
      * @return object  a new DB object.  A DB\Error object on failure.
      *
