@@ -849,7 +849,7 @@ abstract class Common extends Util
      *
      * @return string  the sql query for autoPrepare()
      */
-    public function buildManipSQL($table, $table_fields, $mode, $where = false)
+    public function buildManipSQL($table, $table_fields, $mode, $where = null)
     {
         if (count($table_fields) == 0) {
             return $this->raiseError(DB::DB_ERROR_NEED_MORE_DATA);
