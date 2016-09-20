@@ -10,9 +10,6 @@ use PDO;
 /**
  * A PEAR DB driver that uses Doctrine's DBAL as an underlying database
  * layer.
- *
- * @todo Integration test for this would mean we can get code coverage
- * @codeCoverageIgnore
  */
 class DoctrineDbal extends Common
 {
@@ -179,16 +176,16 @@ class DoctrineDbal extends Common
      * @param array            $dsn        A valid PEAR DB DSN
      * @return DoctrineDbal    The constructed Pineapple\DB\Driver\DoctrineDbal object
      */
-    public function setConnectionHandle(DBALConnection $connection, array $dsn)
+    public function setConnectionHandle(DBALConnection $connection, array $dsn = [])
     {
         $this->dsn = $dsn;
         $this->connection = $connection;
 
-        if ($dsn['dbsyntax']) {
+        if (isset($dsn['dbsyntax'])) {
             $this->dbsyntax = $dsn['dbsyntax'];
         }
 
-        if ($dsn['database']) {
+        if (isset($dsn['database'])) {
             $this->db = $dsn['database'];
         }
 
@@ -202,7 +199,7 @@ class DoctrineDbal extends Common
      */
     public function disconnect()
     {
-        $this->connection = null;
+        unset($this->connection);
         return true;
     }
 
