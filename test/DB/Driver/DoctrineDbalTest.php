@@ -18,6 +18,13 @@ class DoctrineDbalTest extends TestCase
     private $dbh = null;
     private $dbalConn = null;
 
+    private static $setupDb = [
+        'CREATE TABLE dbaltest (a TEXT)',
+        'INSERT INTO dbaltest (a) VALUES (\'test1\')',
+        'INSERT INTO dbaltest (a) VALUES (\'test2\')',
+        'INSERT INTO dbaltest (a) VALUES (\'test3\')',
+    ];
+
     /**
      * @before
      */
@@ -27,8 +34,12 @@ class DoctrineDbalTest extends TestCase
 
         $dbalConfig = new DBALConfiguration();
         $this->dbalConn = DBALDriverManager::getConnection([
-            'url' => 'sqlite::memory:',
+            'url' => 'sqlite:///:memory:',
         ], $dbalConfig);
+
+        foreach (self::$setupDb as $sql) {
+            $this->dbalConn->query($sql);
+        }
 
         $this->dbh->setConnectionHandle($this->dbalConn);
     }
@@ -75,5 +86,16 @@ class DoctrineDbalTest extends TestCase
     {
         // this isn't a great test. we can't check something that is unset().
         $this->assertTrue($this->dbh->disconnect());
+    }
+
+    public function testSimpleQuery()
+    {
+        $this->markTestIncomplete('setAttribute does not seem to exist');
+        $data = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        // $this->assertEquals([
+        //     'test1',
+        //     'test2',
+        //     'test3',
+        // ], $data);
     }
 }
