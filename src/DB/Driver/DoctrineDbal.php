@@ -206,6 +206,19 @@ class DoctrineDbal extends Common
     }
 
     /**
+     * Determine if we're connected
+     *
+     * @return bool true if connected, false if not
+     */
+    private function connected()
+    {
+        if (isset($this->connection) && $this->connection) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Sends a query to the database server
      *
      * @param string  the SQL query string
@@ -219,7 +232,7 @@ class DoctrineDbal extends Common
         $ismanip = $this->_checkManip($query);
         $this->lastQuery = $query;
         $query = $this->modifyQuery($query);
-        if (!$this->connection) {
+        if (!$this->connected()) {
             return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
         }
         if (!$this->autocommit && $ismanip) {
@@ -706,7 +719,11 @@ class DoctrineDbal extends Common
      */
     public function myRaiseError($errno = null)
     {
-        $error = $this->connection->errorInfo();
+        if ($this->connected()) {
+            $error = $this->connection->errorInfo();
+        } else {
+            $error = ['Disconnected', null, 'No active connection'];
+        }
         return $this->raiseError(
             $errno,
             null,
