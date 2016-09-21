@@ -90,12 +90,8 @@ class DoctrineDbalTest extends TestCase
 
     public function testSimpleQuery()
     {
-        $this->markTestIncomplete('setAttribute does not seem to exist');
-        $data = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
-        // $this->assertEquals([
-        //     'test1',
-        //     'test2',
-        //     'test3',
-        // ], $data);
+        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $result = new Result($this->dbh, $sth);
+        $this->assertEquals(['test1'], $result->fetchRow());
     }
 }
