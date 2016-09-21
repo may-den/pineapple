@@ -166,6 +166,14 @@ class DoctrineDbal extends Common
      */
     public function connect($dsn, $persistent = false)
     {
+        // this is a stupid error
+        return $this->raiseError(
+            DB::DB_ERROR_NOSUCHDB,
+            null,
+            null,
+            'Please use ' . self::class . '::setConnectionHandle() instead'
+        );
+
         return DB::DB_OK;
     }
 
