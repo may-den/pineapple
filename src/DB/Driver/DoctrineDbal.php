@@ -166,14 +166,8 @@ class DoctrineDbal extends Common
      */
     public function connect($dsn, $persistent = false)
     {
-        // this is a stupid error
-        return $this->raiseError(
-            DB::DB_ERROR_NODBSELECTED,
-            null,
-            null,
-            'Please use ' . self::class . '::setConnectionHandle() instead'
-        );
-
+        // this returns success, but in effect does nothing.
+        // since $this->connection remains unset, driver still behaves well.
         return DB::DB_OK;
     }
 
