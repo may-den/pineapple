@@ -168,7 +168,7 @@ class DoctrineDbal extends Common
     {
         // this is a stupid error
         return $this->raiseError(
-            DB::DB_ERROR_NOSUCHDB,
+            DB::DB_ERROR_NODBSELECTED,
             null,
             null,
             'Please use ' . self::class . '::setConnectionHandle() instead'
