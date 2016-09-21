@@ -50,6 +50,7 @@ class DoctrineDbalTest extends TestCase
     public function teardownDbalInstance()
     {
         unset($this->dbh);
+        unset($this->dbalConn);
     }
 
     public function testConstruct()
@@ -84,7 +85,7 @@ class DoctrineDbalTest extends TestCase
 
     public function testDisconnect()
     {
-        // this isn't a great test. we can't check something that is unset().
+        // this isn't a great test. we can't check something that is unset() using reflection.
         $this->assertTrue($this->dbh->disconnect());
     }
 
@@ -93,5 +94,13 @@ class DoctrineDbalTest extends TestCase
         $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
         $result = new Result($this->dbh, $sth);
         $this->assertEquals(['test1'], $result->fetchRow());
+    }
+
+    public function testSimpleQueryWithNoConnection()
+    {
+        $this->dbh->disconnect();
+        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $this->assertInstanceOf(Error::class, $sth);
+        $this->assertEquals(DB::DB_ERROR_NODBSELECTED, $sth->getCode());
     }
 }
