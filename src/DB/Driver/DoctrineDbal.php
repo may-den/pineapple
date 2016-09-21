@@ -245,16 +245,20 @@ class DoctrineDbal extends Common
             $this->transaction_opcount++;
         }
 
-        // @todo: doctrine? ensure we're using mysql?
-        if (!$this->options['result_buffering']) {
-            $this->connection
-                ->getWrappedConnection()
-                ->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
-        } else {
-            $this->connection
-                ->getWrappedConnection()
-                ->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+        // enable/disable result_buffering in mysql
+        // @codeCoverageIgnoreStart
+        if ($this->getPlatform() === 'mysql') {
+            if (!$this->options['result_buffering']) {
+                $this->connection
+                    ->getWrappedConnection()
+                    ->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+            } else {
+                $this->connection
+                    ->getWrappedConnection()
+                    ->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+            }
         }
+        // @codeCoverageIgnoreEnd
 
         $result = $this->connection->query($query);
 
@@ -845,6 +849,40 @@ class DoctrineDbal extends Common
                 return 'SHOW DATABASES';
             default:
                 return null;
+        }
+    }
+
+    /**
+     * Obtain a "rationalised" database major name
+     *
+     * @return string Lower-cased type of database, e.g. "mysql", "pgsql"
+     */
+    private function getPlatform()
+    {
+        if (!$this->connected()) {
+            return $this->raiseError(DB::DB_ERROR_NODBSELECTED);
+        }
+
+        switch ($this->connection->getDatabasePlatform()) {
+            case 'MysqlPlatform':
+            case 'MySQL57Platform':
+                return 'mysql';
+                break;
+
+            case 'PostgreSqlPlatform':
+            case 'PostgreSQL91Platform':
+            case 'PostgreSQL92Platform':
+            case 'PostgreSQL94Platfor':
+                return 'pgsql';
+                break;
+
+            case 'SqlitePlatform':
+                return 'sqlite';
+                break;
+
+            default:
+                return 'unknown';
+                break;
         }
     }
 }
