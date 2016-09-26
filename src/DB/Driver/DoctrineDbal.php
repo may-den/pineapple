@@ -269,10 +269,11 @@ class DoctrineDbal extends Common
             return $this->raiseError($exception->getCode(), null, null, $exception->getMessage());
         }
 
-        if (is_object($result)) {
+        if (!$ismanip && is_object($result)) {
             $this->lastStatement = $result;
             return $result;
         }
+
         return DB::DB_OK;
     }
 
