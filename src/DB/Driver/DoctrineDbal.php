@@ -3,8 +3,11 @@ namespace Pineapple\DB\Driver;
 
 use Pineapple\DB;
 use Pineapple\DB\Error;
+
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\PDOStatement;
+use Doctrine\DBAL\Driver\DriverException as DBALDriverException;
+
 use PDO;
 
 /**
@@ -260,11 +263,12 @@ class DoctrineDbal extends Common
         }
         // @codeCoverageIgnoreEnd
 
-        $result = $this->connection->query($query);
-
-        if (!$result) {
-            return $this->myRaiseError();
+        try {
+            $result = $this->connection->query($query);
+        } catch (DBALDriverException $exception) {
+            return $this->raiseError($exception->getCode(), null, null, $exception->getMessage());
         }
+
         if (is_object($result)) {
             $this->lastStatement = $result;
             return $result;
