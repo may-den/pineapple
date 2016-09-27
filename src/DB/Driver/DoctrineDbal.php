@@ -313,12 +313,12 @@ class DoctrineDbal extends Common
     public function fetchInto($result, &$arr, $fetchmode, $rownum = null)
     {
         if ($fetchmode & DB::DB_FETCHMODE_ASSOC) {
-            $arr = @$result->fetch(PDO::FETCH_ASSOC, null, $rownum);
+            $arr = $result->fetch(PDO::FETCH_ASSOC, null, $rownum);
             if ($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE && $arr) {
                 $arr = array_change_key_case($arr, CASE_LOWER);
             }
         } else {
-            $arr = @$result->fetch(PDO::FETCH_NUM);
+            $arr = $result->fetch(PDO::FETCH_NUM);
         }
         if (!$arr) {
             return null;
