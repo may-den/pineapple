@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 class DoctrineDbalTest extends TestCase
 {
+    // @var DoctrineDbal
     private $dbh = null;
     private $dbalConn = null;
 
@@ -102,5 +103,70 @@ class DoctrineDbalTest extends TestCase
         $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
         $this->assertInstanceOf(Error::class, $sth);
         $this->assertEquals(DB::DB_ERROR_NODBSELECTED, $sth->getCode());
+    }
+
+    public function testSimpleQueryWithInsert()
+    {
+        $result = $this->dbh->simpleQuery('INSERT INTO dbaltest (a) VALUES (\'onyx\')');
+        $this->assertEquals(DB::DB_OK, $result);
+    }
+
+    public function testSimpleQueryWithInsertAndWithoutAutocommit()
+    {
+        $this->dbh->autoCommit(false);
+        $result = $this->dbh->simpleQuery('INSERT INTO dbaltest (a) VALUES (\'onyx\')');
+        $this->assertEquals(DB::DB_OK, $result);
+    }
+
+    public function testSimpleQueryWithSyntaxError()
+    {
+        $sth = $this->dbh->simpleQuery('BLUMFRUB');
+        $this->assertInstanceOf(Error::class, $sth);
+        $this->assertEquals(DB::DB_ERROR, $sth->getCode());
+    }
+
+    public function testNextResult()
+    {
+        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        // not all drivers support stacked queries. detecting which is a fine art.
+        // in honesty, it's more trouble than it's worth in terms of this legacy library.
+        $this->assertFalse($this->dbh->nextResult($sth));
+    }
+
+    public function testFetchInto()
+    {
+        $data = [];
+        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_DEFAULT);
+
+        // a success code
+        $this->assertEquals(DB::DB_OK, $result);
+        // and a row of data
+        $this->assertEquals(['test1'], $data);
+    }
+
+    public function testFetchIntoAssocMode()
+    {
+        $data = [];
+        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_ASSOC);
+
+        // a success code
+        $this->assertEquals(DB::DB_OK, $result);
+        // and a row of data
+        $this->assertEquals(['a' => 'test1'], $data);
+    }
+
+    public function testFetchIntoAssocModeWithNoData()
+    {
+        $this->markTestIncomplete('test not complete');
+        $data = [];
+        $sth = $this->dbh->simpleQuery('INSERT INTO dbaltest (\'a\') VALUES (\'jadzia\'))');
+        $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_ASSOC);
+
+        // a success code
+        $this->assertEquals(DB::DB_OK, $result);
+        // and a row of data
+        $this->assertEquals(['a' => 'test1'], $data);
     }
 }
