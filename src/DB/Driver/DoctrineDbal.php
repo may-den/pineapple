@@ -240,10 +240,9 @@ class DoctrineDbal extends Common
         }
         if (!$this->autocommit && $ismanip) {
             if ($this->transaction_opcount == 0) {
-                $result = $this->connection->beginTransaction();
-                if (!$result) {
-                    return $this->myRaiseError();
-                }
+                // dbal doesn't return a status for begin transaction. pdo does.
+                $this->connection->beginTransaction();
+                // ...so we can't (easily) capture an exception if this goes wrong.
             }
             $this->transaction_opcount++;
         }
@@ -266,7 +265,7 @@ class DoctrineDbal extends Common
         try {
             $result = $this->connection->query($query);
         } catch (DBALDriverException $exception) {
-            return $this->raiseError($exception->getCode(), null, null, $exception->getMessage());
+            return $this->raiseError(DB::DB_ERROR, null, null, $exception->getMessage());
         }
 
         if (!$ismanip && is_object($result)) {
