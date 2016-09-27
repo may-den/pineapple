@@ -6,7 +6,7 @@ use Pineapple\DB\Error;
 
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\PDOStatement;
-use Doctrine\DBAL\Driver\DriverException as DBALDriverException;
+use Doctrine\DBAL\Exception\DriverException as DBALDriverException;
 
 use PDO;
 
