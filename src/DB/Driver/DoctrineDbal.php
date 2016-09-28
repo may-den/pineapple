@@ -314,7 +314,7 @@ class DoctrineDbal extends Common
     {
         if ($fetchmode & DB::DB_FETCHMODE_ASSOC) {
             $arr = $result->fetch(PDO::FETCH_ASSOC, null, $rownum);
-            if ($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE && $arr) {
+            if (($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) && $arr) {
                 $arr = array_change_key_case($arr, CASE_LOWER);
             }
         } else {
