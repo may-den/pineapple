@@ -5,7 +5,7 @@ use Pineapple\DB;
 use Pineapple\DB\Error;
 
 use Doctrine\DBAL\Connection as DBALConnection;
-use Doctrine\DBAL\Driver\PDOStatement;
+use Doctrine\DBAL\Driver\Statement as DBALStatement;
 use Doctrine\DBAL\Exception\DriverException as DBALDriverException;
 
 use PDO;
@@ -89,6 +89,7 @@ class DoctrineDbal extends Common
 
     /**
      * A copy of the last pdostatement object
+     * @var DBALStatement
      */
     public $lastStatement = null;
 
@@ -310,7 +311,7 @@ class DoctrineDbal extends Common
      *
      * @see Pineapple\DB\Result::fetchInto()
      */
-    public function fetchInto($result, &$arr, $fetchmode, $rownum = null)
+    public function fetchInto(DBALStatement $result, &$arr, $fetchmode, $rownum = null)
     {
         if ($fetchmode & DB::DB_FETCHMODE_ASSOC) {
             $arr = $result->fetch(PDO::FETCH_ASSOC, null, $rownum);
@@ -754,12 +755,12 @@ class DoctrineDbal extends Common
     /**
      * Returns information about a table or a result set
      *
-     * @param object|string  $result  Pineapple\DB\Result object from a query or a
-     *                                string containing the name of a table.
-     *                                While this also accepts a query result
-     *                                resource identifier, this behavior is
-     *                                deprecated.
-     * @param int            $mode    a valid tableInfo mode
+     * @param DBALStatement|string $result Pineapple\DB\Result object from a query or a
+     *                                     string containing the name of a table.
+     *                                     While this also accepts a query result
+     *                                     resource identifier, this behavior is
+     *                                     deprecated.
+     * @param int                  $mode   a valid tableInfo mode
      *
      * @return mixed   an associative array with the information requested.
      *                 A Pineapple\DB\Error object on failure.
@@ -791,7 +792,7 @@ class DoctrineDbal extends Common
             $this->myRaiseError();
         }
 
-        if (!is_object($id) || !($id instanceof PDOStatement)) {
+        if (!is_object($id) || !($id instanceof DBALStatement)) {
             return $this->myRaiseError(DB::DB_ERROR_NEED_MORE_DATA);
         }
 
