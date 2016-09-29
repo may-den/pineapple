@@ -432,7 +432,7 @@ class DoctrineDbal extends Common
     public function commit()
     {
         if ($this->transaction_opcount > 0) {
-            if (!$this->connection) {
+            if (!$this->connected()) {
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
 
