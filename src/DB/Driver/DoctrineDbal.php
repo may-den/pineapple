@@ -349,12 +349,12 @@ class DoctrineDbal extends Common
      *
      * @see Pineapple\DB\Result::free()
      */
-    public function freeResult(DBALStatement $result)
+    public function freeResult(DBALStatement &$result)
     {
         if ($result === null) {
             return false;
         }
-        $result = null;
+        unset($result);
         return true;
     }
 
