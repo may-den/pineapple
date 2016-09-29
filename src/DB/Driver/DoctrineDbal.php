@@ -394,6 +394,8 @@ class DoctrineDbal extends Common
      *                          object on failure.
      *
      * @see Pineapple\DB\Result::numRows()
+     * @todo This is not easily testable, since not all drivers support this for SELECTs
+     * @codeCoverageIgnore
      */
     public function numRows($result)
     {
