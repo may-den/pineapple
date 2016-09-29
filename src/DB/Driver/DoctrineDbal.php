@@ -438,8 +438,11 @@ class DoctrineDbal extends Common
 
             try {
                 $this->connection->commit();
+                // @todo honestly, i don't know how to generate a failed tranascation commit
+                // @codeCoverageIgnoreStart
             } catch (DBALDriverException $e) {
                 return $this->myRaiseError();
+                // @codeCoverageIgnoreEnd
             }
 
             $this->transaction_opcount = 0;
