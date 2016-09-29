@@ -7,6 +7,7 @@ use Pineapple\DB\Error;
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\Statement as DBALStatement;
 use Doctrine\DBAL\Exception\DriverException as DBALDriverException;
+use Doctrine\DBAL\ConnectionException as DBALConnectionException;
 
 use PDO;
 
@@ -440,7 +441,7 @@ class DoctrineDbal extends Common
                 $this->connection->commit();
                 // @todo honestly, i don't know how to generate a failed tranascation commit
                 // @codeCoverageIgnoreStart
-            } catch (DBALDriverException $e) {
+            } catch (DBALConnectionException $e) {
                 return $this->myRaiseError();
                 // @codeCoverageIgnoreEnd
             }
