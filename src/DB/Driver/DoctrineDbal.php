@@ -321,17 +321,15 @@ class DoctrineDbal extends Common
         } else {
             $arr = $result->fetch(PDO::FETCH_NUM);
         }
+
         if (!$arr) {
             return null;
         }
+
         if ($this->options['portability'] & DB::DB_PORTABILITY_RTRIM) {
-            /**
-             * Even though this DBMS already trims output, we do this because
-             * a field might have intentional whitespace at the end that
-             * gets removed by DB_PORTABILITY_RTRIM under another driver.
-             */
             $this->_rtrimArrayValues($arr);
         }
+
         if ($this->options['portability'] & DB::DB_PORTABILITY_NULL_TO_EMPTY) {
             $this->_convertNullArrayValuesToEmpty($arr);
         }
