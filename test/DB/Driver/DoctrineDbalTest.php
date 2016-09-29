@@ -10,6 +10,7 @@ use Pineapple\DB\Driver\DoctrineDbal;
 use Doctrine\DBAL\DriverManager as DBALDriverManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Connection as DBALConnection;
+use Doctrine\DBAL\Driver\Statement as DBALStatement;
 
 use PHPUnit\Framework\TestCase;
 
@@ -20,10 +21,23 @@ class DoctrineDbalTest extends TestCase
     private $dbalConn = null;
 
     private static $setupDb = [
+        // general data testing
         'CREATE TABLE dbaltest (a TEXT)',
         'INSERT INTO dbaltest (a) VALUES (\'test1\')',
         'INSERT INTO dbaltest (a) VALUES (\'test2\')',
         'INSERT INTO dbaltest (a) VALUES (\'test3\')',
+        'INSERT INTO dbaltest (a) VALUES (\'trimming test    \')',
+
+        // testing key cases
+        'CREATE TABLE keycasetest (MixedCaseColumn TEXT)',
+        'INSERT INTO keycasetest (MixedCaseColumn) VALUES (\'objet volante non identifie\')',
+
+        // testing conversion of nulls to empty strings
+        'CREATE TABLE nullcoalescencetest (a TEXT, b TEXT)',
+        'INSERT INTO nullcoalescencetest (a, b) VALUES (\'nebular hypothesis, gimme gimme gimme\', null)',
+
+        // testing transacations (empty table)
+        'CREATE TABLE transactiontest (a TEXT)',
     ];
 
     /**
@@ -135,8 +149,8 @@ class DoctrineDbalTest extends TestCase
 
     public function testFetchInto()
     {
-        $data = [];
         $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $data = [];
         $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_DEFAULT);
 
         // a success code
@@ -147,8 +161,8 @@ class DoctrineDbalTest extends TestCase
 
     public function testFetchIntoAssocMode()
     {
-        $data = [];
         $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $data = [];
         $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_ASSOC);
 
         // a success code
@@ -159,14 +173,136 @@ class DoctrineDbalTest extends TestCase
 
     public function testFetchIntoAssocModeWithNoData()
     {
-        $this->markTestIncomplete('test not complete');
+        // query and get a raw statement from the driver
+        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest LIMIT 1');
+        $this->assertInstanceOf(DBALStatement::class, $sth);
+
+        // first fetch should give us a valid row
         $data = [];
-        $sth = $this->dbh->simpleQuery('INSERT INTO dbaltest (\'a\') VALUES (\'jadzia\'))');
+        $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_ASSOC);
+        $this->assertEquals(DB::DB_OK, $result);
+        $this->assertEquals(['a' => 'test1'], $data);
+
+        // second fetch should produce false from the driver, and fetchInto return nul
+        $data = []; // the actual return from fetchInto for $data is unpredictable
+        $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_ASSOC);
+        $this->assertNull($result);
+    }
+
+    public function testFetchIntoAssocModeWithKeyCaseSquashing()
+    {
+        $this->dbh->setOption('portability', DB::DB_PORTABILITY_LOWERCASE);
+        $sth = $this->dbh->simpleQuery('SELECT * FROM keycasetest');
+        $data = [];
         $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_ASSOC);
 
         // a success code
         $this->assertEquals(DB::DB_OK, $result);
         // and a row of data
-        $this->assertEquals(['a' => 'test1'], $data);
+        $this->assertEquals(['mixedcasecolumn' => 'objet volante non identifie'], $data);
+    }
+
+    public function testFetchIntoWithTrimming()
+    {
+        $this->dbh->setOption('portability', DB::DB_PORTABILITY_RTRIM);
+        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest WHERE a LIKE \'trimming%\'');
+        $data = [];
+        $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_DEFAULT);
+
+        // a success code
+        $this->assertEquals(DB::DB_OK, $result);
+        // and a row of data
+        $this->assertEquals(['trimming test'], $data);
+    }
+
+    public function testFetchIntoWithNullCoalescence()
+    {
+        // before - this should come out with a null in the array
+        $sth = $this->dbh->simpleQuery('SELECT b FROM nullcoalescencetest');
+        $data = [];
+        $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_DEFAULT);
+
+        $this->assertEquals(DB::DB_OK, $result);
+        $this->assertNull($data[0]);
+
+        // after - this should come out with nulls converted into empty strings
+        $this->dbh->setOption('portability', DB::DB_PORTABILITY_NULL_TO_EMPTY);
+        $sth = $this->dbh->simpleQuery('SELECT b FROM nullcoalescencetest');
+        $data = [];
+        $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_DEFAULT);
+
+        $this->assertEquals(DB::DB_OK, $result);
+        $this->assertEmpty($data[0]);
+    }
+
+    public function testFreeResult()
+    {
+        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+
+        $this->assertInstanceOf(DBALStatement::class, $sth);
+        $this->assertTrue($this->dbh->freeResult($sth));
+        $this->assertInstanceOf(DBALStatement::class, $sth);
+    }
+
+    public function testFreeResultAlreadyFreed()
+    {
+        $sth = null;
+        $this->assertFalse($this->dbh->freeResult($sth));
+    }
+
+    public function testNumCols()
+    {
+        $sth = $this->dbh->simpleQuery('SELECT * FROM nullcoalescencetest');
+        $this->assertEquals(2, $this->dbh->numCols($sth));
+    }
+
+    public function testNumColsWithNoColumns()
+    {
+        $sth = $this->dbh->simpleQuery('REINDEX dbaltest');
+        $this->assertInstanceOf(Error::class, $this->dbh->numCols($sth));
+    }
+
+    public function testAutoCommit()
+    {
+        // don't like reflection, but want to test this important method
+        $reflectionClass = new \ReflectionClass($this->dbh);
+        $reflectionProp = $reflectionClass->getProperty('autocommit');
+        $reflectionProp->setAccessible(true);
+
+        // on by default
+        $this->assertTrue($reflectionProp->getValue($this->dbh));
+
+        // turn it off by default value
+        $this->dbh->autoCommit();
+        $this->assertFalse($reflectionProp->getValue($this->dbh));
+
+        // turn it back on so we can test it with implicit turn off
+        $this->dbh->autoCommit(true);
+        $this->assertTrue($reflectionProp->getValue($this->dbh));
+
+        // and lastly test implicit turn off
+        $this->dbh->autoCommit(false);
+        $this->assertFalse($reflectionProp->getValue($this->dbh));
+    }
+
+    public function testCommitWithNoActiveTransaction()
+    {
+        $this->assertEquals(DB::DB_OK, $this->dbh->commit());
+    }
+
+    public function testCommitWithActiveTransaction()
+    {
+        $this->dbh->autoCommit(false);
+        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'the nurse who loved me\')');
+        $this->assertEquals(DB::DB_OK, $this->dbh->commit());
+    }
+
+    public function testCommitWithDisconnection()
+    {
+        $this->dbh->autoCommit(false);
+        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'the nurse who loved me\')');
+        $this->dbh->disconnect();
+
+        $this->assertInstanceOf(Error::class, $this->dbh->commit());
     }
 }
