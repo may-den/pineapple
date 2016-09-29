@@ -435,11 +435,14 @@ class DoctrineDbal extends Common
             if (!$this->connection) {
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
-            $result = $this->connection->commit();
-            $this->transaction_opcount = 0;
-            if (!$result) {
+
+            try {
+                $this->connection->commit();
+            } catch (DBALDriverException $e) {
                 return $this->myRaiseError();
             }
+
+            $this->transaction_opcount = 0;
         }
         return DB::DB_OK;
     }
