@@ -345,16 +345,19 @@ class DoctrineDbal extends Common
      * Pineapple\DB\Result::free() instead.  It can't be declared "protected"
      * because Pineapple\DB\Result is a separate object.
      *
-     * @param resource $result  PHP's query result resource
+     * @param DBALStatement $result PHP's query result resource
      *
-     * @return bool  TRUE on success, FALSE if $result is invalid
+     * @return bool                 TRUE on success, FALSE if $result is invalid
      *
      * @see Pineapple\DB\Result::free()
      */
-    public function freeResult($result)
+    public function freeResult(DBALStatement $result)
     {
+        if ($result === null) {
+            return false;
+        }
         $result = null;
-        return is_resource($result) ? true : false;
+        return true;
     }
 
     /**
