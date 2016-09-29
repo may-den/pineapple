@@ -374,7 +374,7 @@ class DoctrineDbal extends Common
      */
     public function numCols($result)
     {
-        $cols = @$result->columnCount();
+        $cols = $result->columnCount();
         if (!$cols) {
             return $this->myRaiseError();
         }
@@ -397,7 +397,7 @@ class DoctrineDbal extends Common
      */
     public function numRows($result)
     {
-        $rows = @$result->rowCount();
+        $rows = $result->rowCount();
         if ($rows === null) {
             return $this->myRaiseError();
         }
@@ -507,7 +507,7 @@ class DoctrineDbal extends Common
             $result = $this->query("UPDATE {$seqName} SET id = LAST_INSERT_ID(id + 1)");
             if ($result === DB::DB_OK) {
                 // COMMON CASE
-                $id = @$this->connection->lastInsertId();
+                $id = $this->connection->lastInsertId();
                 if ($id != 0) {
                     return $id;
                 }
@@ -780,7 +780,7 @@ class DoctrineDbal extends Common
              * Probably received a table name.
              * Create a result resource identifier.
              */
-            $id = @$this->simpleQuery("SELECT * FROM $result LIMIT 0");
+            $id = $this->simpleQuery("SELECT * FROM $result LIMIT 0");
             $got_string = true;
         } elseif (is_object($result)) {
             /**
@@ -811,7 +811,7 @@ class DoctrineDbal extends Common
         }
 
         for ($i = 0; $i < $count; $i++) {
-            $tmp = @$id->getColumnMeta($i);
+            $tmp = $id->getColumnMeta($i);
 
             $res[$i] = [
                 'table' => $tmp['table'],
