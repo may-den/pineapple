@@ -460,14 +460,20 @@ class DoctrineDbal extends Common
     public function rollback()
     {
         if ($this->transaction_opcount > 0) {
-            if (!$this->connection) {
+            if (!$this->connected()) {
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
-            $result = $this->connection->rollback();
-            $this->transaction_opcount = 0;
-            if (!$result) {
+
+            try {
+                $this->connection->rollBack();
+                // @todo honestly, i don't know how to generate a failed tranascation rollback
+                // @codeCoverageIgnoreStart
+            } catch (DBALConnectionException $e) {
                 return $this->myRaiseError();
+                // @codeCoverageIgnoreEnd
             }
+
+            $this->transaction_opcount = 0;
         }
         return DB::DB_OK;
     }
