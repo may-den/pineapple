@@ -270,11 +270,15 @@ class DoctrineDbal extends Common
             return $this->raiseError(DB::DB_ERROR, null, null, $exception->getMessage());
         }
 
-        if (!$ismanip && is_object($result)) {
-            $this->lastStatement = $result;
+        // keep this so we can perform rowCount and suchlike later
+        $this->lastStatement = $result;
+
+        // fetch queries should return the result object now
+        if (!$ismanip && isset($result) && ($result instanceof DBALStatement)) {
             return $result;
         }
 
+        // ...whilst insert/update/delete just gets a "sure, it went well" result
         return DB::DB_OK;
     }
 
@@ -488,8 +492,8 @@ class DoctrineDbal extends Common
      */
     public function affectedRows()
     {
-        if ($this->lastStatement === null || !is_object($this->lastStatement)) {
-            $this->myRaiseError();
+        if (!isset($this->lastStatement) || !($this->lastStatement instanceof DBALStatement)) {
+            return $this->myRaiseError();
         }
 
         if ($this->lastQueryManip) {
