@@ -303,6 +303,68 @@ class DoctrineDbalTest extends TestCase
         $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'the nurse who loved me\')');
         $this->dbh->disconnect();
 
-        $this->assertInstanceOf(Error::class, $this->dbh->commit());
+        $result = $this->dbh->commit();
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_NODBSELECTED, $result->getCode());
+    }
+
+    public function testRollback()
+    {
+        $this->dbh->autoCommit(false);
+        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'the nurse who loved me\')');
+        $this->dbh->rollback();
+
+        $sth = $this->dbh->simpleQuery('SELECT * FROM transactiontest');
+        $data = [];
+        $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_ASSOC);
+
+        $this->assertNull($result);
+        $this->assertFalse($data);
+    }
+
+    public function testRollbackWithDisconnection()
+    {
+        $this->dbh->autoCommit(false);
+        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'the nurse who loved me\')');
+        $this->dbh->disconnect();
+
+        $result = $this->dbh->rollback();
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_NODBSELECTED, $result->getCode());
+    }
+
+    public function testAffectedRows()
+    {
+        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'the nurse who loved me\'),(\'solaris\')');
+        $this->assertEquals(2, $this->dbh->affectedRows());
+    }
+
+    public function testAffectedRowsWithNoLastStatement()
+    {
+        // use our own connection so we don't have rowCount from test fixture setup
+        $myDbh = DB::connect('DoctrineDbal://');
+
+        $dbalConfig = new DBALConfiguration();
+        $myDbalConn = DBALDriverManager::getConnection([
+            'url' => 'sqlite:///:memory:',
+        ], $dbalConfig);
+
+        $myDbh->setConnectionHandle($myDbalConn);
+
+        $result = $myDbh->affectedRows();
+
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR, $result->getCode());
+    }
+
+    public function testAffectedRowsOnNonManipulativeQuery()
+    {
+        $this->dbh->query('SELECT * FROM dbaltest');
+        $this->assertEquals(0, $this->dbh->affectedRows());
+    }
+
+    public function testQuoteIdentifier()
+    {
+        $this->assertEquals('`foo``bar`', $this->dbh->quoteIdentifier('foo`bar'));
     }
 }
