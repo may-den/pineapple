@@ -748,7 +748,8 @@ class DoctrineDbal extends Common
      */
     public function escapeSimple($str)
     {
-        return @preg_replace('/^(.)(.*)\g1$/', '$2', $this->connection->quote($str));
+        // @todo this requires attention before release, this is badly Not Right
+        return preg_replace('/^(.)(.*)\g1$/', '$2', $this->connection->quote($str));
     }
 
     /**
