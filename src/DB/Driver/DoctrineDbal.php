@@ -517,9 +517,21 @@ class DoctrineDbal extends Common
      *      Pineapple\DB\Driver\Common::getSequenceName(),
      *      Pineapple\DB\Driver\DoctrineDbal::createSequence(),
      *      Pineapple\DB\Driver\DoctrineDbal::dropSequence()
+     *
+     * @deprecated Pineapple retains but does not support this, it's restricted to mysql, and untested
+     * @codeCoverageIgnore
      */
     public function nextId($seqName, $onDemand = true)
     {
+        /**
+         * this method is in here for LEGACY purposes only, and because it does not
+         * easily fit into pineapple-compat. only support mysql platform, error if
+         * other platform detected.
+         */
+        if ($this->getPlatform() !== 'mysql') {
+            return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
+        }
+
         $seqName = $this->getSequenceName($seqName);
         do {
             $repeat = 0;
@@ -596,9 +608,21 @@ class DoctrineDbal extends Common
      *      Pineapple\DB\Driver\Common::getSequenceName(),
      *      Pineapple\DB\Driver\Pineapple\DB\Driver\DoctrineDbal::nextID(),
      *      Pineapple\DB\Driver\Pineapple\DB\Driver\DoctrineDbal::dropSequence()
+     *
+     * @deprecated Pineapple retains but does not support this, it's restricted to mysql, and untested
+     * @codeCoverageIgnore
      */
     public function createSequence($seqName)
     {
+        /**
+         * this method is in here for LEGACY purposes only, and because it does not
+         * easily fit into pineapple-compat. only support mysql platform, error if
+         * other platform detected.
+         */
+        if ($this->getPlatform() !== 'mysql') {
+            return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
+        }
+
         $seqName = $this->getSequenceName($seqName);
         $res = $this->query("CREATE TABLE {$seqName} (id INTEGER UNSIGNED AUTO_INCREMENT NOT NULL, PRIMARY KEY(id))");
         if (DB::isError($res)) {
@@ -620,9 +644,21 @@ class DoctrineDbal extends Common
      *      Pineapple\DB\Driver\Common::getSequenceName(),
      *      Pineapple\DB\Driver\Pineapple\DB\Driver\DoctrineDbal::nextID(),
      *      Pineapple\DB\Driver\Pineapple\DB\Driver\DoctrineDbal::createSequence()
+     *
+     * @deprecated Pineapple retains but does not support this, it's restricted to mysql, and untested
+     * @codeCoverageIgnore
      */
     public function dropSequence($seqName)
     {
+        /**
+         * this method is in here for LEGACY purposes only, and because it does not
+         * easily fit into pineapple-compat. only support mysql platform, error if
+         * other platform detected.
+         */
+        if ($this->getPlatform() !== 'mysql') {
+            return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
+        }
+
         return $this->query('DROP TABLE ' . $this->getSequenceName($seqName));
     }
 
@@ -636,9 +672,15 @@ class DoctrineDbal extends Common
      *                         on failure.
      *
      * @access private
+     *
+     * @deprecated Pineapple retains but does not support this, it's restricted to mysql, and untested
+     * @codeCoverageIgnore
      */
     private function BCsequence($seqName)
     {
+        // n.b. we don't error out if not using mysql here, because this is only used
+        // in one method which is already fitted with such a condition. and it's deprecated anyway.
+
         // Obtain a user-level lock... this will release any previous
         // application locks, but unlike LOCK TABLES, it does not abort
         // the current transaction and is much less frequently used.
