@@ -739,15 +739,59 @@ class DoctrineDbal extends Common
     /**
      * Escapes a string according to the current DBMS's standards
      *
-     * @param string $str  the string to be escaped
+     * @param string $str   the string to be escaped
      *
-     * @return string      the escaped string
+     * @return string|Error the escaped string, or an error
      *
      * @see Pineapple\DB\Driver\Common::quoteSmart()
      * @since Method available since Release 1.6.0
      */
     public function escapeSimple($str)
     {
+        /**
+         * this requires something of an explanation.
+         * DB was not built for PDO, but the database functions for each driver
+         * it supported. this used, for example, mysql_real_escape_string,
+         * pgsql_escape_string/pgsql_escape_literal, but the product would not
+         * be encapsulated in quotes.
+         *
+         * Dbal, providing a consistent PDO-like interface (save for a few
+         * return values and methods), offers quote(), which _does_ quote the
+         * string. but code that uses escapeSimple() expects an escaped string,
+         * not a quoted escaped string.
+         *
+         * we're going to need to strip these quotes. a rundown of the styles:
+         * mysql: single quotes, backslash to literal single quotes to escape
+         * pgsql: single quotes, literal single quotes are repeated twice
+         * sqlite: as pgsql
+         *
+         * because we're tailored for Dbal, we are (supposedly) agnostic to
+         * these things. generically, we could look for either " or ' at the
+         * beginning and end, and strip those. as a safety net, check length.
+         * we could also just strip single quotes.
+         */
+        switch ($this->getPlatform()) {
+            case 'mysql':
+            case 'pgsql':
+            case 'sqlite':
+                $quotedString = $this->connection->quote($str);
+
+                if (preg_match('/^(["\']).*\g1$/', $quotedString) && ((strlen($quotedString) - strlen($str)) >= 2)) {
+                    // it's a quoted string, it's 2 or more characters longer, let's strip
+                    return preg_replace('/^(["\'])(.*)\g1$/', '$2', $quotedString);
+                }
+
+                // no quotes detected or length is insufficiently different to incorporate quotes
+                return $quotedString;
+                break;
+
+            default:
+                return $this->myRaiseError(DB::DB_ERROR_UNSUPPORTED);
+                break;
+        }
+
+
+
         // @todo this requires attention before release, this is badly Not Right
         return preg_replace('/^(.)(.*)\g1$/', '$2', $this->connection->quote($str));
     }
