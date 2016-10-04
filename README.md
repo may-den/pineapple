@@ -1,8 +1,8 @@
 # Pineapple: Refactored PEAR and DB
 
-| `master` | `dev-0.2.0` |
-|----------|-------------|
-| [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=master)](https://travis-ci.org/wethersherbs/pineapple) | [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=dev-0.2.0)](https://travis-ci.org/wethersherbs/pineapple) |
+| `master` |
+|----------|
+| [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=master)](https://travis-ci.org/wethersherbs/pineapple) |
 
 ## Why?
 
