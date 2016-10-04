@@ -581,15 +581,6 @@ class DoctrineDbal extends Common
                     // First ID of a newly created sequence is 1
                     return 1;
                 }
-            } elseif (DB::isError($result) &&
-                      $result->getCode() == DB::DB_ERROR_ALREADY_EXISTS) {
-                // BACKWARDS COMPAT
-                // see BCsequence() comment
-                $result = $this->BCsequence($seqName);
-                if (DB::isError($result)) {
-                    return $this->raiseError($result);
-                }
-                $repeat = 1;
             }
         } while ($repeat);
 
@@ -660,61 +651,6 @@ class DoctrineDbal extends Common
         }
 
         return $this->query('DROP TABLE ' . $this->getSequenceName($seqName));
-    }
-
-    /**
-     * Backwards compatibility with old sequence emulation implementation
-     * (clean up the dupes)
-     *
-     * @param string $seqName  the sequence name to clean up
-     *
-     * @return bool|Error      true on success. A Pineapple\DB\Error object
-     *                         on failure.
-     *
-     * @access private
-     *
-     * @deprecated Pineapple retains but does not support this, it's restricted to mysql, and untested
-     * @codeCoverageIgnore
-     */
-    private function BCsequence($seqName)
-    {
-        // n.b. we don't error out if not using mysql here, because this is only used
-        // in one method which is already fitted with such a condition. and it's deprecated anyway.
-
-        // Obtain a user-level lock... this will release any previous
-        // application locks, but unlike LOCK TABLES, it does not abort
-        // the current transaction and is much less frequently used.
-        $result = $this->getOne("SELECT GET_LOCK('${seqName}_lock',10)");
-        if (DB::isError($result)) {
-            return $result;
-        }
-        if ($result == 0) {
-            // Failed to get the lock, can't do the conversion, bail
-            // with a DB_ERROR_NOT_LOCKED error
-            return $this->myRaiseError(DB::DB_ERROR_NOT_LOCKED);
-        }
-
-        $highest_id = $this->getOne("SELECT MAX(id) FROM ${seqName}");
-        if (DB::isError($highest_id)) {
-            return $highest_id;
-        }
-
-        // This should kill all rows except the highest
-        // We should probably do something if $highest_id isn't
-        // numeric, but I'm at a loss as how to handle that...
-        $result = $this->query("DELETE FROM {$seqName} WHERE id <> $highest_id");
-        if (DB::isError($result)) {
-            return $result;
-        }
-
-        // If another thread has been waiting for this lock,
-        // it will go thru the above procedure, but will have no
-        // real effect
-        $result = $this->getOne("SELECT RELEASE_LOCK('${seqName}_lock')");
-        if (DB::isError($result)) {
-            return $result;
-        }
-        return true;
     }
 
     /**
