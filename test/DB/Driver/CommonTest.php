@@ -286,7 +286,7 @@ class CommonTest extends TestCase
         $sth = $dbh->autoPrepare('my_awesome_table', ['good', 'bad', 'ugly']);
 
         $reflectionClass = new \ReflectionClass($dbh);
-        $reflectionProp = $reflectionClass->getProperty('prepared_queries');
+        $reflectionProp = $reflectionClass->getProperty('preparedQueries');
         $reflectionProp->setAccessible(true);
 
         $preparedQueries = $reflectionProp->getValue($dbh);
@@ -314,7 +314,7 @@ class CommonTest extends TestCase
         $sth = $dbh->autoPrepare('my_awesome_table', ['good', 'bad', 'ugly'], DB::DB_AUTOQUERY_UPDATE);
 
         $reflectionClass = new \ReflectionClass($dbh);
-        $reflectionProp = $reflectionClass->getProperty('prepared_queries');
+        $reflectionProp = $reflectionClass->getProperty('preparedQueries');
         $reflectionProp->setAccessible(true);
 
         $preparedQueries = $reflectionProp->getValue($dbh);
@@ -331,7 +331,7 @@ class CommonTest extends TestCase
         $sth = $dbh->autoPrepare('my_awesome_table', ['good', 'bad', 'ugly'], DB::DB_AUTOQUERY_UPDATE, 'id = 123');
 
         $reflectionClass = new \ReflectionClass($dbh);
-        $reflectionProp = $reflectionClass->getProperty('prepared_queries');
+        $reflectionProp = $reflectionClass->getProperty('preparedQueries');
         $reflectionProp->setAccessible(true);
 
         $preparedQueries = $reflectionProp->getValue($dbh);
@@ -366,7 +366,7 @@ class CommonTest extends TestCase
 
         $this->assertEquals(
             'INSERT INTO my_awesome_table (good,bad,ugly) VALUES (\'yes\',\'no\',\'of course\')',
-            $dbh->last_query
+            $dbh->lastQuery
         );
     }
 
@@ -1207,7 +1207,7 @@ class CommonTest extends TestCase
     {
         $dbh = DB::connect(TestDriver::class . '://');
         $reflectionClass = new \ReflectionClass($dbh);
-        $reflectionProp = $reflectionClass->getProperty('_next_query_manip');
+        $reflectionProp = $reflectionClass->getProperty('nextQueryManip');
         $reflectionProp->setAccessible(true);
 
         $dbh->nextQueryIsManip(true);

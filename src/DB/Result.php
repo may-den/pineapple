@@ -24,48 +24,48 @@ class Result
      * @var boolean
      * @see DB\Common::$options
      */
-    var $autofree;
+    public $autofree;
 
     /**
-     * A reference to the DB_<driver> object
+     * A reference to the Pineapple\DB\Driver\<driver> object
      * @var object
      */
-    var $dbh;
+    public $dbh;
 
     /**
      * The current default fetch mode
      * @var integer
      * @see DB\Common::$fetchmode
      */
-    var $fetchmode;
+    public $fetchmode;
 
     /**
      * The name of the class into which results should be fetched when
      * DB_FETCHMODE_OBJECT is in effect
      *
      * @var string
-     * @see DB\Common::$fetchmode_object_class
+     * @see DB\Common::$fetchModeObjectClass
      */
-    var $fetchmode_object_class;
+    public $fetchModeObjectClass;
 
     /**
      * The number of rows to fetch from a limit query
      * @var integer
      */
-    var $limit_count = null;
+    public $limit_count = null;
 
     /**
      * The row to start fetching from in limit queries
      * @var integer
      */
-    var $limit_from = null;
+    public $limit_from = null;
 
     /**
      * The execute parameters that created this result
      * @var array
      * @since Property available since Release 1.7.0
      */
-    var $parameters;
+    public $parameters;
 
     /**
      * The query string that created this result
@@ -75,19 +75,19 @@ class Result
      * @var string
      * @since Property available since Release 1.7.0
      */
-    var $query;
+    public $query;
 
     /**
      * The query result resource id created by PHP
-     * @var resource
+     * @var mixed
      */
-    var $result;
+    public $result;
 
     /**
      * The present row being dealt with
      * @var integer
      */
-    var $row_counter = null;
+    public $row_counter = null;
 
     /**
      * The prepared statement resource id created by PHP in $dbh
@@ -104,7 +104,7 @@ class Result
      * @var resource
      * @since Property available since Release 1.7.0
      */
-    var $statement;
+    public $statement;
 
     /**
      * This constructor sets the object's properties
@@ -120,9 +120,9 @@ class Result
         $this->autofree = $dbh->getOption('autofree');
         $this->dbh = $dbh;
         $this->fetchmode = $dbh->getFetchmode();
-        $this->fetchmode_object_class = $dbh->getFetchmodeObjectClass();
-        $this->parameters = $dbh->last_parameters;
-        $this->query = $dbh->last_query;
+        $this->fetchModeObjectClass = $dbh->getFetchModeObjectClass();
+        $this->parameters = $dbh->lastParameters;
+        $this->query = $dbh->lastQuery;
         $this->result = $result;
         $this->statement = empty($dbh->last_stmt) ? null : $dbh->last_stmt;
         foreach ($options as $key => $value) {
@@ -131,7 +131,7 @@ class Result
     }
 
     /**
-     * Set options for the DB_result object
+     * Set options for the Pineapple\DB\Result object
      *
      * @param string $key    the option to set
      * @param mixed  $value  the value to set the option to
@@ -172,7 +172,7 @@ class Result
      *
      * @return mixed  an array or object containing the row's data,
      *                 NULL when the end of the result set is reached
-     *                 or a DB_Error object on failure.
+     *                 or a Pineapple\DB\Error object on failure.
      *
      * @see DB\Common::setOption(), DB\Common::setFetchMode()
      */
@@ -183,7 +183,7 @@ class Result
         }
         if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
-            $object_class = $this->fetchmode_object_class;
+            $object_class = $this->fetchModeObjectClass;
         }
         if (is_null($rownum) && $this->limit_from !== null) {
             if ($this->row_counter === null) {
@@ -199,11 +199,12 @@ class Result
 
             $this->row_counter++;
         }
+        $arr = [];
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
         if ($res === DB::DB_OK) {
             if (isset($object_class)) {
                 // The default mode is specified in the
-                // DB\Common::fetchmode_object_class property
+                // DB\Common::fetchModeObjectClass property
                 if ($object_class == 'stdClass') {
                     $arr = (object) $arr;
                 } else {
@@ -241,7 +242,7 @@ class Result
      * @param int   $rownum     the row number to fetch (index starts at 0)
      *
      * @return mixed  DB_OK if a row is processed, NULL when the end of the
-     *                 result set is reached or a DB_Error object on failure
+     *                result set is reached or a Pineapple\DB\Error object on failure
      *
      * @see DB\Common::setOption(), DB\Common::setFetchMode()
      */
@@ -252,7 +253,7 @@ class Result
         }
         if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
-            $object_class = $this->fetchmode_object_class;
+            $object_class = $this->fetchModeObjectClass;
         }
         if (is_null($rownum) && $this->limit_from !== null) {
             if ($this->row_counter === null) {
@@ -271,7 +272,7 @@ class Result
         if ($res === DB::DB_OK) {
             if (isset($object_class)) {
                 // default mode specified in the
-                // DB\Common::fetchmode_object_class property
+                // DB\Common::fetchModeObjectClass property
                 if ($object_class == 'stdClass') {
                     $arr = (object) $arr;
                 } else {
@@ -289,7 +290,7 @@ class Result
     /**
      * Get the the number of columns in a result set
      *
-     * @return int  the number of columns.  A DB_Error object on failure.
+     * @return int  the number of columns.  A Pineapple\DB\Error object on failure.
      */
     public function numCols()
     {
@@ -299,7 +300,7 @@ class Result
     /**
      * Get the number of rows in a result set
      *
-     * @return int  the number of rows.  A DB_Error object on failure.
+     * @return int  the number of rows.  A Pineapple\DB\Error object on failure.
      */
     public function numRows()
     {
@@ -312,6 +313,7 @@ class Result
             if (DB::isError($res)) {
                 return $res;
             }
+            $tmp = null;
             $i = 0;
             while ($res->fetchInto($tmp, DB::DB_FETCHMODE_ORDERED)) {
                 $i++;
@@ -337,7 +339,7 @@ class Result
     /**
      * Frees the resources allocated for this result set
      *
-     * @return bool  true on success.  A DB_Error object on failure.
+     * @return bool  true on success.  A Pineapple\DB\Error object on failure.
      */
     public function free()
     {

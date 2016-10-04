@@ -47,6 +47,18 @@ use Pineapple\DB\Error;
 abstract class Common extends Util
 {
     /**
+     * The DB driver type (mysql, oci8, odbc, etc.)
+     * @var string
+     */
+    protected $phptype;
+
+    /**
+     * The database syntax variant to be used (db2, access, etc.), if any
+     * @var string
+     */
+    protected $dbsyntax;
+
+    /**
      * The current default fetch mode
      * @var integer
      */
@@ -58,21 +70,21 @@ abstract class Common extends Util
      *
      * @var string
      */
-    protected $fetchmode_object_class = \stdClass::class;
+    protected $fetchModeObjectClass = \stdClass::class;
 
     /**
      * Was a connection present when the object was serialized()?
      * @var bool
      * @see Common::__sleep(), Common::__wake()
      */
-    protected $was_connected = null;
+    protected $wasConnected = null;
 
     /**
      * The most recently executed query
      * @var string
      * @todo replace with an accessor
      */
-    public $last_query = '';
+    public $lastQuery = '';
 
     /**
      * A flag to indicate that the author is prepared to make some poor life choices
@@ -80,6 +92,17 @@ abstract class Common extends Util
      * @var boolean
      */
     protected $acceptConsequencesOfPoorCodingChoices = false;
+
+    /**
+     * The DSN information for connecting to a database
+     * @var array
+     */
+    protected $dsn = [];
+
+    /**
+     * @var mixed Database connection handle
+     */
+    protected $connection = null;
 
     /**
      * Run-time configuration options
@@ -107,32 +130,32 @@ abstract class Common extends Util
      * @since Property available since Release 1.7.0
      * @todo Replace with in accessor
      */
-    public $last_parameters = [];
+    public $lastParameters = [];
 
     /**
      * The elements from each prepared statement
      * @var array
      */
-    protected $prepare_tokens = [];
+    protected $prepareTokens = [];
 
     /**
      * The data types of the various elements in each prepared statement
      * @var array
      */
-    protected $prepare_types = [];
+    protected $prepareTypes = [];
 
     /**
      * The prepared queries
      * @var array
      */
-    protected $prepared_queries = [];
+    protected $preparedQueries = [];
 
     /**
      * Flag indicating that the last query was a manipulation query.
      * @access protected
      * @var boolean
      */
-    protected $_last_query_manip = false;
+    protected $lastQueryManip = false;
 
     /**
      * Flag indicating that the next query <em>must</em> be a manipulation
@@ -140,10 +163,31 @@ abstract class Common extends Util
      * @access protected
      * @var boolean
      */
-    protected $_next_query_manip = false;
+    protected $nextQueryManip = false;
 
     /**
-     * This constructor calls <kbd>$this->PEAR('DB_Error')</kbd>
+     * The capabilities of the DB implementation
+     *
+     * The 'new_link' element contains the PHP version that first provided
+     * new_link support for this DBMS.  Contains false if it's unsupported.
+     *
+     * Meaning of the 'limit' element:
+     *   + 'emulate' = emulate with fetch row by number
+     *   + 'alter'   = alter the query
+     *   + false     = skip rows
+     *
+     * @var array
+     */
+    protected $features = [];
+
+    /**
+     * A mapping of native error codes to DB error codes
+     * @var array
+     */
+    protected $errorcode_map = [];
+
+    /**
+     * This constructor calls <kbd>parent::__construct('Pineapple\DB\Error')</kbd>
      *
      * @return void
      */
@@ -160,11 +204,11 @@ abstract class Common extends Util
      */
     public function __sleep()
     {
-        $this->was_connected = false;
+        $this->wasConnected = false;
 
         if ($this->connection) {
             // Don't disconnect(), people use serialize() for many reasons
-            $this->was_connected = true;
+            $this->wasConnected = true;
         }
 
         $toSerialize = [
@@ -172,10 +216,10 @@ abstract class Common extends Util
             'dsn',
             'features',
             'fetchmode',
-            'fetchmode_object_class',
+            'fetchModeObjectClass',
             'options',
-            'was_connected',
-            'error_class',
+            'wasConnected',
+            'errorClass',
         ];
         if (isset($this->autocommit)) {
             $toSerialize = array_merge(['autocommit'], $toSerialize);
@@ -194,7 +238,7 @@ abstract class Common extends Util
      */
     public function __wakeup()
     {
-        if ($this->was_connected) {
+        if ($this->wasConnected) {
             $this->connect($this->dsn, $this->options['persistent']);
         }
     }
@@ -459,7 +503,7 @@ abstract class Common extends Util
      *                               If no class is specified by default a cast
      *                               to object from the assoc array row will be
      *                               done.  There is also the posibility to use
-     *                               and extend the 'DB_row' class.
+     *                               and extend the 'Pineapple\DB\Row' class.
      *
      * @see DB_FETCHMODE_ORDERED, DB_FETCHMODE_ASSOC, DB_FETCHMODE_OBJECT
      */
@@ -467,7 +511,7 @@ abstract class Common extends Util
     {
         switch ($fetchmode) {
             case DB::DB_FETCHMODE_OBJECT:
-                $this->fetchmode_object_class = $object_class;
+                $this->fetchModeObjectClass = $object_class;
                 // no break here deliberately
             case DB::DB_FETCHMODE_ORDERED:
             case DB::DB_FETCHMODE_ASSOC:
@@ -501,7 +545,7 @@ abstract class Common extends Util
      */
     public function getFetchModeObjectClass()
     {
-        return $this->fetchmode_object_class;
+        return $this->fetchModeObjectClass;
     }
 
     /**
@@ -631,14 +675,16 @@ abstract class Common extends Util
      *
      * Example 3. All portability options except trimming
      * <code>
-     * $db->setOption('portability',
-     *                 DB_PORTABILITY_ALL ^ DB_PORTABILITY_RTRIM);
+     * $db->setOption(
+     *     'portability',
+     *     DB::DB_PORTABILITY_ALL ^ DB::DB_PORTABILITY_RTRIM
+      * );
      * </code>
      *
      * @param string $option option name
      * @param mixed  $value value for the option
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return mixed DB_OK on success. A Pineapple\DB\Error object on failure.
      *
      * @see Common::$options
      */
@@ -704,8 +750,8 @@ abstract class Common extends Util
      *
      * @param string $query  the query to be prepared
      *
-     * @return mixed  DB statement resource on success. A DB_Error object
-     *                 on failure.
+     * @return mixed  DB statement resource on success. A Pineapple\DB\Error
+     *                object on failure.
      *
      * @see Common::execute()
      */
@@ -732,12 +778,12 @@ abstract class Common extends Util
             }
         }
 
-        $this->prepare_tokens[] = &$newtokens;
-        end($this->prepare_tokens);
+        $this->prepareTokens[] = &$newtokens;
+        end($this->prepareTokens);
 
-        $k = key($this->prepare_tokens);
-        $this->prepare_types[$k] = $types;
-        $this->prepared_queries[$k] = implode(' ', $newtokens);
+        $k = key($this->prepareTokens);
+        $this->prepareTypes[$k] = $types;
+        $this->preparedQueries[$k] = implode(' ', $newtokens);
 
         return $k;
     }
@@ -748,16 +794,16 @@ abstract class Common extends Util
      * @param string $table         the table name
      * @param array  $table_fields  the array of field names
      * @param int    $mode          a type of query to make:
-     *                               DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
+     *                              DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
      * @param string $where         for update queries: the WHERE clause to
-     *                               append to the SQL statement.  Don't
-     *                               include the "WHERE" keyword.
+     *                              append to the SQL statement.  Don't
+     *                              include the "WHERE" keyword.
      *
-     * @return resource  the query handle
+     * @return mixed                the query handle
      *
      * @uses Common::prepare(), Common::buildManipSQL()
      */
-    public function autoPrepare($table, $table_fields, $mode = DB::DB_AUTOQUERY_INSERT, $where = false)
+    public function autoPrepare($table, $table_fields, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
     {
         $query = $this->buildManipSQL($table, $table_fields, $mode, $where);
         if (DB::isError($query)) {
@@ -772,20 +818,20 @@ abstract class Common extends Util
      *
      * @param string $table         the table name
      * @param array  $fields_values the associative array where $key is a
-     *                               field name and $value its value
+     *                              field name and $value its value
      * @param int    $mode          a type of query to make:
-     *                               DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
+     *                              DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
      * @param string $where         for update queries: the WHERE clause to
-     *                               append to the SQL statement.  Don't
-     *                               include the "WHERE" keyword.
+     *                              append to the SQL statement.  Don't
+     *                              include the "WHERE" keyword.
      *
      * @return mixed  a new Result object for successful SELECT queries
-     *                 or DB_OK for successul data manipulation queries.
-     *                 A DB_Error object on failure.
+     *                or DB_OK for successul data manipulation queries.
+     *                A Pineapple\DB\Error object on failure.
      *
      * @uses Common::autoPrepare(), Common::execute()
      */
-    public function autoExecute($table, $fields_values, $mode = DB::DB_AUTOQUERY_INSERT, $where = false)
+    public function autoExecute($table, $fields_values, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
     {
         $sth = $this->autoPrepare($table, array_keys($fields_values), $mode, $where);
         if (DB::isError($sth)) {
@@ -819,14 +865,15 @@ abstract class Common extends Util
      * @param string $table         the table name
      * @param array  $table_fields  the array of field names
      * @param int    $mode          a type of query to make:
-     *                               DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
+     *                              DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
      * @param string $where         for update queries: the WHERE clause to
-     *                               append to the SQL statement.  Don't
-     *                               include the "WHERE" keyword.
+     *                              append to the SQL statement.  Don't
+     *                              include the "WHERE" keyword.
      *
-     * @return string  the sql query for autoPrepare()
+     * @return string|Error         the sql query for autoPrepare(), or an Error
+     *                              object in the case of failure
      */
-    public function buildManipSQL($table, $table_fields, $mode, $where = false)
+    public function buildManipSQL($table, $table_fields, $mode, $where = null)
     {
         if (count($table_fields) == 0) {
             return $this->raiseError(DB::DB_ERROR_NEED_MORE_DATA);
@@ -848,7 +895,8 @@ abstract class Common extends Util
                 }
                 return "INSERT INTO $table ($names) VALUES ($values)";
             case DB::DB_AUTOQUERY_UPDATE:
-                if ((empty(trim($where)) || $where == false) && $this->acceptConsequencesOfPoorCodingChoices === false) {
+                if ((empty(trim($where)) || $where === null) &&
+                    $this->acceptConsequencesOfPoorCodingChoices === false) {
                     return $this->raiseError(DB::DB_ERROR_POSSIBLE_UNINTENDED_CONSEQUENCES);
                 }
 
@@ -864,7 +912,7 @@ abstract class Common extends Util
                 }
                 $sql = "UPDATE $table SET $set";
 
-                if ($where) {
+                if (($where !== null) && $where) {
                     $sql .= " WHERE $where";
                 }
                 return $sql;
@@ -889,14 +937,14 @@ abstract class Common extends Util
      *
      * @param resource $stmt  a DB statement resource returned from prepare()
      * @param mixed    $data  array, string or numeric data to be used in
-     *                         execution of the statement.  Quantity of items
-     *                         passed must match quantity of placeholders in
-     *                         query:  meaning 1 placeholder for non-array
-     *                         parameters or 1 placeholder per array element.
+     *                        execution of the statement.  Quantity of items
+     *                        passed must match quantity of placeholders in
+     *                        query:  meaning 1 placeholder for non-array
+     *                        parameters or 1 placeholder per array element.
      *
      * @return mixed  a new Result object for successful SELECT queries
-     *                 or DB_OK for successul data manipulation queries.
-     *                 A DB_Error object on failure.
+     *                or DB_OK for successul data manipulation queries.
+     *                A Pineapple\DB\Error object on failure.
      *
      * {@internal ibase and oci8 have their own execute() methods.}}
      *
@@ -918,6 +966,8 @@ abstract class Common extends Util
         }
     }
 
+    abstract public function simpleQuery($query);
+
     /**
      * Emulates executing prepared statements if the DBMS not support them
      *
@@ -929,7 +979,7 @@ abstract class Common extends Util
      *                         parameters or 1 placeholder per array element.
      *
      * @return mixed  a string containing the real query run when emulating
-     *                 prepare/execute.  A DB_Error object on failure.
+     *                 prepare/execute.  A Pineapple\DB\Error object on failure.
      *
      * @access protected
      * @see Common::execute()
@@ -938,20 +988,20 @@ abstract class Common extends Util
     {
         $stmt = (int)$stmt;
         $data = (array)$data;
-        $this->last_parameters = $data;
+        $this->lastParameters = $data;
 
-        if (count($this->prepare_types[$stmt]) != count($data)) {
-            $this->last_query = $this->prepared_queries[$stmt];
+        if (count($this->prepareTypes[$stmt]) != count($data)) {
+            $this->lastQuery = $this->preparedQueries[$stmt];
             return $this->raiseError(DB::DB_ERROR_MISMATCH);
         }
 
-        $realquery = $this->prepare_tokens[$stmt][0];
+        $realquery = $this->prepareTokens[$stmt][0];
 
         $i = 0;
         foreach ($data as $value) {
-            if ($this->prepare_types[$stmt][$i] == DB::DB_PARAM_SCALAR) {
+            if ($this->prepareTypes[$stmt][$i] == DB::DB_PARAM_SCALAR) {
                 $realquery .= $this->quoteSmart($value);
-            } elseif ($this->prepare_types[$stmt][$i] == DB::DB_PARAM_OPAQUE) {
+            } elseif ($this->prepareTypes[$stmt][$i] == DB::DB_PARAM_OPAQUE) {
                 $fp = @fopen($value, 'rb');
                 if (!$fp) {
                     // @codeCoverageIgnoreStart
@@ -965,7 +1015,7 @@ abstract class Common extends Util
                 $realquery .= $value;
             }
 
-            $realquery .= $this->prepare_tokens[$stmt][++$i];
+            $realquery .= $this->prepareTokens[$stmt][++$i];
         }
 
         return $realquery;
@@ -984,7 +1034,7 @@ abstract class Common extends Util
      * @param array    $data  numeric array containing the
      *                         data to insert into the query
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::prepare(), Common::execute()
      */
@@ -1014,10 +1064,10 @@ abstract class Common extends Util
     public function freePrepared($stmt, $free_resource = true)
     {
         $stmt = (int)$stmt;
-        if (isset($this->prepare_tokens[$stmt])) {
-            unset($this->prepare_tokens[$stmt]);
-            unset($this->prepare_types[$stmt]);
-            unset($this->prepared_queries[$stmt]);
+        if (isset($this->prepareTokens[$stmt])) {
+            unset($this->prepareTokens[$stmt]);
+            unset($this->prepareTypes[$stmt]);
+            unset($this->preparedQueries[$stmt]);
             return true;
         }
         return false;
@@ -1080,7 +1130,7 @@ abstract class Common extends Util
      *
      * @return mixed  a new Result object for successful SELECT queries
      *                 or DB_OK for successul data manipulation queries.
-     *                 A DB_Error object on failure.
+     *                 A Pineapple\DB\Error object on failure.
      *
      * @see Result, Common::prepare(), Common::execute()
      */
@@ -1095,7 +1145,7 @@ abstract class Common extends Util
             $this->freePrepared($sth, false);
             return $ret;
         } else {
-            $this->last_parameters = [];
+            $this->lastParameters = [];
             $result = $this->simpleQuery($query);
             if ($result === DB::DB_OK || DB::isError($result)) {
                 return $result;
@@ -1110,7 +1160,7 @@ abstract class Common extends Util
      * Generates and executes a LIMIT query
      *
      * @param string $query   the query
-     * @param intr   $from    the row to start to fetching (0 = the first row)
+     * @param int    $from    the row to start to fetching (0 = the first row)
      * @param int    $count   the numbers of rows to fetch
      * @param mixed  $params  array, string or numeric data to be used in
      *                         execution of the statement.  Quantity of items
@@ -1120,7 +1170,7 @@ abstract class Common extends Util
      *
      * @return mixed  a new Result object for successful SELECT queries
      *                 or DB_OK for successul data manipulation queries.
-     *                 A DB_Error object on failure.
+     *                 A Pineapple\DB\Error object on failure.
      */
     public function limitQuery($query, $from, $count, $params = [])
     {
@@ -1149,10 +1199,11 @@ abstract class Common extends Util
      *                         parameters or 1 placeholder per array element.
      *
      * @return mixed  the returned value of the query.
-     *                 A DB_Error object on failure.
+     *                 A Pineapple\DB\Error object on failure.
      */
     public function getOne($query, $params = [])
     {
+        $row = null;
         $params = (array)$params;
         // modifyLimitQuery() would be nice here, but it causes BC issues
         if (sizeof($params) > 0) {
@@ -1187,14 +1238,14 @@ abstract class Common extends Util
      *
      * @param string $query   the SQL query
      * @param mixed  $params  array, string or numeric data to be used in
-     *                         execution of the statement.  Quantity of items
-     *                         passed must match quantity of placeholders in
-     *                         query:  meaning 1 placeholder for non-array
-     *                         parameters or 1 placeholder per array element.
+     *                        execution of the statement.  Quantity of items
+     *                        passed must match quantity of placeholders in
+     *                        query:  meaning 1 placeholder for non-array
+     *                        parameters or 1 placeholder per array element.
      * @param int $fetchmode  the fetch mode to use
      *
-     * @return array  the first row of results as an array.
-     *                 A DB_Error object on failure.
+     * @return array|Error    the first row of results as an array.
+     *                        A Pineapple\DB\Error object on failure.
      */
     public function getRow($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
@@ -1254,7 +1305,7 @@ abstract class Common extends Util
      *                         query:  meaning 1 placeholder for non-array
      *                         parameters or 1 placeholder per array element.
      *
-     * @return array  the results as an array.  A DB_Error object on failure.
+     * @return array  the results as an array.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::query()
      */
@@ -1366,25 +1417,25 @@ abstract class Common extends Util
      *
      * @param string $query        the SQL query
      * @param bool   $force_array  used only when the query returns
-     *                              exactly two columns.  If true, the values
-     *                              of the returned array will be one-element
-     *                              arrays instead of scalars.
+     *                             exactly two columns.  If true, the values
+     *                             of the returned array will be one-element
+     *                             arrays instead of scalars.
      * @param mixed  $params       array, string or numeric data to be used in
-     *                              execution of the statement.  Quantity of
-     *                              items passed must match quantity of
-     *                              placeholders in query:  meaning 1
-     *                              placeholder for non-array parameters or
-     *                              1 placeholder per array element.
+     *                             execution of the statement.  Quantity of
+     *                             items passed must match quantity of
+     *                             placeholders in query:  meaning 1
+     *                             placeholder for non-array parameters or
+     *                             1 placeholder per array element.
      * @param int   $fetchmode     the fetch mode to use
      * @param bool  $group         if true, the values of the returned array
-     *                              is wrapped in another array.  If the same
-     *                              key value (in the first column) repeats
-     *                              itself, the values will be appended to
-     *                              this array instead of overwriting the
-     *                              existing values.
+     *                             is wrapped in another array.  If the same
+     *                             key value (in the first column) repeats
+     *                             itself, the values will be appended to
+     *                             this array instead of overwriting the
+     *                             existing values.
      *
-     * @return array  the associative array containing the query results.
-     *                A DB_Error object on failure.
+     * @return array|Error         the associative array containing the query results.
+     *                             A Pineapple\DB\Error object on failure.
      */
     public function getAssoc(
         $query,
@@ -1393,6 +1444,7 @@ abstract class Common extends Util
         $fetchmode = DB::DB_FETCHMODE_DEFAULT,
         $group = false
     ) {
+        $row = null;
         $params = (array) $params;
         if (sizeof($params) > 0) {
             $sth = $this->prepare($query);
@@ -1496,7 +1548,7 @@ abstract class Common extends Util
      *                            + DB_FETCHMODE_ORDERED | DB_FETCHMODE_FLIPPED
      *                            + DB_FETCHMODE_ASSOC | DB_FETCHMODE_FLIPPED
      *
-     * @return array  the nested array.  A DB_Error object on failure.
+     * @return array  the nested array.  A Pineapple\DB\Error object on failure.
      */
     public function getAll($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
@@ -1555,8 +1607,8 @@ abstract class Common extends Util
      *
      * @param bool $onoff  true turns it on, false turns it off
      *
-     * @return int  DB_OK on success.  A DB_Error object if the driver
-     *               doesn't support auto-committing transactions.
+     * @return int|Error   DB_OK on success. A Pineapple\DB\Error object if
+     *                     the driver doesn't support auto-committing transactions.
      */
     public function autoCommit($onoff = false)
     {
@@ -1566,7 +1618,7 @@ abstract class Common extends Util
     /**
      * Commits the current transaction
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int|Error  DB_OK on success. A Pineapple\DB\Error object on failure.
      */
     public function commit()
     {
@@ -1576,7 +1628,7 @@ abstract class Common extends Util
     /**
      * Reverts the current transaction
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int|Error  DB_OK on success.  A Pineapple\DB\Error object on failure.
      */
     public function rollback()
     {
@@ -1588,7 +1640,7 @@ abstract class Common extends Util
      *
      * @param resource $result  the query result idenifier produced by PHP
      *
-     * @return int  the number of rows.  A DB_Error object on failure.
+     * @return int|Error  the number of rows.  A Pineapple\DB\Error object on failure.
      */
     public function numRows($result)
     {
@@ -1600,7 +1652,7 @@ abstract class Common extends Util
      *
      * 0 is returned for queries that don't manipulate data.
      *
-     * @return int  the number of rows.  A DB_Error object on failure.
+     * @return int|Error  the number of rows.  A Pineapple\DB\Error object on failure.
      */
     public function affectedRows()
     {
@@ -1631,10 +1683,10 @@ abstract class Common extends Util
      *
      * @param string  $seq_name  name of the sequence
      * @param boolean $ondemand  when true, the seqence is automatically
-     *                            created if it does not exist
+     *                           created if it does not exist
      *
-     * @return int  the next id number in the sequence.
-     *               A DB_Error object on failure.
+     * @return int|Error         the next id number in the sequence.
+     *                           A Pineapple\DB\Error object on failure.
      *
      * @see Common::createSequence(), Common::dropSequence(),
      *      Common::getSequenceName()
@@ -1656,7 +1708,7 @@ abstract class Common extends Util
      *
      * @param string $seq_name  name of the new sequence
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int|Error        DB_OK on success. A Pineapple\DB\Error object on failure.
      *
      * @see Common::dropSequence(), Common::getSequenceName(),
      *      Common::nextID()
@@ -1671,7 +1723,7 @@ abstract class Common extends Util
      *
      * @param string $seq_name  name of the sequence to be deleted
      *
-     * @return int  DB_OK on success.  A DB_Error object on failure.
+     * @return int|Error  DB_OK on success. A Pineapple\DB\Error object on failure.
      *
      * @see Common::createSequence(), Common::getSequenceName(),
      *      Common::nextID()
@@ -1684,36 +1736,36 @@ abstract class Common extends Util
     /**
      * Communicates an error and invoke error callbacks, etc
      *
-     * Basically a wrapper for PEAR::raiseError without the message string.
+     * Basically a wrapper for Pineapple\Util::raiseError without the message string.
      *
-     * @param mixed   integer error code, or a PEAR error object (all
-     *                 other parameters are ignored if this parameter is
-     *                 an object
-     * @param int     error mode, see PEAR_Error docs
+     * @param mixed   integer error code, or a Pineapple\Error object (all
+     *                other parameters are ignored if this parameter is
+     *                an object
+     * @param int     error mode, see Pineapple\Error docs
      * @param mixed   if error mode is PEAR_ERROR_TRIGGER, this is the
-     *                 error level (E_USER_NOTICE etc).  If error mode is
-     *                 PEAR_ERROR_CALLBACK, this is the callback function,
-     *                 either as a function name, or as an array of an
-     *                 object and method name.  For other error modes this
-     *                 parameter is ignored.
+     *                error level (E_USER_NOTICE etc).  If error mode is
+     *                PEAR_ERROR_CALLBACK, this is the callback function,
+     *                either as a function name, or as an array of an
+     *                object and method name.  For other error modes this
+     *                parameter is ignored.
      * @param string  extra debug information.  Defaults to the last
-     *                 query and native error code.
+     *                query and native error code.
      * @param mixed   native error code, integer or string depending the
-     *                 backend
+     *                backend
      * @param mixed   dummy parameter for E_STRICT compatibility with
-     *                 PEAR::raiseError
+     *                Pineapple\Util::raiseError
      * @param mixed   dummy parameter for E_STRICT compatibility with
-     *                 PEAR::raiseError
+     *                Pineapple\Util::raiseError
      *
-     * @return object  the PEAR_Error object
+     * @return Error  the Pineapple\Error object
      *
-     * @see PEAR_Error
+     * @see Pineapple\Error
      */
     public function raiseError(
         $code = DB::DB_ERROR,
         $mode = null,
         $options = null,
-        $userinfo = null,
+        $userInfo = null,
         $nativecode = null,
         $dummy1 = null,
         $dummy2 = null
@@ -1724,24 +1776,24 @@ abstract class Common extends Util
             return $tmp;
         }
 
-        if ($userinfo === null) {
-            $userinfo = $this->last_query;
+        if ($userInfo === null) {
+            $userInfo = $this->lastQuery;
         }
 
         if ($nativecode) {
-            $userinfo .= ' [nativecode=' . trim($nativecode) . ']';
+            $userInfo .= ' [nativecode=' . trim($nativecode) . ']';
         } else {
-            $userinfo .= ' [DB Error: ' . DB::errorMessage($code) . ']';
+            $userInfo .= ' [DB Error: ' . DB::errorMessage($code) . ']';
         }
 
-        $tmp = Util::raiseError(null, $code, $mode, $options, $userinfo, Error::class, true);
+        $tmp = Util::raiseError(null, $code, $mode, $options, $userInfo, Error::class, true);
         return $tmp;
     }
 
     /**
      * Gets the DBMS' native error code produced by the last query
      *
-     * @return mixed  the DBMS' error code.  A DB_Error object on failure.
+     * @return mixed  the DBMS' error code.  A Pineapple\DB\Error object on failure.
      */
     public function errorNative()
     {
@@ -1898,8 +1950,8 @@ abstract class Common extends Util
      *                     These are bitwise, so the first two can be
      *                     combined using <kbd>|</kbd>.
      *
-     * @return array  an associative array with the information requested.
-     *                 A DB_Error object on failure.
+     * @return array|Error  an associative array with the information requested.
+     *                      A Pineapple\DB\Error object on failure.
      *
      * @see Common::setOption()
      */
@@ -1917,18 +1969,18 @@ abstract class Common extends Util
      * Lists internal database information
      *
      * @param string $type  type of information being sought.
-     *                       Common items being sought are:
-     *                       tables, databases, users, views, functions
-     *                       Each DBMS's has its own capabilities.
+     *                      Common items being sought are:
+     *                      tables, databases, users, views, functions
+     *                      Each DBMS's has its own capabilities.
      *
-     * @return array  an array listing the items sought.
-     *                 A DB DB_Error object on failure.
+     * @return array|Error  an array listing the items sought.
+     *                      A DB Pineapple\DB\Error object on failure.
      */
     public function getListOf($type)
     {
         $sql = $this->getSpecialQuery($type);
         if ($sql === null) {
-            $this->last_query = '';
+            $this->lastQuery = '';
             return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
         } elseif (is_int($sql) || DB::isError($sql)) {
             // Previous error
@@ -1970,13 +2022,13 @@ abstract class Common extends Util
      */
     public function nextQueryIsManip($manip)
     {
-        $this->_next_query_manip = $manip ? true : false;
+        $this->nextQueryManip = $manip ? true : false;
     }
 
     /**
      * Checks if the given query is a manipulation query. This also takes into
-     * account the _next_query_manip flag and sets the _last_query_manip flag
-     * (and resets _next_query_manip) according to the result.
+     * account the nextQueryManip flag and sets the lastQueryManip flag
+     * (and resets nextQueryManip) according to the result.
      *
      * @param string The query to check.
      *
@@ -1987,13 +2039,13 @@ abstract class Common extends Util
      */
     protected function _checkManip($query)
     {
-        if ($this->_next_query_manip || DB::isManip($query)) {
-            $this->_last_query_manip = true;
+        if ($this->nextQueryManip || DB::isManip($query)) {
+            $this->lastQueryManip = true;
         } else {
-            $this->_last_query_manip = false;
+            $this->lastQueryManip = false;
         }
-        $this->_next_query_manip = false;
-        return $this->_last_query_manip;
+        $this->nextQueryManip = false;
+        return $this->lastQueryManip;
     }
 
     /**

@@ -7,7 +7,7 @@ namespace Pineapple;
  * PHP versions 4 and 5
  *
  * @category   pear
- * @package    PEAR
+ * @package    Pineapple
  * @author     Sterling Hughes <sterling@php.net>
  * @author     Stig Bakken <ssb@php.net>
  * @author     Tomas V.V.Cox <cox@idecnet.com>
@@ -25,18 +25,15 @@ namespace Pineapple;
  * If you want a destructor in your class, inherit PEAR and make a
  * destructor method called _yourclassname (same name as the
  * constructor, but with a "_" prefix).  Also, in your constructor you
- * have to call the PEAR constructor: $this->PEAR();.
+ * have to call the PEAR constructor: parent::__construct();.
  * The destructor method will be called without parameters.  Note that
  * at in some SAPI implementations (such as Apache), any output during
  * the request shutdown (in which destructors are called) seems to be
  * discarded.  If you need to get any debug information from your
  * destructor, use error_log(), syslog() or something similar.
  *
- * IMPORTANT! To use the emulated destructors you need to create the
- * objects by reference: $obj =& new PEAR_child;
- *
  * @category   pear
- * @package    PEAR
+ * @package    Pineapple
  * @author     Stig Bakken <ssb@php.net>
  * @author     Tomas V.V. Cox <cox@idecnet.com>
  * @author     Greg Beaver <cellog@php.net>
@@ -44,7 +41,7 @@ namespace Pineapple;
  * @license    http://opensource.org/licenses/bsd-license.php New BSD License
  * @version    Release: 1.10.1
  * @link       http://pear.php.net/package/PEAR
- * @see        PEAR_Error
+ * @see        Pineapple\Error
  * @since      Class available since PHP 4.0.2
  * @link       http://pear.php.net/manual/en/core.pear.php#core.pear.pear
  */
@@ -71,24 +68,20 @@ class Util
      * @var     string
      * @access  protected
      */
-    protected $error_class = Error::class;
+    protected $errorClass = Error::class;
 
     /**
-     * Constructor.  Registers this object in
-     * $_PEAR_destructor_object_list for destructor emulation if a
-     * destructor object exists.
+     * Constructor.
      *
-     * @param string $error_class  (optional) which class to use for
-     *        error objects, defaults to PEAR_Error.
+     * @param string $errorClass  (optional) which class to use for
+     *                            error objects, defaults to Pineapple\Error.
      * @access public
      * @return void
      */
-    public function __construct($error_class = null)
+    public function __construct($errorClass = null)
     {
-        $classname = strtolower(get_class($this));
-
-        if ($error_class !== null) {
-            $this->error_class = $error_class;
+        if ($errorClass !== null) {
+            $this->errorClass = $errorClass;
         }
     }
 
@@ -139,7 +132,7 @@ class Util
     }
 
     /**
-     * Tell whether a value is a PEAR error.
+     * Tell whether a value is a Pineapple\Error.
      *
      * @param   mixed $data   the value to test
      * @param   int   $code   if $data is an error object, return true
@@ -170,59 +163,66 @@ class Util
      * handling applied.  If the $mode and $options parameters are not
      * specified, the object's defaults are used.
      *
-     * @param mixed $message a text error message or a PEAR error object
+     * @param mixed $message a text error message or a Pineapple\Error object
      *
      * @param int $code      a numeric error code (it is up to your class
-     *                  to define these if you want to use codes)
+     *                       to define these if you want to use codes)
      *
      * @param int $mode      One of PEAR_ERROR_RETURN, PEAR_ERROR_PRINT,
-     *                  PEAR_ERROR_TRIGGER, PEAR_ERROR_DIE,
-     *                  PEAR_ERROR_CALLBACK, PEAR_ERROR_EXCEPTION.
+     *                       PEAR_ERROR_TRIGGER, PEAR_ERROR_DIE,
+     *                       PEAR_ERROR_CALLBACK, PEAR_ERROR_EXCEPTION.
      *
      * @param mixed $options If $mode is PEAR_ERROR_TRIGGER, this parameter
-     *                  specifies the PHP-internal error level (one of
-     *                  E_USER_NOTICE, E_USER_WARNING or E_USER_ERROR).
-     *                  If $mode is PEAR_ERROR_CALLBACK, this
-     *                  parameter specifies the callback function or
-     *                  method.  In other error modes this parameter
-     *                  is ignored.
+     *                       specifies the PHP-internal error level (one of
+     *                       E_USER_NOTICE, E_USER_WARNING or E_USER_ERROR).
+     *                       If $mode is PEAR_ERROR_CALLBACK, this
+     *                       parameter specifies the callback function or
+     *                       method.  In other error modes this parameter
+     *                       is ignored.
      *
-     * @param string $userinfo If you need to pass along for example debug
-     *                  information, this parameter is meant for that.
+     * @param string $userInfo If you need to pass along for example debug
+     *                         information, this parameter is meant for that.
      *
-     * @param string $error_class The returned error object will be
-     *                  instantiated from this class, if specified.
+     * @param string $errorClass The returned error object will be
+     *                           instantiated from this class, if specified.
      *
-     * @param bool $skipmsg If true, raiseError will only pass error codes,
-     *                  the error message parameter will be dropped.
+     * @param bool $skipMessage If true, raiseError will only pass error codes,
+     *                          the error message parameter will be dropped.
      *
-     * @return object   a PEAR error object
-     * @see PEAR::setErrorHandling
+     * @return object   a Pineapple\Error object
      * @since PHP 4.0.5
      */
-    protected static function staticRaiseError($object, $message = null, $code = null, $mode = null, $options = null, $userinfo = null, $error_class = null, $skipmsg = false)
-    {
-        // The error is yet a PEAR error object
+    protected static function staticRaiseError(
+        $object,
+        $message = null,
+        $code = null,
+        $mode = null,
+        $options = null,
+        $userInfo = null,
+        $errorClass = null,
+        $skipMessage = false
+    ) {
+        // Check if the object is a Pineapple\Error object
         if (is_object($message)) {
             $code = $message->getCode();
-            $userinfo = $message->getUserInfo();
-            $error_class = $message->getType();
+            $userInfo = $message->getUserInfo();
+            $errorClass = $message->getType();
             $message->error_message_prefix = '';
             $message = $message->getMessage();
         }
 
-        if ($error_class !== null) {
-            $ec = $error_class;
-        } elseif ($object !== null && isset($object->error_class)) {
-            $ec = $object->error_class;
+        if ($errorClass !== null) {
+            $ec = $errorClass;
+        } elseif ($object !== null && isset($object->errorClass)) {
+            $ec = $object->errorClass;
         } else {
             $ec = Error::class;
         }
 
-        if ($skipmsg) {
-            $a = new $ec($code, self::PEAR_ERROR_RETURN, $options, $userinfo);
+        if ($skipMessage) {
+            $a = new $ec($code, self::PEAR_ERROR_RETURN, $options, $userInfo);
         } else {
-            $a = new $ec($message, $code, self::PEAR_ERROR_RETURN, $options, $userinfo);
+            $a = new $ec($message, $code, self::PEAR_ERROR_RETURN, $options, $userInfo);
         }
 
         return $a;
@@ -230,27 +230,27 @@ class Util
 
     /**
      * Simpler form of raiseError with fewer options.  In most cases
-     * message, code and userinfo are enough.
+     * message, code and userInfo are enough.
      *
-     * @param mixed $message a text error message or a PEAR error object
+     * @param mixed $message a text error message or a Pineapple\Error object
      *
      * @param int $code      a numeric error code (it is up to your class
-     *                  to define these if you want to use codes)
+     *                       to define these if you want to use codes)
      *
-     * @param string $userinfo If you need to pass along for example debug
-     *                  information, this parameter is meant for that.
+     * @param string $userInfo If you need to pass along for example debug
+     *                         information, this parameter is meant for that.
      *
-     * @return object   a PEAR error object
-     * @see PEAR::raiseError
+     * @return object   a Pineapple\Error object
+     * @see Pineapple\Util::raiseError
      */
-    protected static function staticThrowError($object, $message = null, $code = null, $userinfo = null)
+    protected static function staticThrowError($object, $message = null, $code = null, $userInfo = null)
     {
         if ($object !== null) {
-            $a = $object->raiseError($message, $code, null, null, $userinfo);
+            $a = $object->raiseError($message, $code, null, null, $userInfo);
             return $a;
         }
 
-        $a = self::raiseError($message, $code, null, null, $userinfo);
+        $a = self::raiseError($message, $code, null, null, $userInfo);
         return $a;
     }
 }

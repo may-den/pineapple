@@ -91,7 +91,6 @@ namespace Pineapple;
  * @version    Release: 1.10.1
  * @link       http://pear.php.net/package/PEAR
  * @since      Class available since Release 1.3.3
- *
  */
 class Exception extends \Exception
 {
@@ -101,17 +100,18 @@ class Exception extends \Exception
     protected $cause;
     private static $observers = [];
     private static $uniqueid = 0;
+    private $trace;
 
     /**
      * Supported signatures:
-     *  - PEAR_Exception(string $message);
-     *  - PEAR_Exception(string $message, int $code);
-     *  - PEAR_Exception(string $message, \Exception $cause);
-     *  - PEAR_Exception(string $message, \Exception $cause, int $code);
-     *  - PEAR_Exception(string $message, Error $cause);
-     *  - PEAR_Exception(string $message, Error $cause, int $code);
-     *  - PEAR_Exception(string $message, array $causes);
-     *  - PEAR_Exception(string $message, array $causes, int $code);
+     *  - Pineapple\Exception(string $message);
+     *  - Pineapple\Exception(string $message, int $code);
+     *  - Pineapple\Exception(string $message, \Exception $cause);
+     *  - Pineapple\Exception(string $message, \Exception $cause, int $code);
+     *  - Pineapple\Exception(string $message, Error $cause);
+     *  - Pineapple\Exception(string $message, Error $cause, int $code);
+     *  - Pineapple\Exception(string $message, array $causes);
+     *  - Pineapple\Exception(string $message, array $causes, int $code);
      * @param string exception message
      * @param int|\Exception|Error|array|null exception cause
      * @param int|null exception code or null
@@ -156,6 +156,9 @@ class Exception extends \Exception
         self::$observers[$label] = $callback;
     }
 
+    /**
+     * @param  string $label The name of the observer to remove.
+     */
     public static function removeObserver($label = 'default')
     {
         unset(self::$observers[$label]);
@@ -294,26 +297,38 @@ class Exception extends \Exception
         }
     }
 
+    /**
+     * @return array The stack trace of the exception
+     */
     public function getTraceSafe()
     {
-        if (!isset($this->_trace)) {
-            $this->_trace = $this->getTrace();
+        if (!isset($this->trace)) {
+            $this->trace = $this->getTrace();
         }
-        return $this->_trace;
+        return $this->trace;
     }
 
+    /**
+     * @return string The name of the class where the error has occurred
+     */
     public function getErrorClass()
     {
         $trace = $this->getTraceSafe();
         return $trace[0]['class'];
     }
 
+    /**
+     * @return string The name of the method where the error occurred
+     */
     public function getErrorMethod()
     {
         $trace = $this->getTraceSafe();
         return $trace[0]['function'];
     }
 
+    /**
+     * @return string The description view of the error
+     */
     public function __toString()
     {
         if (isset($_SERVER['REQUEST_URI'])) {
@@ -322,6 +337,9 @@ class Exception extends \Exception
         return $this->toText();
     }
 
+    /**
+     * @return string An HTML view of the error that has occurred
+     */
     public function toHtml()
     {
         $trace = $this->getTraceSafe();
@@ -412,6 +430,9 @@ class Exception extends \Exception
         return $html;
     }
 
+    /**
+     * @return string A text view of the Error that has occurred
+     */
     public function toText()
     {
         $causes = [];

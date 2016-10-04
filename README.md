@@ -1,10 +1,14 @@
 # Pineapple: Refactored PEAR and DB
 
+| `master` | `dev-0.2.0` |
+|----------|-------------|
+| [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=master)](https://travis-ci.org/wethersherbs/pineapple) | [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=dev-0.2.0)](https://travis-ci.org/wethersherbs/pineapple) |
+
 ## Why?
 
 PEAR DB is very old (the copyright range ends 9 years prior to Pineapple's inception), and was obsoleted by MDB2, which has in turn become obsolete. People have code based on these modules, but need an upgrade path that means new code can be developed using modern DB access methods, whilst retaining access for legacy code without opening a second database connection.
 
-This package is a fork of PEAR and DB, heavily refactored. The purpose of it is to provide a method-compatible drop-in replacement, reproducing `PEAR::raiseError` and `PEAR::isError`, and all methods under the `DB` class. Connection-specific drivers are dropped and only a `DoctrineDbal` driver remains, and that must be constructed without a connection-specific DSN and dependency injected with a constructed DBAL connection. It is intended _only_ as a path to Doctrine DBAL migration, to keep legacy systems working whilst retaining a single database connection per application.
+This package is a fork of PEAR and DB, heavily refactored. The purpose of it is to provide a method-compatible drop-in replacement, reproducing `PEAR::raiseError` and `PEAR::isError`, and all methods under the `DB` class. Connection-specific drivers are dropped and only a `DoctrineDbal` driver remains (with plans for incorporating a `PDO` driver), and that must be constructed without a connection-specific DSN and dependency injected with a constructed DBAL connection. It is intended _only_ as a path to Doctrine DBAL/PDO migration, to keep legacy systems working whilst retaining a single database connection per application.
 
 The intention is to strip unused methods, clean (remove all warnings and notices), make PSR-2 clean and provide full test coverage of the DB compatibility layer. Global constants will be replaced with class constants, though the compatibility module ([wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat)) will provide global constants that map to class constants for backward compatibility.
 

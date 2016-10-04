@@ -93,7 +93,7 @@ class TestDriver extends Common
     public function prepare($query)
     {
         // this is a very specific name relied upon by neighbouring classes.
-        $this->last_query = $query;
+        $this->lastQuery = $query;
 
         // Common::prepare doesn't inspect for errors, but query checks for errors
         // post prepare, so watch for syntax markers
@@ -109,8 +109,8 @@ class TestDriver extends Common
         $this->lastResult = null;
 
         // this is a very specific name relied upon by neighbouring classes.
-        $this->last_query = $query;
-        $this->last_parameters = [];
+        $this->lastQuery = $query;
+        $this->lastParameters = [];
 
         if (preg_match('/^(SELECT|BREAKINGSEL)/', $query)) {
             // SELECT: a regular SELECT that returns data successfully
@@ -321,7 +321,7 @@ class TestDriver extends Common
 
     protected function executeEmulateQuery($stmt, $data = [])
     {
-        if (preg_match('/FAILURE/', $this->prepared_queries[$stmt])) {
+        if (preg_match('/FAILURE/', $this->preparedQueries[$stmt])) {
             return $this->raiseError(DB::DB_ERROR_SYNTAX);
         } else {
             return parent::executeEmulateQuery($stmt, $data);

@@ -67,7 +67,7 @@ class DB
     // @const The code returned by many methods upon success
     const DB_OK = 1;
 
-    // @const Unkown error
+    // @const Unknown error
     const DB_ERROR = -1;
 
     // @const Syntax error
@@ -139,7 +139,7 @@ class DB
     // @const The PHP extension needed for this DBMS could not be found
     const DB_ERROR_EXTENSION_NOT_FOUND = -25;
 
-    // @const The present user has inadequate permissions to perform the task requestd
+    // @const The present user has inadequate permissions to perform the task requested
     const DB_ERROR_ACCESS_VIOLATION = -26;
 
     // @const The database requested does not exist
@@ -309,7 +309,9 @@ class DB
      * connect to the database
      *
      * @param string $type     the database type (eg "mysql")
-     * @param array  $options  an associative array of option names and values
+     * @param mixed  $options  an associative array of option names and values,
+     *                         or a true/false value for the 'persistent'
+     *                         option
      *
      * @return object  a new DB object.  A DB\Error object on failure.
      *
@@ -336,7 +338,7 @@ class DB
             return $tmp;
         }
 
-        @$obj = new $classname;
+        $obj = new $classname;
 
         foreach ($options as $option => $value) {
             $test = $obj->setOption($option, $value);
@@ -411,7 +413,7 @@ class DB
             return $tmp;
         }
 
-        @$obj = new $classname;
+        $obj = new $classname;
 
         foreach ($options as $option => $value) {
             $test = $obj->setOption($option, $value);
@@ -495,7 +497,7 @@ class DB
     /**
      * Return a textual error message for a DB error code
      *
-     * @param integer $value  the DB error code
+     * @param integer|DB\Error $value  the DB error code
      *
      * @return string  the error message or false if the error code was
      *                  not recognized
