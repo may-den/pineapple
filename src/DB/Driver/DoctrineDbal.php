@@ -718,18 +718,19 @@ class DoctrineDbal extends Common
                 }
 
                 // no quotes detected or length is insufficiently different to incorporate quotes
+                // n.b. the default mode is PDO::PARAM_STR, typically this won't actually be hit.
+                // @codeCoverageIgnoreStart
                 return $quotedString;
                 break;
+                // @codeCoverageIgnoreEnd
 
+            // not going to try covering this
+            // @codeCoverageIgnoreStart
             default:
                 return $this->myRaiseError(DB::DB_ERROR_UNSUPPORTED);
                 break;
+            // @codeCoverageIgnoreEnd
         }
-
-
-
-        // @todo this requires attention before release, this is badly Not Right
-        return preg_replace('/^(.)(.*)\g1$/', '$2', $this->connection->quote($str));
     }
 
     /**
