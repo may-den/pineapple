@@ -367,4 +367,101 @@ class DoctrineDbalTest extends TestCase
     {
         $this->assertEquals('`foo``bar`', $this->dbh->quoteIdentifier('foo`bar'));
     }
+
+    public function testEscapeSimple()
+    {
+        $this->assertEquals(
+            'foof`foof',
+            $this->dbh->escapeSimple('foof`foof')
+        );
+
+        $this->assertEquals(
+            '"foof"',
+            $this->dbh->escapeSimple('"foof"')
+        );
+
+        $this->assertEquals(
+            '\'\'foof\'\'',
+            $this->dbh->escapeSimple('\'foof\'')
+        );
+
+        $this->assertEquals(
+            '1234',
+            $this->dbh->escapeSimple('1234')
+        );
+    }
+
+    public function testModifyLimitQuery()
+    {
+        $result = $this->dbh->limitQuery(
+            'SELECT a FROM dbaltest',
+            1,
+            1
+        );
+        $this->assertInstanceOf(Result::class, $result);
+
+        $this->assertEquals(['test2'], $row = $result->fetchRow());
+        $this->assertNull($row = $result->fetchRow());
+    }
+
+    public function testErrorNative()
+    {
+        $this->dbh->query('BORKAGE');
+        // this is, obviously, an sqlite error code
+        $this->assertEquals('HY000', $this->dbh->errorNative());
+    }
+
+    public function testTableInfo()
+    {
+        $result = $this->dbh->query('SELECT * FROM dbaltest');
+        $tableInfo = $this->dbh->tableInfo($result);
+
+        $this->assertEquals(1, count($tableInfo));
+
+        unset($tableInfo[0]['len']);
+        $this->assertEquals([
+            [
+                'table' => 'dbaltest',
+                'name' => 'a',
+                'type' => 'string',
+                'flags' => [],
+            ]
+        ], $tableInfo);
+    }
+
+    public function testTableInfoWithStringOnDisconnectedConnection()
+    {
+        $this->dbh->disconnect();
+        $tableInfo = $this->dbh->tableInfo('dbaltest');
+
+        $this->assertInstanceOf(Error::class, $tableInfo);
+    }
+
+    public function testTableInfoWithBadValue()
+    {
+        $this->dbh->disconnect();
+        $tableInfo = $this->dbh->tableInfo(false);
+
+        $this->assertInstanceOf(Error::class, $tableInfo);
+        $this->assertEquals(DB::DB_ERROR, $tableInfo->getCode());
+    }
+
+    public function testTableInfoWithLowerCase()
+    {
+        $this->dbh->setOption('portability', DB::DB_PORTABILITY_LOWERCASE);
+        $result = $this->dbh->query('SELECT * FROM keycasetest');
+        $tableInfo = $this->dbh->tableInfo($result);
+
+        $this->assertEquals(1, count($tableInfo));
+
+        unset($tableInfo[0]['len']);
+        $this->assertEquals([
+            [
+                'table' => 'keycasetest',
+                'name' => 'mixedcasecolumn',
+                'type' => 'string',
+                'flags' => [],
+            ]
+        ], $tableInfo);
+    }
 }
