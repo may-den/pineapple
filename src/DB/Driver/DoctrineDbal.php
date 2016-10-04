@@ -894,11 +894,16 @@ class DoctrineDbal extends Common
      *                      doesn't support the object type requested
      *
      * @access protected
-     * @todo these are mysql specific, and this is a doctrine driver
+     * @deprecated This is deprecated by Pineapple and will be removed in future
      * @see Pineapple\DB\Driver\Common::getListOf()
+     * @codeCoverageIgnore
      */
     protected function getSpecialQuery($type)
     {
+        if ($this->getPlatform() !== 'mysql') {
+            return $this->myRaiseError(DB::DB_ERROR_UNSUPPORTED);
+        }
+
         switch ($type) {
             case 'tables':
                 return 'SHOW TABLES';
