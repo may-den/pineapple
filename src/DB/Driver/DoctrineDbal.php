@@ -819,17 +819,20 @@ class DoctrineDbal extends Common
     {
         if (is_string($result)) {
             // Fix for bug #11580.
-            if (!$this->connection) {
+            if (!$this->connected()) {
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
 
             /**
              * Probably received a table name.
              * Create a result resource identifier.
+             * n.b. Retained for compatibility, but this is untestable with sqlite
              */
+            // @codeCoverageIgnoreStart
             $id = $this->simpleQuery("SELECT * FROM $result LIMIT 0");
             $got_string = true;
-        } elseif (is_object($result)) {
+            // @codeCoverageIgnoreEnd
+        } elseif (is_object($result) && isset($result->result)) {
             /**
              * Probably received a result object.
              * Extract the result resource identifier.
@@ -837,11 +840,14 @@ class DoctrineDbal extends Common
             $id = $result->result;
             $got_string = false;
         } else {
-            $this->myRaiseError();
+            return $this->myRaiseError();
         }
 
         if (!is_object($id) || !($id instanceof DBALStatement)) {
+            // not easy to test without triggering a very difficult error
+            // @codeCoverageIgnoreStart
             return $this->myRaiseError(DB::DB_ERROR_NEED_MORE_DATA);
+            // @codeCoverageIgnoreEnd
         }
 
         if ($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) {
@@ -861,8 +867,8 @@ class DoctrineDbal extends Common
             $tmp = $id->getColumnMeta($i);
 
             $res[$i] = [
-                'table' => $tmp['table'],
-                'name' => $tmp['name'],
+                'table' => $case_func($tmp['table']),
+                'name' => $case_func($tmp['name']),
                 'type' => isset($tmp['native_type']) ? $tmp['native_type'] : 'unknown',
                 'len' => $tmp['len'],
                 'flags' => $tmp['flags'],
