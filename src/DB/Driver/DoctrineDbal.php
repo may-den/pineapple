@@ -749,10 +749,14 @@ class DoctrineDbal extends Common
      *
      * @access protected
      */
-    public function modifyLimitQuery($query, $from, $count, $params = [])
+    protected function modifyLimitQuery($query, $from, $count, $params = [])
     {
         if (DB::isManip($query) || $this->nextQueryManip) {
+            // THIS MAKES LITERALLY NO SENSE BUT I AM RETAINING FOR COMPATIBILITY.
+            // COMPATIBILITY WHICH LIKELY ISN'T NEEDED.
+            // @codeCoverageIgnoreStart
             return $query . " LIMIT $count";
+            // @codeCoverageIgnoreEnd
         } else {
             return $query . " LIMIT $from, $count";
         }
