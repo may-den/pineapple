@@ -464,4 +464,48 @@ class DoctrineDbalTest extends TestCase
             ]
         ], $tableInfo);
     }
+
+    public function testTableInfoWithModeOrder()
+    {
+        $result = $this->dbh->query('SELECT * FROM dbaltest');
+        $tableInfo = $this->dbh->tableInfo($result, DB::DB_TABLEINFO_ORDER);
+
+        $this->assertEquals(3, count($tableInfo));
+
+        unset($tableInfo[0]['len']);
+        $this->assertEquals([
+            [
+                'table' => 'dbaltest',
+                'name' => 'a',
+                'type' => 'string',
+                'flags' => [],
+            ],
+            'num_fields' => 1,
+            'order' => ['a' => 0],
+        ], $tableInfo);
+    }
+
+    public function testTableInfoWithModeOrderTable()
+    {
+        $result = $this->dbh->query('SELECT * FROM dbaltest');
+        $tableInfo = $this->dbh->tableInfo($result, DB::DB_TABLEINFO_ORDERTABLE);
+
+        $this->assertEquals(3, count($tableInfo));
+
+        unset($tableInfo[0]['len']);
+        $this->assertEquals([
+            [
+                'table' => 'dbaltest',
+                'name' => 'a',
+                'type' => 'string',
+                'flags' => [],
+            ],
+            'num_fields' => 1,
+            'ordertable' => [
+                'dbaltest' => [
+                    'a' => 0,
+                ],
+            ],
+        ], $tableInfo);
+    }
 }
