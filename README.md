@@ -1,4 +1,6 @@
-# Pineapple: An API-compatible replacement, forked from and for PEAR DB.
+# Pineapple
+
+#### An API-compatible replacement, forked from and for PEAR DB.
 
 | `master` | `dev-0.3.x` |
 |----------|-------------|
