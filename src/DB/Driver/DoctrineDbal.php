@@ -918,8 +918,10 @@ class DoctrineDbal extends Common
 
     /**
      * Obtain a "rationalised" database major name
+     * n.b. we won't test this, in future it would make sense to see the purpose removed.
      *
      * @return string Lower-cased type of database, e.g. "mysql", "pgsql"
+     * @codeCoverageIgnore
      */
     private function getPlatform()
     {
@@ -927,21 +929,16 @@ class DoctrineDbal extends Common
             return $this->raiseError(DB::DB_ERROR_NODBSELECTED);
         }
 
-        switch ($this->connection->getDatabasePlatform()) {
-            case 'MysqlPlatform':
-            case 'MySQL57Platform':
-                return 'mysql';
+        // we're not going to support everything
+        switch ($name = $this->connection->getDatabasePlatform()->getName()) {
+            case 'mysql':
+            case 'sqlite':
+                // verbatim name
+                return $name;
                 break;
 
-            case 'PostgreSqlPlatform':
-            case 'PostgreSQL91Platform':
-            case 'PostgreSQL92Platform':
-            case 'PostgreSQL94Platfor':
-                return 'pgsql';
-                break;
-
-            case 'SqlitePlatform':
-                return 'sqlite';
+            case 'postgresql':
+                return 'pgsql'; // this shortened name is intentional
                 break;
 
             default:
