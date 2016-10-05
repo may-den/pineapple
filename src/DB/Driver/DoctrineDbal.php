@@ -341,7 +341,7 @@ class DoctrineDbal extends Common
 
             try {
                 $this->connection->commit();
-                // @todo honestly, i don't know how to generate a failed tranascation commit
+                // @todo honestly, i don't know how to generate a failed transaction commit
                 // @codeCoverageIgnoreStart
             } catch (DBALConnectionException $e) {
                 return $this->myRaiseError();
