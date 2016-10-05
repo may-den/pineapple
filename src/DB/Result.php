@@ -305,7 +305,7 @@ class Result
     public function numRows()
     {
         if ($this->dbh->getOption('portability') & DB::DB_PORTABILITY_NUMROWS) {
-            if ($this->dbh->features['prepare']) {
+            if ($this->dbh->getFeature('prepare')) {
                 $res = $this->dbh->query($this->query, $this->parameters);
             } else {
                 $res = $this->dbh->query($this->query);
