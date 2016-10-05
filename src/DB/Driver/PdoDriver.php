@@ -5,6 +5,8 @@ use Pineapple\DB;
 use Pineapple\DB\Error;
 
 use PDO;
+use PDOStatement;
+use PDOException;
 
 /**
  * A PEAR DB driver that uses PDO as an underlying database layer.
@@ -67,12 +69,12 @@ class PdoDriver extends Common
         1452 => DB::DB_ERROR_CONSTRAINT,
     ];
 
-    // @var DBALConnection Our Doctrine DBAL connection
+    // @var PDO Our PDO connection
     protected $connection = null;
 
     /**
      * A copy of the last pdostatement object
-     * @var DBALStatement
+     * @var PDOStatement
      */
     public $lastStatement = null;
 
@@ -92,12 +94,12 @@ class PdoDriver extends Common
     private $transaction_opcount = 0;
 
     /**
-     * Set the DBAL connection handle in the object
+     * Set the PDO connection handle in the object
      *
-     * @param DBALConnection   $connection A constructed DBAL connection handle
-     * @return DoctrineDbal    The constructed Pineapple\DB\Driver\DoctrineDbal object
+     * @param PDO        $connection A constructed PDO connection handle
+     * @return PdoDriver             The constructed Pineapple\DB\Driver\PdoDriver object
      */
-    public function setConnectionHandle(DBALConnection $connection)
+    public function setConnectionHandle(PDO $connection)
     {
         $this->connection = $connection;
 
@@ -134,9 +136,8 @@ class PdoDriver extends Common
         }
         if (!$this->autocommit && $ismanip) {
             if ($this->transaction_opcount == 0) {
-                // dbal doesn't return a status for begin transaction. pdo does.
+                // @todo check return value
                 $this->connection->beginTransaction();
-                // ...so we can't (easily) capture an exception if this goes wrong.
             }
             $this->transaction_opcount++;
         }
@@ -145,28 +146,29 @@ class PdoDriver extends Common
         // @codeCoverageIgnoreStart
         if ($this->getPlatform() === 'mysql') {
             if (!$this->options['result_buffering']) {
-                $this->connection
-                    ->getWrappedConnection()
-                    ->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+                $this->connection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
             } else {
-                $this->connection
-                    ->getWrappedConnection()
-                    ->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+                $this->connection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
             }
         }
         // @codeCoverageIgnoreEnd
 
         try {
             $result = $this->connection->query($query);
-        } catch (DBALDriverException $exception) {
+        } catch (PDOException $exception) {
             return $this->raiseError(DB::DB_ERROR, null, null, $exception->getMessage());
+        }
+
+        // @todo decide if we're going to support PDOException or return codes, likely not both
+        if ($result === false) {
+            return $this->raiseError(DB::DB_ERROR, null, null, implode(' ', $this->connection->errorInfo()));
         }
 
         // keep this so we can perform rowCount and suchlike later
         $this->lastStatement = $result;
 
         // fetch queries should return the result object now
-        if (!$ismanip && isset($result) && ($result instanceof DBALStatement)) {
+        if (!$ismanip && isset($result) && ($result instanceof PDOStatement)) {
             return $result;
         }
 
@@ -208,7 +210,7 @@ class PdoDriver extends Common
      *
      * @see Pineapple\DB\Result::fetchInto()
      */
-    public function fetchInto(DBALStatement $result, &$arr, $fetchmode, $rownum = null)
+    public function fetchInto(PDOStatement $result, &$arr, $fetchmode, $rownum = null)
     {
         if ($fetchmode & DB::DB_FETCHMODE_ASSOC) {
             $arr = $result->fetch(PDO::FETCH_ASSOC, null, $rownum);
@@ -240,13 +242,13 @@ class PdoDriver extends Common
      * Pineapple\DB\Result::free() instead.  It can't be declared "protected"
      * because Pineapple\DB\Result is a separate object.
      *
-     * @param DBALStatement $result PHP's query result resource
+     * @param PDOStatement $result PHP's query result resource
      *
-     * @return bool                 TRUE on success, FALSE if $result is invalid
+     * @return bool                TRUE on success, FALSE if $result is invalid
      *
      * @see Pineapple\DB\Result::free()
      */
-    public function freeResult(DBALStatement &$result = null)
+    public function freeResult(PDOStatement &$result = null)
     {
         if ($result === null) {
             return false;
@@ -335,9 +337,9 @@ class PdoDriver extends Common
 
             try {
                 $this->connection->commit();
-                // @todo honestly, i don't know how to generate a failed tranascation commit
+                // @todo honestly, i don't know how to generate a failed transaction commit
                 // @codeCoverageIgnoreStart
-            } catch (DBALConnectionException $e) {
+            } catch (PDOException $e) {
                 return $this->myRaiseError();
                 // @codeCoverageIgnoreEnd
             }
@@ -364,7 +366,7 @@ class PdoDriver extends Common
                 $this->connection->rollBack();
                 // @todo honestly, i don't know how to generate a failed tranascation rollback
                 // @codeCoverageIgnoreStart
-            } catch (DBALConnectionException $e) {
+            } catch (PDOException $e) {
                 return $this->myRaiseError();
                 // @codeCoverageIgnoreEnd
             }
@@ -384,7 +386,7 @@ class PdoDriver extends Common
      */
     public function affectedRows()
     {
-        if (!isset($this->lastStatement) || !($this->lastStatement instanceof DBALStatement)) {
+        if (!isset($this->lastStatement) || !($this->lastStatement instanceof PDOStatement)) {
             return $this->myRaiseError();
         }
 
@@ -407,8 +409,8 @@ class PdoDriver extends Common
      *
      * @see Pineapple\DB\Driver\Common::nextID(),
      *      Pineapple\DB\Driver\Common::getSequenceName(),
-     *      Pineapple\DB\Driver\DoctrineDbal::createSequence(),
-     *      Pineapple\DB\Driver\DoctrineDbal::dropSequence()
+     *      Pineapple\DB\Driver\PdoDriver::createSequence(),
+     *      Pineapple\DB\Driver\PdoDriver::dropSequence()
      *
      * @deprecated Pineapple retains but does not support this, it's restricted to mysql, and untested
      * @codeCoverageIgnore
@@ -489,8 +491,8 @@ class PdoDriver extends Common
      *
      * @see Pineapple\DB\Driver\Common::createSequence(),
      *      Pineapple\DB\Driver\Common::getSequenceName(),
-     *      Pineapple\DB\Driver\Pineapple\DB\Driver\DoctrineDbal::nextID(),
-     *      Pineapple\DB\Driver\Pineapple\DB\Driver\DoctrineDbal::dropSequence()
+     *      Pineapple\DB\Driver\Pineapple\DB\Driver\PdoDriver::nextID(),
+     *      Pineapple\DB\Driver\Pineapple\DB\Driver\PdoDriver::dropSequence()
      *
      * @deprecated Pineapple retains but does not support this, it's restricted to mysql, and untested
      * @codeCoverageIgnore
@@ -525,8 +527,8 @@ class PdoDriver extends Common
      *
      * @see Pineapple\DB\Driver\Common::dropSequence(),
      *      Pineapple\DB\Driver\Common::getSequenceName(),
-     *      Pineapple\DB\Driver\Pineapple\DB\Driver\DoctrineDbal::nextID(),
-     *      Pineapple\DB\Driver\Pineapple\DB\Driver\DoctrineDbal::createSequence()
+     *      Pineapple\DB\Driver\Pineapple\DB\Driver\PdoDriver::nextID(),
+     *      Pineapple\DB\Driver\Pineapple\DB\Driver\PdoDriver::createSequence()
      *
      * @deprecated Pineapple retains but does not support this, it's restricted to mysql, and untested
      * @codeCoverageIgnore
@@ -583,17 +585,16 @@ class PdoDriver extends Common
          * pgsql_escape_string/pgsql_escape_literal, but the product would not
          * be encapsulated in quotes.
          *
-         * Dbal, providing a consistent PDO-like interface (save for a few
-         * return values and methods), offers quote(), which _does_ quote the
-         * string. but code that uses escapeSimple() expects an escaped string,
-         * not a quoted escaped string.
+         * PDO offers quote(), which _does_ quote the string. but code that
+         * uses escapeSimple() expects an escaped string, not a quoted escaped
+         * string.
          *
          * we're going to need to strip these quotes. a rundown of the styles:
          * mysql: single quotes, backslash to literal single quotes to escape
          * pgsql: single quotes, literal single quotes are repeated twice
          * sqlite: as pgsql
          *
-         * because we're tailored for Dbal, we are (supposedly) agnostic to
+         * because we're tailored for PDO, we are (supposedly) agnostic to
          * these things. generically, we could look for either " or ' at the
          * beginning and end, and strip those. as a safety net, check length.
          * we could also just strip single quotes.
@@ -664,7 +665,7 @@ class PdoDriver extends Common
      * @return object  the Pineapple\DB\Error object
      *
      * @see Pineapple\DB\Driver\Common::raiseError(),
-     *      Pineapple\DB\Driver\DoctrineDbal::errorNative(), Pineapple\DB\Driver\Common::errorCode()
+     *      Pineapple\DB\Driver\PdoDriver::errorNative(), Pineapple\DB\Driver\Common::errorCode()
      */
     public function myRaiseError($errno = null)
     {
@@ -695,12 +696,12 @@ class PdoDriver extends Common
     /**
      * Returns information about a table or a result set
      *
-     * @param DBALStatement|string $result Pineapple\DB\Result object from a query or a
-     *                                     string containing the name of a table.
-     *                                     While this also accepts a query result
-     *                                     resource identifier, this behavior is
-     *                                     deprecated.
-     * @param int                  $mode   a valid tableInfo mode
+     * @param PDOStatement|string $result Pineapple\DB\Result object from a query or a
+     *                                    string containing the name of a table.
+     *                                    While this also accepts a query result
+     *                                    resource identifier, this behavior is
+     *                                    deprecated.
+     * @param int                 $mode   a valid tableInfo mode
      *
      * @return mixed   an associative array with the information requested.
      *                 A Pineapple\DB\Error object on failure.
@@ -735,7 +736,7 @@ class PdoDriver extends Common
             return $this->myRaiseError();
         }
 
-        if (!is_object($id) || !($id instanceof DBALStatement)) {
+        if (!is_object($id) || !($id instanceof PDOStatement)) {
             // not easy to test without triggering a very difficult error
             // @codeCoverageIgnoreStart
             return $this->myRaiseError(DB::DB_ERROR_NEED_MORE_DATA);
@@ -822,15 +823,12 @@ class PdoDriver extends Common
         }
 
         // we're not going to support everything
-        switch ($name = $this->connection->getDatabasePlatform()->getName()) {
+        switch ($name = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME)) {
             case 'mysql':
+            case 'pgsql':
             case 'sqlite':
                 // verbatim name
                 return $name;
-                break;
-
-            case 'postgresql':
-                return 'pgsql'; // this shortened name is intentional
                 break;
 
             default:
