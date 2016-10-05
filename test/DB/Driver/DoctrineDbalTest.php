@@ -81,19 +81,13 @@ class DoctrineDbalTest extends TestCase
         $reflectionProp->setAccessible(true);
 
         $this->assertInstanceOf(DBALConnection::class, $reflectionProp->getValue($this->dbh));
-    }
-
-    public function testSetConnectionHandleWithSyntaxAndDatabase()
-    {
-        $this->markTestIncomplete('this sets a connection handle but does not verify it');
-        // use reflection to ensure the connection handle is a dbal instance
-        $this->dbh->setConnectionHandle($this->dbalConn);
+        $this->assertTrue($this->dbh->connected());
     }
 
     public function testDisconnect()
     {
-        // this isn't a great test. we can't check something that is unset() using reflection.
         $this->assertTrue($this->dbh->disconnect());
+        $this->assertFalse($this->dbh->connected());
     }
 
     public function testSimpleQuery()
