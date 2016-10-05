@@ -12,18 +12,6 @@ use PDO;
 class PdoDriver extends Common
 {
     /**
-     * The DB driver type (mysql, oci8, odbc, etc.)
-     * @var string
-     */
-    protected $phptype = 'pdo';
-
-    /**
-     * The database syntax variant to be used (db2, access, etc.), if any
-     * @var string
-     */
-    protected $dbsyntax = 'pdo';
-
-    /**
      * The capabilities of this DB implementation
      *
      * The 'new_link' element contains the PHP version that first provided
@@ -107,88 +95,14 @@ class PdoDriver extends Common
     public $transaction_opcount = 0;
 
     /**
-     * The database specified in the DSN
-     *
-     * It's a fix to allow calls to different databases in the same script.
-     *
-     * @var string
-     * @access private
-     */
-    private $db = '';
-
-    /**
-     * Connect to the database server, log in and open the database
-     *
-     * Don't call this method directly.  Use DB::connect() instead.
-     *
-     * PEAR DB's mysqli driver supports the following extra DSN options:
-     *   + When the 'ssl' $option passed to DB::connect() is true:
-     *     + key      The path to the key file.
-     *     + cert     The path to the certificate file.
-     *     + ca       The path to the certificate authority file.
-     *     + capath   The path to a directory that contains trusted SSL
-     *                 CA certificates in pem format.
-     *     + cipher   The list of allowable ciphers for SSL encryption.
-     *
-     * Example of how to connect using SSL:
-     * <code>
-     * require_once 'DB.php';
-     *
-     * $dsn = [
-     *     'phptype' => 'mysqli',
-     *     'username' => 'someuser',
-     *     'password' => 'apasswd',
-     *     'hostspec' => 'localhost',
-     *     'database' => 'thedb',
-     *     'key' => 'client-key.pem',
-     *     'cert' => 'client-cert.pem',
-     *     'ca' => 'cacert.pem',
-     *     'capath' => '/path/to/ca/dir',
-     *     'cipher' => 'AES',
-     * ];
-     *
-     * $options = [
-     *     'ssl' => true,
-     * ];
-     *
-     * $db = DB::connect($dsn, $options);
-     * if (Util::isError($db)) {
-     *     die($db->getMessage());
-     * }
-     * </code>
-     *
-     * @param array $dsn         the data source name
-     * @param bool  $persistent  should the connection be persistent?
-     *
-     * @return int|Error         DB_OK on success.
-     *                           A Pineapple\DB\Error object on failure.
-     */
-    public function connect($dsn, $persistent = false)
-    {
-        // this returns success, but in effect does nothing.
-        // since $this->connection remains unset, driver still behaves well.
-        return DB::DB_OK;
-    }
-
-    /**
      * Set the DBAL connection handle in the object
      *
      * @param DBALConnection   $connection A constructed DBAL connection handle
-     * @param array            $dsn        A valid PEAR DB DSN
      * @return DoctrineDbal    The constructed Pineapple\DB\Driver\DoctrineDbal object
      */
-    public function setConnectionHandle(DBALConnection $connection, array $dsn = [])
+    public function setConnectionHandle(DBALConnection $connection)
     {
-        $this->dsn = $dsn;
         $this->connection = $connection;
-
-        if (isset($dsn['dbsyntax'])) {
-            $this->dbsyntax = $dsn['dbsyntax'];
-        }
-
-        if (isset($dsn['database'])) {
-            $this->db = $dsn['database'];
-        }
 
         return $this;
     }

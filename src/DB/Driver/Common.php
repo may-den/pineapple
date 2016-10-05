@@ -48,18 +48,6 @@ use Pineapple\DB\Exception\FeatureException;
 abstract class Common extends Util
 {
     /**
-     * The DB driver type (mysql, oci8, odbc, etc.)
-     * @var string
-     */
-    protected $phptype;
-
-    /**
-     * The database syntax variant to be used (db2, access, etc.), if any
-     * @var string
-     */
-    protected $dbsyntax;
-
-    /**
      * The current default fetch mode
      * @var integer
      */
@@ -93,12 +81,6 @@ abstract class Common extends Util
      * @var boolean
      */
     protected $acceptConsequencesOfPoorCodingChoices = false;
-
-    /**
-     * The DSN information for connecting to a database
-     * @var array
-     */
-    protected $dsn = [];
 
     /**
      * @var mixed Database connection handle
@@ -213,8 +195,6 @@ abstract class Common extends Util
         }
 
         $toSerialize = [
-            'dbsyntax',
-            'dsn',
             'features',
             'fetchmode',
             'fetchModeObjectClass',

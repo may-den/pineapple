@@ -45,7 +45,7 @@ class DoctrineDbalTest extends TestCase
      */
     public function setupDbalInstance()
     {
-        $this->dbh = DB::connect('DoctrineDbal://');
+        $this->dbh = DB::factory(DoctrineDbal::class);
 
         $dbalConfig = new DBALConfiguration();
         $this->dbalConn = DBALDriverManager::getConnection([
@@ -85,17 +85,9 @@ class DoctrineDbalTest extends TestCase
 
     public function testSetConnectionHandleWithSyntaxAndDatabase()
     {
+        $this->markTestIncomplete('this sets a connection handle but does not verify it');
         // use reflection to ensure the connection handle is a dbal instance
-        $this->dbh->setConnectionHandle($this->dbalConn, DB::parseDSN('sqlite://foo@bar/mydb'));
-
-        $reflectionClass = new \ReflectionClass($this->dbh);
-        $syntaxProp = $reflectionClass->getProperty('dbsyntax');
-        $syntaxProp->setAccessible(true);
-        $databaseProp = $reflectionClass->getProperty('db');
-        $databaseProp->setAccessible(true);
-
-        $this->assertEquals('sqlite', $syntaxProp->getValue($this->dbh));
-        $this->assertEquals('mydb', $databaseProp->getValue($this->dbh));
+        $this->dbh->setConnectionHandle($this->dbalConn);
     }
 
     public function testDisconnect()
@@ -342,7 +334,7 @@ class DoctrineDbalTest extends TestCase
     public function testAffectedRowsWithNoLastStatement()
     {
         // use our own connection so we don't have rowCount from test fixture setup
-        $myDbh = DB::connect('DoctrineDbal://');
+        $myDbh = DB::factory(DoctrineDbal::class);
 
         $dbalConfig = new DBALConfiguration();
         $myDbalConn = DBALDriverManager::getConnection([

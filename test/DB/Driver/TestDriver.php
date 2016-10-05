@@ -14,9 +14,7 @@ class TestDriver extends Common
     private $lastResult = null;
     private $hasFreed = false;
 
-    var $phptype = 'test';
-    var $dbsyntax = 'test';
-    var $features = [
+    protected $features = [
         'limit' => 'alter',
         'new_link' => false,
         'numrows' => true,
@@ -26,7 +24,7 @@ class TestDriver extends Common
         'transactions' => true,
     ];
 
-    var $errorcode_map = [
+    protected $errorcode_map = [
         1000 => DB::DB_OK,
         1001 => DB::DB_ERROR,
         1002 => DB::DB_ERROR_ACCESS_VIOLATION,
@@ -59,7 +57,6 @@ class TestDriver extends Common
 
     private $lastQueryType = null;
     private $sequenceCounter = 1000;
-    protected $dsn = null;
     protected $connection = false;
     protected $autocommit = false;
 
@@ -71,17 +68,6 @@ class TestDriver extends Common
     public function setPrepareFeature($flag)
     {
         $this->features['prepare'] = $flag ? true : false;
-    }
-
-    public function connect($dsn, $persistent = false)
-    {
-        $this->dsn = $dsn;
-        $debug = $this->getOption('debug');
-        if (!Util::isError($debug) && ($debug === 'please fail')) {
-            return $this->myRaiseError();
-        }
-        $this->connection = true;
-        return DB::DB_OK;
     }
 
     public function disconnect()
