@@ -695,7 +695,7 @@ abstract class Common extends Util
      *
      * @return bool true if connected, false if not
      */
-    protected function connected()
+    public function connected()
     {
         if (isset($this->connection) && $this->connection) {
             return true;

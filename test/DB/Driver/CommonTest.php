@@ -1320,4 +1320,12 @@ class CommonTest extends TestCase
         $this->expectException(FeatureException::class);
         $this->assertEquals('alter', $dbh->getFeature('blumfrub'));
     }
+
+    public function testConnected()
+    {
+        $dbh = DB::factory(TestDriver::class);
+        $this->assertFalse($dbh->connected());
+        $dbh->stubConnect();
+        $this->assertTrue($dbh->connected());
+    }
 }
