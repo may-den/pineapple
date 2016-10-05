@@ -1309,4 +1309,17 @@ class CommonTest extends TestCase
         $this->assertInstanceOf(Error::class, $result);
         $this->assertEquals(DB::DB_ERROR_DIVZERO, $result->getCode());
     }
+
+    public function testGetFeature()
+    {
+        $dbh = DB::factory(TestDriver::class);
+        $this->assertEquals('alter', $dbh->getFeature('limit'));
+    }
+
+    public function testGetFeatureWithBadFeature()
+    {
+        $dbh = DB::factory(TestDriver::class);
+        $this->expectException(FeatureException::class);
+        $this->assertEquals('alter', $dbh->getFeature('blumfrub'));
+    }
 }
