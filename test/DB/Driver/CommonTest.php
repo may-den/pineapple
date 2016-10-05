@@ -7,6 +7,8 @@ use Pineapple\DB\Result;
 use Pineapple\DB\Error;
 use Pineapple\DB\Driver\Common;
 use Pineapple\Test\DB\Driver\TestDriver;
+use Pineapple\DB\Exception\FeatureException;
+
 use PHPUnit\Framework\TestCase;
 
 // 'Common' is an abstract class so we're going to use our mock TestDriver to stub
@@ -98,6 +100,17 @@ class CommonTest extends TestCase
         $this->assertEquals($dbh, $rehydratedObject);
     }
 
+    public function testSleepWakeupConnected()
+    {
+        // __sleep is a magic method, use serialize to trigger it.
+        // honestly i have no idea why it even exists. who freezes their db connection?
+        $dbh = DB::factory(TestDriver::class);
+        $dbh->stubConnect();
+        $rehydratedObject = unserialize(serialize($dbh));
+        $rehydratedObject->stubConnect();
+        $this->assertEquals($dbh, $rehydratedObject);
+    }
+
     public function testSleepWakeupWithAutocommit()
     {
         // __sleep is a magic method, use serialize to trigger it.
@@ -112,14 +125,14 @@ class CommonTest extends TestCase
     {
         // honestly testing some of these methods really put a question mark above my sanity.
         $dbh = DB::factory(TestDriver::class);
-        $this->assertEquals(TestDriver::class, (string) $dbh);
+        $dbh->stubConnect();
+        $this->assertEquals(TestDriver::class . ' [connected]', (string) $dbh);
     }
 
     public function testToStringOnDisconnectedObject()
     {
         // honestly testing some of these methods really put a question mark above my sanity.
         $dbh = DB::factory(TestDriver::class);
-        $dbh->disconnect();
         $this->assertEquals(TestDriver::class, (string) $dbh);
     }
 

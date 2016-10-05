@@ -119,19 +119,6 @@ class PdoDriver extends Common
     }
 
     /**
-     * Determine if we're connected
-     *
-     * @return bool true if connected, false if not
-     */
-    private function connected()
-    {
-        if (isset($this->connection) && $this->connection) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Sends a query to the database server
      *
      * @param string  the SQL query string

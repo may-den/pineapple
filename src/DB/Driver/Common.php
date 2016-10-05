@@ -189,7 +189,7 @@ abstract class Common extends Util
     {
         $this->wasConnected = false;
 
-        if ($this->connection) {
+        if ($this->connected()) {
             // Don't disconnect(), people use serialize() for many reasons
             $this->wasConnected = true;
         }
@@ -209,22 +209,6 @@ abstract class Common extends Util
     }
 
     /**
-     * Automatically reconnects to the database when PHP's unserialize()
-     * function is called
-     *
-     * The reconnection attempt is only performed if the object was connected
-     * at the time PHP's serialize() function was run.
-     *
-     * @return void
-     */
-    public function __wakeup()
-    {
-        if ($this->wasConnected) {
-            $this->connect($this->dsn, $this->options['persistent']);
-        }
-    }
-
-    /**
      * Automatic string conversion for PHP 5
      *
      * @return string  a string describing the current PEAR DB object
@@ -235,7 +219,7 @@ abstract class Common extends Util
     {
         $info = get_class($this);
 
-        if ($this->connection) {
+        if ($this->connected()) {
             $info .= ' [connected]';
         }
 
@@ -704,6 +688,19 @@ abstract class Common extends Util
             return $this->options[$option];
         }
         return $this->raiseError("unknown option $option");
+    }
+
+    /**
+     * Determine if we're connected
+     *
+     * @return bool true if connected, false if not
+     */
+    protected function connected()
+    {
+        if (isset($this->connection) && $this->connection) {
+            return true;
+        }
+        return false;
     }
 
     /**

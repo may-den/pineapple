@@ -70,6 +70,11 @@ class TestDriver extends Common
         $this->features['prepare'] = $flag ? true : false;
     }
 
+    public function stubConnect()
+    {
+        $this->connection = true;
+    }
+
     public function disconnect()
     {
         $this->connection = false;
