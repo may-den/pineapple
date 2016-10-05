@@ -92,13 +92,10 @@ class DoctrineDbal extends Common
     /**
      * The quantity of transactions begun
      *
-     * {@internal  While this is private, it can't actually be designated
-     * private in PHP 5 because it is directly accessed in the test suite.}}
-     *
      * @var integer
      * @access private
      */
-    public $transaction_opcount = 0;
+    private $transaction_opcount = 0;
 
     /**
      * Set the DBAL connection handle in the object
