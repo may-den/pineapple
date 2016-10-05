@@ -50,14 +50,32 @@ It would not take a large amount of effort to refactor your code to avoid using 
 
 ## Usage
 
+In Doctrine DBAL mode:
+
 ```php
 <?php
 
-use Pineapple\DB as PineappleDB;
+use Pineapple\DB;
+use Pineapple\DB\Driver\DoctrineDbal;
 
-$db = PineappleDB::connect('DoctrineDbal://');
-$db->setConnectionHandle($dbalConn, PineappleDB::parseDSN('mysql://foo:bar@dbhost/dbname');
+// lengthy dbal connection here...
+
+$db = DB::factory(DoctrineDbal::class);
+$db->setConnectionHandle($dbalConn);
 $result = $db->query('SELECT USER(), DATABASE()');
+```
+
+In PDO mode:
+
+```php
+<?php
+
+use Pineapple\DB;
+use Pineapple\DB\Driver\PdoDriver;
+
+$db = DB::factory(PdoDriver::class);
+$db->setConnectionHandle(new PDO('sqlite::memory:'));
+$result = $db->query('SELECT CURRENT_TIMESTAMP');
 ```
 
 ## Test suite
