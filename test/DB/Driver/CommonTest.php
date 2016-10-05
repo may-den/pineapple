@@ -576,7 +576,6 @@ class CommonTest extends TestCase
 
     public function testGetOneWithNoData()
     {
-        // $this->markTestIncomplete('test fails, please investigate');
         $dbh = DB::factory(TestDriver::class);
 
         $result = $dbh->getOne('EMPTYSEL');
@@ -628,7 +627,6 @@ class CommonTest extends TestCase
 
     public function testGetRowWithNoData()
     {
-        // $this->markTestIncomplete('test fails, please investigate');
         $dbh = DB::factory(TestDriver::class);
 
         $result = $dbh->getRow('EMPTYSEL');

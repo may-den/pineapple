@@ -359,7 +359,6 @@ class ResultTest extends TestCase
 
     public function testNumRowsWithPortabilityAndPreparedStatements()
     {
-        // $this->markTestIncomplete('this test is broken due to storing expanded query after variable sub');
         $dbh = DB::factory(TestDriver::class, ['portability' => DB::DB_PORTABILITY_NUMROWS]);
         // "enable" prepared queries
         $dbh->setPrepareFeature(true);
