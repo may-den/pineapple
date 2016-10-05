@@ -308,12 +308,12 @@ class DB
      * Create a new DB object for the specified database type but don't
      * connect to the database
      *
-     * @param string $type     the database type (eg "mysql")
+     * @param string $type     the database driver name (eg "PdoDriver")
      * @param mixed  $options  an associative array of option names and values,
      *                         or a true/false value for the 'persistent'
      *                         option
      *
-     * @return object  a new DB object.  A DB\Error object on failure.
+     * @return object          a new DB object. A DB\Error object on failure.
      *
      * @see DB\Driver\Common::setOption()
      */
