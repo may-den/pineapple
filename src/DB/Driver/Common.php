@@ -5,6 +5,7 @@ use Pineapple\Util;
 use Pineapple\DB;
 use Pineapple\DB\Result;
 use Pineapple\DB\Error;
+use Pineapple\DB\Exception\FeatureException;
 
 /**
  * Contains the Common base class
@@ -253,13 +254,26 @@ abstract class Common extends Util
     public function __toString()
     {
         $info = get_class($this);
-        $info .=  ': (phptype=' . $this->phptype .
-                  ', dbsyntax=' . $this->dbsyntax .
-                  ')';
+
         if ($this->connection) {
             $info .= ' [connected]';
         }
+
         return $info;
+    }
+
+
+    /**
+     * Gets an advertised feature of the driver
+     *
+     * @param string $feature Name of the feature to return
+     */
+    public function getFeature($feature)
+    {
+        if (!isset($this->features[$feature])) {
+            throw new FeatureException('Feature \"{$feature}\" not advertised by driver');
+        }
+        return $this->features[$feature];
     }
 
     /**
