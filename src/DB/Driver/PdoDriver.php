@@ -75,9 +75,9 @@ class PdoDriver extends Common
     /**
      * Should data manipulation queries be committed automatically?
      * @var bool
-     * @access private
+     * @access protected
      */
-    public $autocommit = true;
+    protected $autocommit = true;
 
     /**
      * The quantity of transactions begun
