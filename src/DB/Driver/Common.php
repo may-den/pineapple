@@ -99,7 +99,6 @@ abstract class Common extends Util
     protected $options = [
         'result_buffering' => 500,
         'persistent' => false,
-        'ssl' => false,
         'debug' => 0,
         'seqname_format' => '%s_seq',
         'autofree' => false,
@@ -150,9 +149,6 @@ abstract class Common extends Util
 
     /**
      * The capabilities of the DB implementation
-     *
-     * The 'new_link' element contains the PHP version that first provided
-     * new_link support for this DBMS.  Contains false if it's unsupported.
      *
      * Meaning of the 'limit' element:
      *   + 'emulate' = emulate with fetch row by number
@@ -556,9 +552,6 @@ abstract class Common extends Util
      *      <br />the sprintf() format string used on sequence names.  This
      *            format is applied to sequence names passed to
      *            createSequence(), nextID() and dropSequence().
-     * </li><li>
-     * <var>ssl</var> <kbd>boolean</kbd> = <samp>false</samp>
-     *      <br />use ssl to connect?
      * </li>
      * </ul>
      *

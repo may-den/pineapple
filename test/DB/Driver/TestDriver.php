@@ -16,11 +16,8 @@ class TestDriver extends Common
 
     protected $features = [
         'limit' => 'alter',
-        'new_link' => false,
         'numrows' => true,
-        'pconnect' => false,
         'prepare' => false,
-        'ssl' => true,
         'transactions' => true,
     ];
 

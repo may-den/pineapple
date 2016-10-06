@@ -20,9 +20,6 @@ class DoctrineDbal extends Common
     /**
      * The capabilities of this DB implementation
      *
-     * The 'new_link' element contains the PHP version that first provided
-     * new_link support for this DBMS.  Contains false if it's unsupported.
-     *
      * Meaning of the 'limit' element:
      *   + 'emulate' = emulate with fetch row by number
      *   + 'alter'   = alter the query
@@ -32,11 +29,8 @@ class DoctrineDbal extends Common
      */
     protected $features = [
         'limit' => 'alter',
-        'new_link' => false,
         'numrows' => true,
-        'pconnect' => false,
         'prepare' => false,
-        'ssl' => true,
         'transactions' => true,
     ];
 
