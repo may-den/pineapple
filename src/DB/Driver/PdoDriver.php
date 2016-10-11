@@ -126,6 +126,9 @@ class PdoDriver extends Common
         $this->lastQuery = $query;
         $query = $this->modifyQuery($query);
 
+        // query driver options, none by default
+        $queryDriverOptions = [];
+
         if (!$this->connected()) {
             return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
         }
@@ -147,23 +150,31 @@ class PdoDriver extends Common
 
         // enable/disable result_buffering in mysql
         // @codeCoverageIgnoreStart
-        if ($this->getPlatform() === 'mysql') {
-            if (!$this->options['result_buffering']) {
-                $this->connection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
-            } else {
-                $this->connection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
-            }
+        // @todo test this *thoroughly*
+        if (($this->getPlatform() === 'mysql') && !$this->options['result_buffering']) {
+            $queryDriverOptions[PDO::MYSQL_ATTR_USE_BUFFERED_QUERY] = false;
         }
         // @codeCoverageIgnoreEnd
 
+        // prepare the query for execution (we can only inject the unbuffered query parameter on prepared statements)
         try {
-            $result = $this->connection->query($query);
-        } catch (PDOException $queryException) {
+            $result = $this->connection->prepare($query);
+        } catch (PDOException $prepareException) {
             return $this->raiseError(DB::DB_ERROR, null, null, $queryException->getMessage());
         }
 
-        // @todo decide if we're going to support PDOException or return codes, likely not both
         if ($result === false) {
+            return $this->raiseError(DB::DB_ERROR, null, null, implode(' ', $this->connection->errorInfo()));
+        }
+
+        // execute the query
+        try {
+            $executeResult = $result->execute();
+        } catch (PDOException $executeException) {
+            return $this->raiseError(DB::DB_ERROR, null, null, $queryException->getMessage());
+        }
+
+        if ($executeResult === false) {
             return $this->raiseError(DB::DB_ERROR, null, null, implode(' ', $this->connection->errorInfo()));
         }
 
