@@ -141,17 +141,11 @@ class DoctrineDbal extends Common
             $this->transaction_opcount++;
         }
 
-        // enable/disable result_buffering in mysql
+        // @todo this needs setting on the prepare() driver options, which doctrine doesn't support
         // @codeCoverageIgnoreStart
         if ($this->getPlatform() === 'mysql') {
             if (!$this->options['result_buffering']) {
-                $this->connection
-                    ->getWrappedConnection()
-                    ->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
-            } else {
-                $this->connection
-                    ->getWrappedConnection()
-                    ->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+                return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
             }
         }
         // @codeCoverageIgnoreEnd
