@@ -125,13 +125,23 @@ class PdoDriver extends Common
         $ismanip = $this->_checkManip($query);
         $this->lastQuery = $query;
         $query = $this->modifyQuery($query);
+
         if (!$this->connected()) {
             return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
         }
+
         if (!$this->autocommit && $ismanip) {
-            if ($this->transaction_opcount == 0) {
+            if ($this->transaction_opcount === 0) {
                 // @todo check return value
-                $this->connection->beginTransaction();
+                try {
+                    $return = $this->connection->beginTransaction();
+                } catch (PDOException $transactionException) {
+                    return $this->raiseError(DB::DB_ERROR, null, null, $transactionException->getMessage());
+                }
+
+                if ($return === false) {
+                    return $this->raiseError(DB::ERROR, null, null, implode(' ', $this->connection->errorInfo()));
+                }
             }
             $this->transaction_opcount++;
         }
