@@ -158,8 +158,8 @@ class PdoDriver extends Common
 
         try {
             $result = $this->connection->query($query);
-        } catch (PDOException $exception) {
-            return $this->raiseError(DB::DB_ERROR, null, null, $exception->getMessage());
+        } catch (PDOException $queryException) {
+            return $this->raiseError(DB::DB_ERROR, null, null, $queryException->getMessage());
         }
 
         // @todo decide if we're going to support PDOException or return codes, likely not both
@@ -339,12 +339,16 @@ class PdoDriver extends Common
             }
 
             try {
-                $this->connection->commit();
+                $commitResult = $this->connection->commit();
                 // @todo honestly, i don't know how to generate a failed transaction commit
                 // @codeCoverageIgnoreStart
-            } catch (PDOException $e) {
-                return $this->myRaiseError();
+            } catch (PDOException $commitException) {
+                return $this->raiseError(DB::DB_ERROR, null, null, $commitException->getMessage());
                 // @codeCoverageIgnoreEnd
+            }
+
+            if ($commitResult === false) {
+                return $this->raiseError(DB::DB_ERROR, null, null, implode(' ', $this->connection->errorInfo()));
             }
 
             $this->transaction_opcount = 0;
@@ -366,12 +370,16 @@ class PdoDriver extends Common
             }
 
             try {
-                $this->connection->rollBack();
+                $rollbackResult = $this->connection->rollBack();
                 // @todo honestly, i don't know how to generate a failed tranascation rollback
                 // @codeCoverageIgnoreStart
-            } catch (PDOException $e) {
-                return $this->myRaiseError();
+            } catch (PDOException $rollbackException) {
+                return $this->raiseError(DB::DB_ERROR, null, null, $rollbackException->getMessage());
                 // @codeCoverageIgnoreEnd
+            }
+
+            if ($rollbackResult === false) {
+                return $this->raiseError(DB::DB_ERROR, null, null, implode(' ', $this->connection->errorInfo()));
             }
 
             $this->transaction_opcount = 0;
@@ -608,6 +616,10 @@ class PdoDriver extends Common
             case 'sqlite':
                 $quotedString = $this->connection->quote($str);
 
+                if ($quotedString === false) {
+                    return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
+                }
+
                 if (preg_match('/^(["\']).*\g1$/', $quotedString) && ((strlen($quotedString) - strlen($str)) >= 2)) {
                     // it's a quoted string, it's 2 or more characters longer, let's strip
                     return preg_replace('/^(["\'])(.*)\g1$/', '$2', $quotedString);
@@ -623,7 +635,7 @@ class PdoDriver extends Common
             // not going to try covering this
             // @codeCoverageIgnoreStart
             default:
-                return $this->myRaiseError(DB::DB_ERROR_UNSUPPORTED);
+                return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
                 break;
             // @codeCoverageIgnoreEnd
         }
