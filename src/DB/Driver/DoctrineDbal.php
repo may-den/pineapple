@@ -143,10 +143,8 @@ class DoctrineDbal extends Common
 
         // @todo this needs setting on the prepare() driver options, which doctrine doesn't support
         // @codeCoverageIgnoreStart
-        if ($this->getPlatform() === 'mysql') {
-            if (!$this->options['result_buffering']) {
-                return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
-            }
+        if (($this->getPlatform() === 'mysql') && !$this->options['result_buffering']) {
+            return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
         }
         // @codeCoverageIgnoreEnd
 
