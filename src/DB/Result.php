@@ -115,7 +115,7 @@ class Result
      *
      * @return void
      */
-    public function __construct($dbh, $result, $options = array())
+    public function __construct($dbh, $result, $options = [])
     {
         $this->autofree = $dbh->getOption('autofree');
         $this->dbh = $dbh;
