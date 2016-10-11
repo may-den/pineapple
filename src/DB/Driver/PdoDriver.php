@@ -132,7 +132,6 @@ class PdoDriver extends Common
 
         if (!$this->autocommit && $ismanip) {
             if ($this->transaction_opcount === 0) {
-                // @todo check return value
                 try {
                     $return = $this->connection->beginTransaction();
                 } catch (PDOException $transactionException) {
