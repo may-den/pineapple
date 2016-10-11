@@ -1959,6 +1959,7 @@ abstract class Common extends Util
      *
      * @return array|Error  an array listing the items sought.
      *                      A DB Pineapple\DB\Error object on failure.
+     * @deprecated This is deprecated by Pineapple and will be removed in future
      */
     public function getListOf($type)
     {
