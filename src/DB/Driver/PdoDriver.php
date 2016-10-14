@@ -137,12 +137,23 @@ class PdoDriver extends Common
             if ($this->transaction_opcount === 0) {
                 try {
                     $return = $this->connection->beginTransaction();
+                    // sqlite supports transactions so this can't be tested right now
+                    // @codeCoverageIgnoreStart
                 } catch (PDOException $transactionException) {
                     return $this->raiseError(DB::DB_ERROR, null, null, $transactionException->getMessage());
+                    // @codeCoverageIgnoreEnd
                 }
 
                 if ($return === false) {
-                    return $this->raiseError(DB::ERROR, null, null, implode(' ', $this->connection->errorInfo()));
+                    // sqlite supports transactions so this can't be tested right now
+                    // @codeCoverageIgnoreStart
+                    return $this->raiseError(
+                        DB::ERROR,
+                        null,
+                        null,
+                        self::formatErrorInfo($this->connection->errorInfo())
+                    );
+                    // @codeCoverageIgnoreEnd
                 }
             }
             $this->transaction_opcount++;
@@ -158,32 +169,42 @@ class PdoDriver extends Common
 
         // prepare the query for execution (we can only inject the unbuffered query parameter on prepared statements)
         try {
-            $result = $this->connection->prepare($query);
+            $statement = $this->connection->prepare($query);
         } catch (PDOException $prepareException) {
-            return $this->raiseError(DB::DB_ERROR, null, null, $queryException->getMessage());
+            return $this->raiseError(DB::DB_ERROR, null, null, $prepareException->getMessage());
         }
 
-        if ($result === false) {
-            return $this->raiseError(DB::DB_ERROR, null, null, implode(' ', $this->connection->errorInfo()));
+        if ($statement === false) {
+            return $this->raiseError(
+                DB::DB_ERROR,
+                null,
+                null,
+                self::formatErrorInfo($this->connection->errorInfo())
+            );
         }
 
         // execute the query
         try {
-            $executeResult = $result->execute();
+            $executeResult = $statement->execute();
         } catch (PDOException $executeException) {
-            return $this->raiseError(DB::DB_ERROR, null, null, $queryException->getMessage());
+            return $this->raiseError(DB::DB_ERROR, null, null, $executeException->getMessage());
         }
 
         if ($executeResult === false) {
-            return $this->raiseError(DB::DB_ERROR, null, null, implode(' ', $this->connection->errorInfo()));
+            return $this->raiseError(
+                DB::DB_ERROR,
+                null,
+                null,
+                self::formatErrorInfo($statement->errorInfo())
+            );
         }
 
         // keep this so we can perform rowCount and suchlike later
-        $this->lastStatement = $result;
+        $this->lastStatement = $statement;
 
         // fetch queries should return the result object now
-        if (!$ismanip && isset($result) && ($result instanceof PDOStatement)) {
-            return $result;
+        if (!$ismanip && isset($statement) && ($statement instanceof PDOStatement)) {
+            return $statement;
         }
 
         // ...whilst insert/update/delete just gets a "sure, it went well" result
@@ -195,13 +216,28 @@ class PdoDriver extends Common
      *
      * This method has not been implemented yet.
      *
-     * @param resource $result a valid sql result resource
      * @return false
      * @access public
      */
-    public function nextResult($result)
+    public function nextResult()
     {
         return false;
+    }
+
+    /**
+     * Format a PDO errorInfo block as a legible string
+     *
+     * @param array $errorInfo The output from PDO/PDOStatement::errorInfo
+     * @return string
+     */
+    private static function formatErrorInfo(array $errorInfo)
+    {
+        return sprintf(
+            'SQLSTATE[%d]: (Driver code %d) %s',
+            $errorInfo[0],
+            $errorInfo[1],
+            $errorInfo[2]
+        );
     }
 
     /**
@@ -351,7 +387,7 @@ class PdoDriver extends Common
 
             try {
                 $commitResult = $this->connection->commit();
-                // @todo honestly, i don't know how to generate a failed transaction commit
+                // @todo cannot easily generate a failed transaction commit, don't cover this
                 // @codeCoverageIgnoreStart
             } catch (PDOException $commitException) {
                 return $this->raiseError(DB::DB_ERROR, null, null, $commitException->getMessage());
@@ -359,7 +395,15 @@ class PdoDriver extends Common
             }
 
             if ($commitResult === false) {
-                return $this->raiseError(DB::DB_ERROR, null, null, implode(' ', $this->connection->errorInfo()));
+                // @todo cannot easily generate a failed transaction commit, don't cover this
+                // @codeCoverageIgnoreStart
+                return $this->raiseError(
+                    DB::DB_ERROR,
+                    null,
+                    null,
+                    self::formatErrorInfo($this->connection->errorInfo())
+                );
+                // @codeCoverageIgnoreEnd
             }
 
             $this->transaction_opcount = 0;
@@ -382,7 +426,7 @@ class PdoDriver extends Common
 
             try {
                 $rollbackResult = $this->connection->rollBack();
-                // @todo honestly, i don't know how to generate a failed tranascation rollback
+                // @todo cannot easily generate a failed transaction rollback, don't cover this
                 // @codeCoverageIgnoreStart
             } catch (PDOException $rollbackException) {
                 return $this->raiseError(DB::DB_ERROR, null, null, $rollbackException->getMessage());
@@ -390,7 +434,15 @@ class PdoDriver extends Common
             }
 
             if ($rollbackResult === false) {
-                return $this->raiseError(DB::DB_ERROR, null, null, implode(' ', $this->connection->errorInfo()));
+                // @todo cannot easily generate a failed transaction rollback, don't cover this
+                // @codeCoverageIgnoreStart
+                return $this->raiseError(
+                    DB::DB_ERROR,
+                    null,
+                    null,
+                    self::formatErrorInfo($this->connection->errorInfo())
+                );
+                // @codeCoverageIgnoreEnd
             }
 
             $this->transaction_opcount = 0;
@@ -414,9 +466,9 @@ class PdoDriver extends Common
 
         if ($this->lastQueryManip) {
             return $this->lastStatement->rowCount();
-        } else {
-            return 0;
         }
+
+        return 0;
     }
 
     /**
@@ -493,10 +545,10 @@ class PdoDriver extends Common
                 // we do not need to retrieve the ID again (or we will get 2)
                 if (DB::isError($result)) {
                     return $this->raiseError($result);
-                } else {
-                    // First ID of a newly created sequence is 1
-                    return 1;
                 }
+
+                // First ID of a newly created sequence is 1
+                return 1;
             }
         } while ($repeat);
 
@@ -628,7 +680,10 @@ class PdoDriver extends Common
                 $quotedString = $this->connection->quote($str);
 
                 if ($quotedString === false) {
+                    // @codeCoverageIgnoreStart
+                    // quoting is supported in sqlite so we'll skip testing for it
                     return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
+                    // @codeCoverageIgnoreEnd
                 }
 
                 if (preg_match('/^(["\']).*\g1$/', $quotedString) && ((strlen($quotedString) - strlen($str)) >= 2)) {
@@ -676,9 +731,9 @@ class PdoDriver extends Common
             // @codeCoverageIgnoreStart
             return $query . " LIMIT $count";
             // @codeCoverageIgnoreEnd
-        } else {
-            return $query . " LIMIT $from, $count";
         }
+
+        return $query . " LIMIT $from, $count";
     }
 
     /**

@@ -23,7 +23,7 @@ class PdoDriverTest extends TestCase
     // @var array
     private static $setupDb = [
         // general data testing
-        'CREATE TABLE pdotest (a TEXT)',
+        'CREATE TABLE pdotest (a TEXT UNIQUE)',
         'INSERT INTO pdotest (a) VALUES (\'test1\')',
         'INSERT INTO pdotest (a) VALUES (\'test2\')',
         'INSERT INTO pdotest (a) VALUES (\'test3\')',
@@ -118,6 +118,29 @@ class PdoDriverTest extends TestCase
     public function testSimpleQueryWithSyntaxError()
     {
         $sth = $this->dbh->simpleQuery('BLUMFRUB');
+        $this->assertInstanceOf(Error::class, $sth);
+        $this->assertEquals(DB::DB_ERROR, $sth->getCode());
+    }
+
+    public function testSimpleQueryWithSyntaxErrorExceptionMode()
+    {
+        $this->pdoConn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $sth = $this->dbh->simpleQuery('BLUMFRUB');
+        $this->assertInstanceOf(Error::class, $sth);
+        $this->assertEquals(DB::DB_ERROR, $sth->getCode());
+    }
+
+    public function testSimpleQueryWithExecuteTimeFailure()
+    {
+        $sth = $this->dbh->simpleQuery('INSERT INTO pdotest (a) VALUES (\'test1\')');
+        $this->assertInstanceOf(Error::class, $sth);
+        $this->assertEquals(DB::DB_ERROR, $sth->getCode());
+    }
+
+    public function testSimpleQueryWithExecuteTimeFailureExceptionMode()
+    {
+        $this->pdoConn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $sth = $this->dbh->simpleQuery('INSERT INTO pdotest (a) VALUES (\'test1\')');
         $this->assertInstanceOf(Error::class, $sth);
         $this->assertEquals(DB::DB_ERROR, $sth->getCode());
     }
