@@ -2022,7 +2022,7 @@ abstract class Common extends Util
      *
      * @access protected
      */
-    protected function _checkManip($query)
+    protected function checkManip($query)
     {
         if ($this->nextQueryManip || DB::isManip($query)) {
             $this->lastQueryManip = true;

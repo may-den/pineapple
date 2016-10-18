@@ -289,7 +289,7 @@ class TestDriver extends Common
 
     public function stubCheckManip($query)
     {
-        return parent::_checkManip($query);
+        return parent::checkManip($query);
     }
 
     public function stubRtrimArrayValues(&$array)

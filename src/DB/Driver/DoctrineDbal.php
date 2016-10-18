@@ -126,7 +126,7 @@ class DoctrineDbal extends Common
      */
     public function simpleQuery($query)
     {
-        $ismanip = $this->_checkManip($query);
+        $ismanip = $this->checkManip($query);
         $this->lastQuery = $query;
         $query = $this->modifyQuery($query);
         if (!$this->connected()) {
