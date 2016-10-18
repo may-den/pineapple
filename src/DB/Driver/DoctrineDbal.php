@@ -635,7 +635,7 @@ class DoctrineDbal extends Common
      */
     protected function modifyLimitQuery($query, $from, $count, $params = [])
     {
-        if (DB::isManip($query) || $this->nextQueryManip) {
+        if (self::isManip($query) || $this->nextQueryManip) {
             // THIS MAKES LITERALLY NO SENSE BUT I AM RETAINING FOR COMPATIBILITY.
             // COMPATIBILITY WHICH LIKELY ISN'T NEEDED.
             // @codeCoverageIgnoreStart

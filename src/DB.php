@@ -386,41 +386,6 @@ class DB
     }
 
     /**
-     * Tell whether a query is a data manipulation or data definition query
-     *
-     * Examples of data manipulation queries are INSERT, UPDATE and DELETE.
-     * Examples of data definition queries are CREATE, DROP, ALTER, GRANT,
-     * REVOKE.
-     *
-     * @param string $query  the query
-     *
-     * @return boolean  whether $query is a data manipulation query
-     */
-    public static function isManip($query)
-    {
-        $manips = implode('|', [
-            'INSERT',
-            'UPDATE',
-            'DELETE',
-            'REPLACE',
-            'CREATE',
-            'DROP',
-            'LOAD DATA',
-            'SELECT .* INTO .* FROM',
-            'COPY',
-            'ALTER',
-            'GRANT',
-            'REVOKE',
-            'LOCK',
-            'UNLOCK'
-        ]);
-        if (preg_match('/^\s*"?(' . $manips . ')\s+/si', $query)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Return a textual error message for a DB error code
      *
      * @param integer|DB\Error $value  the DB error code

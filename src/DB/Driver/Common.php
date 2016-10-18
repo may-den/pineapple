@@ -1996,7 +1996,7 @@ abstract class Common extends Util
 
     /**
      * Sets (or unsets) a flag indicating that the next query will be a
-     * manipulation query, regardless of the usual DB::isManip() heuristics.
+     * manipulation query, regardless of the usual self::isManip() heuristics.
      *
      * @param boolean true to set the flag overriding the isManip() behaviour,
      * false to clear it and fall back onto isManip()
@@ -2008,6 +2008,41 @@ abstract class Common extends Util
     public function nextQueryIsManip($manip)
     {
         $this->nextQueryManip = $manip ? true : false;
+    }
+
+    /**
+     * Tell whether a query is a data manipulation or data definition query
+     *
+     * Examples of data manipulation queries are INSERT, UPDATE and DELETE.
+     * Examples of data definition queries are CREATE, DROP, ALTER, GRANT,
+     * REVOKE.
+     *
+     * @param string $query  the query
+     *
+     * @return boolean  whether $query is a data manipulation query
+     */
+    public static function isManip($query)
+    {
+        $manips = implode('|', [
+            'INSERT',
+            'UPDATE',
+            'DELETE',
+            'REPLACE',
+            'CREATE',
+            'DROP',
+            'LOAD DATA',
+            'SELECT .* INTO .* FROM',
+            'COPY',
+            'ALTER',
+            'GRANT',
+            'REVOKE',
+            'LOCK',
+            'UNLOCK'
+        ]);
+        if (preg_match('/^\s*"?(' . $manips . ')\s+/si', $query)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -2024,7 +2059,7 @@ abstract class Common extends Util
      */
     protected function checkManip($query)
     {
-        $this->lastQueryManip = $this->nextQueryManip || DB::isManip($query);
+        $this->lastQueryManip = $this->nextQueryManip || self::isManip($query);
         $this->nextQueryManip = false;
         return $this->lastQueryManip;
     }

@@ -47,66 +47,6 @@ class DBTest extends TestCase
         $this->assertFalse(DB::isConnection(new \stdClass));
     }
 
-    public function testIsManip()
-    {
-        $this->assertTrue(DB::isManip('
-            INSERT INTO things (foo, bar) VALUES (1, 2)
-        '));
-        $this->assertTrue(DB::isManip('
-            UPDATE things
-               SET bar = 2
-             WHERE foo = 1
-        '));
-        $this->assertTrue(DB::isManip('
-            DELETE FROM things
-                  WHERE foo = 1
-        '));
-        $this->assertTrue(DB::isManip('
-            REPLACE INTO things (foo, bar) VALUES (1, 2)
-        '));
-        $this->assertTrue(DB::isManip('
-            CREATE TABLE things (id INT PRIMARY KEY NOT NULL AUTO_INCREMENT)
-        '));
-        $this->assertTrue(DB::isManip('
-            DROP TABLE things
-        '));
-        $this->assertTrue(DB::isManip('
-            LOAD DATA INFILE "foo.dat"
-                        INTO things
-        '));
-        $this->assertTrue(DB::isManip('
-            SELECT foo, bar, baz
-              INTO stuff
-              FROM things
-        '));
-        $this->assertTrue(DB::isManip('
-            ALTER TABLE whatnot
-            DROP COLUMN id
-        '));
-        $this->assertTrue(DB::isManip('
-            GRANT SELECT ON things TO nobody@"%"
-        '));
-        $this->assertTrue(DB::isManip('
-            REVOKE SELECT ON things FROM nobody@"%"
-        '));
-        $this->assertTrue(DB::isManip('
-            LOCK TABLE things
-        '));
-        $this->assertTrue(DB::isManip('
-            UNLOCK TABLE things
-        '));
-    }
-
-    public function testIsNotManip()
-    {
-        $this->assertFalse(DB::isManip('
-            SELECT lyrics
-              FROM track
-             WHERE title = "useless"
-               AND artist = "depeche mode"
-        '));
-    }
-
     public function testErrorMessage()
     {
         $this->assertEquals('no error', DB::errorMessage(DB::DB_OK));

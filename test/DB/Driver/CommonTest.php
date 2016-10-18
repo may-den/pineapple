@@ -1328,4 +1328,64 @@ class CommonTest extends TestCase
         $dbh->stubConnect();
         $this->assertTrue($dbh->connected());
     }
+
+    public function testIsManip()
+    {
+        $this->assertTrue(TestDriver::isManip('
+            INSERT INTO things (foo, bar) VALUES (1, 2)
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            UPDATE things
+               SET bar = 2
+             WHERE foo = 1
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            DELETE FROM things
+                  WHERE foo = 1
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            REPLACE INTO things (foo, bar) VALUES (1, 2)
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            CREATE TABLE things (id INT PRIMARY KEY NOT NULL AUTO_INCREMENT)
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            DROP TABLE things
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            LOAD DATA INFILE "foo.dat"
+                        INTO things
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            SELECT foo, bar, baz
+              INTO stuff
+              FROM things
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            ALTER TABLE whatnot
+            DROP COLUMN id
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            GRANT SELECT ON things TO nobody@"%"
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            REVOKE SELECT ON things FROM nobody@"%"
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            LOCK TABLE things
+        '));
+        $this->assertTrue(TestDriver::isManip('
+            UNLOCK TABLE things
+        '));
+    }
+
+    public function testIsNotManip()
+    {
+        $this->assertFalse(TestDriver::isManip('
+            SELECT lyrics
+              FROM track
+             WHERE title = "useless"
+               AND artist = "depeche mode"
+        '));
+    }
 }
