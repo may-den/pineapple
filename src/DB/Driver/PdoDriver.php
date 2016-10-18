@@ -34,7 +34,7 @@ class PdoDriver extends Common
      * A mapping of native error codes to DB error codes
      * @var array
      */
-    protected $errorcode_map = [
+    protected $errorcodeMap = [
         1004 => DB::DB_ERROR_CANNOT_CREATE,
         1005 => DB::DB_ERROR_CANNOT_CREATE,
         1006 => DB::DB_ERROR_CANNOT_CREATE,

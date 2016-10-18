@@ -21,7 +21,7 @@ class TestDriver extends Common
         'transactions' => true,
     ];
 
-    protected $errorcode_map = [
+    protected $errorcodeMap = [
         1000 => DB::DB_OK,
         1001 => DB::DB_ERROR,
         1002 => DB::DB_ERROR_ACCESS_VIOLATION,
