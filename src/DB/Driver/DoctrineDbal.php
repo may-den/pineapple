@@ -216,11 +216,11 @@ class DoctrineDbal extends Common
         }
 
         if ($this->options['portability'] & DB::DB_PORTABILITY_RTRIM) {
-            $this->_rtrimArrayValues($arr);
+            $this->rtrimArrayValues($arr);
         }
 
         if ($this->options['portability'] & DB::DB_PORTABILITY_NULL_TO_EMPTY) {
-            $this->_convertNullArrayValuesToEmpty($arr);
+            $this->convertNullArrayValuesToEmpty($arr);
         }
         return DB::DB_OK;
     }
@@ -714,7 +714,7 @@ class DoctrineDbal extends Common
              */
             // @codeCoverageIgnoreStart
             $id = $this->simpleQuery("SELECT * FROM $result LIMIT 0");
-            $got_string = true;
+            $gotString = true;
             // @codeCoverageIgnoreEnd
         } elseif (is_object($result) && isset($result->result)) {
             /**
@@ -722,7 +722,7 @@ class DoctrineDbal extends Common
              * Extract the result resource identifier.
              */
             $id = $result->result;
-            $got_string = false;
+            $gotString = false;
         } else {
             return $this->myRaiseError();
         }
@@ -735,9 +735,9 @@ class DoctrineDbal extends Common
         }
 
         if ($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) {
-            $case_func = 'strtolower';
+            $caseFunc = 'strtolower';
         } else {
-            $case_func = 'strval';
+            $caseFunc = 'strval';
         }
 
         $count = $id->columnCount();
@@ -751,8 +751,8 @@ class DoctrineDbal extends Common
             $tmp = $id->getColumnMeta($i);
 
             $res[$i] = [
-                'table' => $case_func($tmp['table']),
-                'name' => $case_func($tmp['name']),
+                'table' => $caseFunc($tmp['table']),
+                'name' => $caseFunc($tmp['name']),
                 'type' => isset($tmp['native_type']) ? $tmp['native_type'] : 'unknown',
                 'len' => $tmp['len'],
                 'flags' => $tmp['flags'],

@@ -294,12 +294,12 @@ class TestDriver extends Common
 
     public function stubRtrimArrayValues(&$array)
     {
-        return $this->_rtrimArrayValues($array);
+        return $this->rtrimArrayValues($array);
     }
 
     public function stubConvertNullArrayValuesToEmpty(&$array)
     {
-        return $this->_convertNullArrayValuesToEmpty($array);
+        return $this->convertNullArrayValuesToEmpty($array);
     }
 
     public function buildDetokenisedQuery($stmt, $data = [])

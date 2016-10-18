@@ -296,10 +296,10 @@ abstract class Common extends Util
      * The output depends on the PHP data type of input and the database
      * type being used.
      *
-     * @param mixed $in  the data to be formatted
+     * @param mixed $property the data to be formatted
      *
-     * @return mixed  the formatted data.  The format depends on the input's
-     *                 PHP type:
+     * @return mixed          the formatted data.  The format depends on the
+     *                        input's PHP type:
      * <ul>
      *  <li>
      *    <kbd>input</kbd> -> <samp>returns</samp>
@@ -391,18 +391,18 @@ abstract class Common extends Util
      * @see Common::escapeSimple()
      * @since Method available since Release 1.6.0
      */
-    public function quoteSmart($in)
+    public function quoteSmart($property)
     {
-        if (is_int($in)) {
-            return $in;
-        } elseif (is_float($in)) {
-            return $this->quoteFloat($in);
-        } elseif (is_bool($in)) {
-            return $this->quoteBoolean($in);
-        } elseif (is_null($in)) {
+        if (is_int($property)) {
+            return $property;
+        } elseif (is_float($property)) {
+            return $this->quoteFloat($property);
+        } elseif (is_bool($property)) {
+            return $this->quoteBoolean($property);
+        } elseif (is_null($property)) {
             return 'NULL';
         } else {
-            return "'" . $this->escapeSimple($in) . "'";
+            return "'" . $this->escapeSimple($property) . "'";
         }
     }
 
@@ -471,7 +471,7 @@ abstract class Common extends Util
      *
      * @param integer $fetchmode    DB_FETCHMODE_ORDERED, DB_FETCHMODE_ASSOC
      *                               or DB_FETCHMODE_OBJECT
-     * @param string $object_class  the class name of the object to be returned
+     * @param string $objectClass   the class name of the object to be returned
      *                               by the fetch methods when the
      *                               DB_FETCHMODE_OBJECT mode is selected.
      *                               If no class is specified by default a cast
@@ -481,11 +481,11 @@ abstract class Common extends Util
      *
      * @see DB_FETCHMODE_ORDERED, DB_FETCHMODE_ASSOC, DB_FETCHMODE_OBJECT
      */
-    public function setFetchMode($fetchmode, $object_class = \stdClass::class)
+    public function setFetchMode($fetchmode, $objectClass = \stdClass::class)
     {
         switch ($fetchmode) {
             case DB::DB_FETCHMODE_OBJECT:
-                $this->fetchModeObjectClass = $object_class;
+                $this->fetchModeObjectClass = $objectClass;
                 // no break here deliberately
             case DB::DB_FETCHMODE_ORDERED:
             case DB::DB_FETCHMODE_ASSOC:
@@ -776,7 +776,7 @@ abstract class Common extends Util
      * Automaticaly generates an insert or update query and pass it to prepare()
      *
      * @param string $table         the table name
-     * @param array  $table_fields  the array of field names
+     * @param array  $tableFields   the array of field names
      * @param int    $mode          a type of query to make:
      *                              DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
      * @param string $where         for update queries: the WHERE clause to
@@ -787,9 +787,9 @@ abstract class Common extends Util
      *
      * @uses Common::prepare(), Common::buildManipSQL()
      */
-    public function autoPrepare($table, $table_fields, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
+    public function autoPrepare($table, $tableFields, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
     {
-        $query = $this->buildManipSQL($table, $table_fields, $mode, $where);
+        $query = $this->buildManipSQL($table, $tableFields, $mode, $where);
         if (DB::isError($query)) {
             return $query;
         }
@@ -801,7 +801,7 @@ abstract class Common extends Util
      * and execute() with it
      *
      * @param string $table         the table name
-     * @param array  $fields_values the associative array where $key is a
+     * @param array  $fieldsValues  the associative array where $key is a
      *                              field name and $value its value
      * @param int    $mode          a type of query to make:
      *                              DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
@@ -815,13 +815,13 @@ abstract class Common extends Util
      *
      * @uses Common::autoPrepare(), Common::execute()
      */
-    public function autoExecute($table, $fields_values, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
+    public function autoExecute($table, $fieldsValues, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
     {
-        $sth = $this->autoPrepare($table, array_keys($fields_values), $mode, $where);
+        $sth = $this->autoPrepare($table, array_keys($fieldsValues), $mode, $where);
         if (DB::isError($sth)) {
             return $sth;
         }
-        $ret = $this->execute($sth, array_values($fields_values));
+        $ret = $this->execute($sth, array_values($fieldsValues));
         $this->freePrepared($sth);
         return $ret;
     }
@@ -847,7 +847,7 @@ abstract class Common extends Util
      *     query, all the records of the table will be updated!
      *
      * @param string $table         the table name
-     * @param array  $table_fields  the array of field names
+     * @param array  $tableFields   the array of field names
      * @param int    $mode          a type of query to make:
      *                              DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
      * @param string $where         for update queries: the WHERE clause to
@@ -857,9 +857,9 @@ abstract class Common extends Util
      * @return string|Error         the sql query for autoPrepare(), or an Error
      *                              object in the case of failure
      */
-    public function buildManipSQL($table, $table_fields, $mode, $where = null)
+    public function buildManipSQL($table, $tableFields, $mode, $where = null)
     {
-        if (count($table_fields) == 0) {
+        if (count($tableFields) == 0) {
             return $this->raiseError(DB::DB_ERROR_NEED_MORE_DATA);
         }
         $first = true;
@@ -867,7 +867,7 @@ abstract class Common extends Util
             case DB::DB_AUTOQUERY_INSERT:
                 $values = '';
                 $names = '';
-                foreach ($table_fields as $value) {
+                foreach ($tableFields as $value) {
                     if ($first) {
                         $first = false;
                     } else {
@@ -886,7 +886,7 @@ abstract class Common extends Util
 
                 $set = '';
 
-                foreach ($table_fields as $value) {
+                foreach ($tableFields as $value) {
                     if ($first) {
                         $first = false;
                     } else {
@@ -981,11 +981,11 @@ abstract class Common extends Util
 
         $realquery = $this->prepareTokens[$stmt][0];
 
-        $i = 0;
+        $bindPosition = 0;
         foreach ($data as $value) {
-            if ($this->prepareTypes[$stmt][$i] == DB::DB_PARAM_SCALAR) {
+            if ($this->prepareTypes[$stmt][$bindPosition] == DB::DB_PARAM_SCALAR) {
                 $realquery .= $this->quoteSmart($value);
-            } elseif ($this->prepareTypes[$stmt][$i] == DB::DB_PARAM_OPAQUE) {
+            } elseif ($this->prepareTypes[$stmt][$bindPosition] == DB::DB_PARAM_OPAQUE) {
                 $fp = @fopen($value, 'rb');
                 if (!$fp) {
                     // @codeCoverageIgnoreStart
@@ -999,7 +999,7 @@ abstract class Common extends Util
                 $realquery .= $value;
             }
 
-            $realquery .= $this->prepareTokens[$stmt][++$i];
+            $realquery .= $this->prepareTokens[$stmt][++$bindPosition];
         }
 
         return $realquery;
@@ -1036,16 +1036,16 @@ abstract class Common extends Util
     /**
      * Frees the internal resources associated with a prepared query
      *
-     * @param resource $stmt           the prepared statement's PHP resource
-     * @param bool     $free_resource  should the PHP resource be freed too?
-     *                                  Use false if you need to get data
-     *                                  from the result set later.
+     * @param resource $stmt         the prepared statement's PHP resource
+     * @param bool     $freeResource should the PHP resource be freed too?
+     *                               Use false if you need to get data
+     *                               from the result set later.
      *
      * @return bool  TRUE on success, FALSE if $result is invalid
      *
      * @see Common::prepare()
      */
-    public function freePrepared($stmt, $free_resource = true)
+    public function freePrepared($stmt, $freeResource = true)
     {
         $stmt = (int)$stmt;
         if (isset($this->prepareTokens[$stmt])) {
@@ -1250,7 +1250,7 @@ abstract class Common extends Util
             }
         }
         // modifyLimitQuery() would be nice here, but it causes BC issues
-        if (sizeof($params) > 0) {
+        if (count($params) > 0) {
             $sth = $this->prepare($query);
             if (DB::isError($sth)) {
                 return $sth;
@@ -1345,7 +1345,7 @@ abstract class Common extends Util
      * will be an array of the values from column 2-n.  If the result
      * set contains only two columns, the returned value will be a
      * scalar with the value of the second column (unless forced to an
-     * array with the $force_array parameter).  A DB error code is
+     * array with the $forceArray parameter).  A DB error code is
      * returned on errors.  If the result set contains fewer than two
      * columns, a DB_ERROR_TRUNCATED error is returned.
      *
@@ -1400,7 +1400,7 @@ abstract class Common extends Util
      * values for results regardless of the database's internal type.
      *
      * @param string $query        the SQL query
-     * @param bool   $force_array  used only when the query returns
+     * @param bool   $forceArray   used only when the query returns
      *                             exactly two columns.  If true, the values
      *                             of the returned array will be one-element
      *                             arrays instead of scalars.
@@ -1423,7 +1423,7 @@ abstract class Common extends Util
      */
     public function getAssoc(
         $query,
-        $force_array = false,
+        $forceArray = false,
         $params = [],
         $fetchmode = DB::DB_FETCHMODE_DEFAULT,
         $group = false
@@ -1458,7 +1458,7 @@ abstract class Common extends Util
 
         $results = [];
 
-        if ($cols > 2 || $force_array) {
+        if ($cols > 2 || $forceArray) {
             // return array values
             // XXX this part can be optimized
             if ($fetchmode == DB::DB_FETCHMODE_ASSOC) {
@@ -1665,17 +1665,17 @@ abstract class Common extends Util
     /**
      * Returns the next free id in a sequence
      *
-     * @param string  $seq_name  name of the sequence
-     * @param boolean $ondemand  when true, the seqence is automatically
-     *                           created if it does not exist
+     * @param string  $seqName  name of the sequence
+     * @param boolean $ondemand when true, the seqence is automatically
+     *                          created if it does not exist
      *
-     * @return int|Error         the next id number in the sequence.
-     *                           A Pineapple\DB\Error object on failure.
+     * @return int|Error        the next id number in the sequence.
+     *                          A Pineapple\DB\Error object on failure.
      *
      * @see Common::createSequence(), Common::dropSequence(),
      *      Common::getSequenceName()
      */
-    public function nextId($seq_name, $ondemand = true)
+    public function nextId($seqName, $ondemand = true)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1690,14 +1690,14 @@ abstract class Common extends Util
      *
      * <var>seqname_format</var> is set via setOption().
      *
-     * @param string $seq_name  name of the new sequence
+     * @param string $seqName  name of the new sequence
      *
-     * @return int|Error        DB_OK on success. A Pineapple\DB\Error object on failure.
+     * @return int|Error       DB_OK on success. A Pineapple\DB\Error object on failure.
      *
      * @see Common::dropSequence(), Common::getSequenceName(),
      *      Common::nextID()
      */
-    public function createSequence($seq_name)
+    public function createSequence($seqName)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1705,14 +1705,14 @@ abstract class Common extends Util
     /**
      * Deletes a sequence
      *
-     * @param string $seq_name  name of the sequence to be deleted
+     * @param string $seqName  name of the sequence to be deleted
      *
      * @return int|Error  DB_OK on success. A Pineapple\DB\Error object on failure.
      *
      * @see Common::createSequence(), Common::getSequenceName(),
      *      Common::nextID()
      */
-    public function dropSequence($seq_name)
+    public function dropSequence($seqName)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -2073,7 +2073,7 @@ abstract class Common extends Util
      *
      * @access protected
      */
-    protected function _rtrimArrayValues(&$array)
+    protected function rtrimArrayValues(&$array)
     {
         foreach ($array as $key => $value) {
             if (is_string($value)) {
@@ -2091,7 +2091,7 @@ abstract class Common extends Util
      *
      * @access protected
      */
-    protected function _convertNullArrayValuesToEmpty(&$array)
+    protected function convertNullArrayValuesToEmpty(&$array)
     {
         foreach ($array as $key => $value) {
             if (is_null($value)) {

@@ -276,11 +276,11 @@ class PdoDriver extends Common
         }
 
         if ($this->options['portability'] & DB::DB_PORTABILITY_RTRIM) {
-            $this->_rtrimArrayValues($arr);
+            $this->rtrimArrayValues($arr);
         }
 
         if ($this->options['portability'] & DB::DB_PORTABILITY_NULL_TO_EMPTY) {
-            $this->_convertNullArrayValuesToEmpty($arr);
+            $this->convertNullArrayValuesToEmpty($arr);
         }
         return DB::DB_OK;
     }
