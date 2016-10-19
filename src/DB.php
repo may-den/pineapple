@@ -314,6 +314,8 @@ class DB
      * @return object          a new DB object. A DB\Error object on failure.
      *
      * @see DB\Driver\Common::setOption()
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public static function factory($type, $options = false)
     {
