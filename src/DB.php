@@ -348,11 +348,16 @@ class DB
         return $obj;
     }
 
+    /**
+     * Check a driver class name for qualification, and prefix it if needed
+     *
+     * @param string $class Name of the driver to qualify
+     * @return string       Fully qualified driver class name
+     */
     private static function qualifyClassname($class)
     {
         if (strpos($class, '\\') === false) {
-            // @todo untestable in unit tests; remove annotation when adding integration test
-            return self::INTERNAL_DRIVER_PREFIX . $class; // @codeCoverageIgnore
+            return self::INTERNAL_DRIVER_PREFIX . $class;
         }
 
         // this is fully qualified or a relative class, use verbatim
