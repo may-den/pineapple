@@ -3,13 +3,14 @@ namespace Pineapple\Test\DB\Driver;
 
 use Pineapple\Util;
 use Pineapple\DB;
+use Pineapple\DB\Driver\DriverInterface;
 use Pineapple\DB\Driver\Common;
 
 /**
  * A null 'test' driver for Pineapple. This serves two purposes: one to act as a scaffold to test scope refactoring,
  * and to provide a test facility for higher levels of abstraction.
  */
-class TestDriver extends Common
+class TestDriver extends Common implements DriverInterface
 {
     private $lastResult = null;
     private $hasFreed = false;

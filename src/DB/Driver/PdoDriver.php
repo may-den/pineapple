@@ -11,7 +11,7 @@ use PDOException;
 /**
  * A PEAR DB driver that uses PDO as an underlying database layer.
  */
-class PdoDriver extends Common
+class PdoDriver extends Common implements DriverInterface
 {
     /**
      * The capabilities of this DB implementation
