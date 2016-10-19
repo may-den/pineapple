@@ -1184,15 +1184,16 @@ class CommonTest extends TestCase
     {
         $dbh = DB::factory(TestDriver::class);
 
-        $this->assertEquals(DB::DB_OK, $dbh->errorCode(1000));
-        $this->assertEquals(DB::DB_ERROR, $dbh->errorCode(54321));
+        $this->assertEquals(DB::DB_OK, $dbh->errorCode('00000'));
+        $this->assertEquals(DB::DB_ERROR_CONSTRAINT_NOT_NULL, $dbh->errorCode('23502'));
+        $this->assertEquals(DB::DB_ERROR, $dbh->errorCode('54321'));
     }
 
     public function testErrorMessage()
     {
         $dbh = DB::factory(TestDriver::class);
 
-        $this->assertEquals('unknown error', $dbh->errorMessage(1001));
+        $this->assertEquals('unknown error', $dbh->errorMessage('blumfrub'));
     }
 
     public function testTableInfo()

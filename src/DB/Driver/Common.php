@@ -160,12 +160,6 @@ abstract class Common extends Util
     protected $features = [];
 
     /**
-     * A mapping of native error codes to DB error codes
-     * @var array
-     */
-    protected $errorcodeMap = [];
-
-    /**
      * This constructor calls <kbd>parent::__construct('Pineapple\DB\Error')</kbd>
      *
      * @return void
@@ -1787,21 +1781,16 @@ abstract class Common extends Util
     /**
      * Maps native error codes to DB's portable ones
      *
-     * Uses the <var>$errorcodeMap</var> property defined in each driver.
-     *
      * @param string|int $nativecode  the error code returned by the DBMS
      *
      * @return int  the portable DB error code.  Return DB_ERROR if the
-     *               current driver doesn't have a mapping for the
-     *               $nativecode submitted.
+     *              current driver doesn't have a mapping for the
+     *              $nativecode submitted.
      */
     public function errorCode($nativecode)
     {
-        if (isset($this->errorcodeMap[$nativecode])) {
-            return $this->errorcodeMap[$nativecode];
-        }
-        // Fall back to DB_ERROR if there was no mapping.
-        return DB::DB_ERROR;
+        // @todo put this into -compat and refactor out this method
+        return $this->getNativeErrorCode($nativecode);
     }
 
     /**
@@ -1816,7 +1805,7 @@ abstract class Common extends Util
      */
     public function errorMessage($dbcode)
     {
-        return DB::errorMessage($this->errorcodeMap[$dbcode]);
+        return DB::errorMessage($this->getNativeErrorCode($dbcode));
     }
 
     /**
