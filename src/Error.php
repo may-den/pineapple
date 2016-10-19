@@ -111,8 +111,7 @@ class Error
                 'PEAR_ERROR_EXCEPTION is obsolete, use class Pineapple\Exception for exceptions',
                 E_USER_WARNING
             );
-            $e = new Exception($this->message, $this->code);
-            throw($e);
+            throw new Exception($this->message, $this->code);
         }
     }
 
