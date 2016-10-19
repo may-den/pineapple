@@ -1,6 +1,8 @@
 <?php
 namespace Pineapple;
 
+use Pineapple\DB\Driver\DriverInterface;
+
 /**
  * Database independent query interface
  *
@@ -378,7 +380,7 @@ class DB
      */
     public static function isConnection($value)
     {
-        return is_object($value) && ($value instanceof DB\Driver\Common) && method_exists($value, 'simpleQuery');
+        return is_object($value) && ($value instanceof DriverInterface);
     }
 
     /**
