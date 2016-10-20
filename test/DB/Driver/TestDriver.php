@@ -306,24 +306,4 @@ class TestDriver extends Common implements DriverInterface
         }
         return parent::modifyLimitQuery($query, $from, $count, $params);
     }
-
-    protected function getSpecialQuery($type)
-    {
-        switch ($type) {
-            case 'returnnull':
-                return null;
-                break;
-
-            case 'thing':
-                return ['thing', 'stuff'];
-                break;
-
-            case 'query':
-                return 'SELECT foo FROM bar';
-                break;
-
-            default:
-                return $this->raiseError(DB::DB_ERROR_DIVZERO);
-        }
-    }
 }

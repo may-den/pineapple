@@ -1206,15 +1206,6 @@ class CommonTest extends TestCase
         $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
     }
 
-    public function testGetSpecialQuery()
-    {
-        // this is a stub method intended to fail
-        $dbh = DB::factory(TestDriver::class);
-        $result = $dbh->stubGetSpecialQuery('things');
-        $this->assertInstanceOf(Error::class, $result);
-        $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $result->getCode());
-    }
-
     public function testManipQuery()
     {
         $dbh = DB::factory(TestDriver::class);
@@ -1275,38 +1266,6 @@ class CommonTest extends TestCase
         $dbh->stubConvertNullArrayValuesToEmpty($toConvert);
 
         $this->assertEquals(['', '', ''], $toConvert);
-    }
-
-    public function testGetListOf()
-    {
-        $dbh = DB::factory(TestDriver::class);
-
-        $this->assertEquals(['thing', 'stuff'], $dbh->getListOf('thing'));
-    }
-
-    public function testGetListOfWithQuery()
-    {
-        $dbh = DB::factory(TestDriver::class);
-
-        $this->assertEquals([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], $dbh->getListOf('query'));
-    }
-
-    public function testGetListOfWithNull()
-    {
-        $dbh = DB::factory(TestDriver::class);
-
-        $result = $dbh->getListOf('returnnull');
-        $this->assertInstanceOf(Error::class, $result);
-        $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $result->getCode());
-    }
-
-    public function testGetListOfWithError()
-    {
-        $dbh = DB::factory(TestDriver::class);
-
-        $result = $dbh->getListOf('blumfrub');
-        $this->assertInstanceOf(Error::class, $result);
-        $this->assertEquals(DB::DB_ERROR_DIVZERO, $result->getCode());
     }
 
     public function testGetFeature()

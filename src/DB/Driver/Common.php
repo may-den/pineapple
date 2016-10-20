@@ -90,9 +90,6 @@ abstract class Common extends Util
     /**
      * Run-time configuration options
      *
-     * The 'optimize' option has been deprecated.  Use the 'portability'
-     * option instead.
-     *
      * @var array
      * @see Common::setOption()
      */
@@ -103,7 +100,6 @@ abstract class Common extends Util
         'seqname_format' => '%s_seq',
         'autofree' => false,
         'portability' => DB::DB_PORTABILITY_NONE,
-        'optimize' => 'performance',  // Deprecated.  Use 'portability'.
     ];
 
     /**
@@ -560,19 +556,9 @@ abstract class Common extends Util
      * <samp>DB_PORTABILITY_NONE</samp>
      * turn off all portability features
      *
-     * This mode gets automatically turned on if the deprecated
-     * <var>optimize</var> option gets set to <samp>performance</samp>.
-     *
-     *
      * <samp>DB_PORTABILITY_LOWERCASE</samp>
      * convert names of tables and fields to lower case when using
      * <kbd>get*()</kbd>, <kbd>fetch*()</kbd> and <kbd>tableInfo()</kbd>
-     *
-     * This mode gets automatically turned on in the following databases
-     * if the deprecated option <var>optimize</var> gets set to
-     * <samp>portability</samp>:
-     * + oci8
-     *
      *
      * <samp>DB_PORTABILITY_RTRIM</samp>
      * right trim the data output by <kbd>get*()</kbd> <kbd>fetch*()</kbd>
@@ -586,23 +572,8 @@ abstract class Common extends Util
      * mode tricks such DBMS's into telling the count by adding
      * <samp>WHERE 1=1</samp> to the end of <kbd>DELETE</kbd> queries.
      *
-     * This mode gets automatically turned on in the following databases
-     * if the deprecated option <var>optimize</var> gets set to
-     * <samp>portability</samp>:
-     * + fbsql
-     * + mysql
-     * + mysqli
-     * + sqlite
-     *
-     *
      * <samp>DB_PORTABILITY_NUMROWS</samp>
      * enable hack that makes <kbd>numRows()</kbd> work in Oracle
-     *
-     * This mode gets automatically turned on in the following databases
-     * if the deprecated option <var>optimize</var> gets set to
-     * <samp>portability</samp>:
-     * + oci8
-     *
      *
      * <samp>DB_PORTABILITY_ERRORS</samp>
      * makes certain error messages in certain drivers compatible
@@ -1454,7 +1425,7 @@ abstract class Common extends Util
 
         if ($cols > 2 || $forceArray) {
             // return array values
-            // XXX this part can be optimized
+            // @todo this part can be optimized
             if ($fetchmode == DB::DB_FETCHMODE_ASSOC) {
                 while (is_array($row = $res->fetchRow(DB::DB_FETCHMODE_ASSOC))) {
                     reset($row);
@@ -1936,51 +1907,6 @@ abstract class Common extends Util
          * this method runs and tells users about that fact.
          */
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
-    }
-
-    /**
-     * Lists internal database information
-     *
-     * @param string $type  type of information being sought.
-     *                      Common items being sought are:
-     *                      tables, databases, users, views, functions
-     *                      Each DBMS's has its own capabilities.
-     *
-     * @return array|Error  an array listing the items sought.
-     *                      A DB Pineapple\DB\Error object on failure.
-     * @deprecated This is deprecated by Pineapple and will be removed in future
-     */
-    public function getListOf($type)
-    {
-        $sql = $this->getSpecialQuery($type);
-        if ($sql === null) {
-            $this->lastQuery = '';
-            return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
-        } elseif (is_int($sql) || DB::isError($sql)) {
-            // Previous error
-            return $this->raiseError($sql);
-        } elseif (is_array($sql)) {
-            // Already the result
-            return $sql;
-        }
-        // Launch this query
-        return $this->getCol($sql);
-    }
-
-    /**
-     * Obtains the query string needed for listing a given type of objects
-     *
-     * @param string $type  the kind of objects you want to retrieve
-     *
-     * @return string  the SQL query string or null if the driver doesn't
-     *                  support the object type requested
-     *
-     * @access protected
-     * @see Common::getListOf()
-     */
-    protected function getSpecialQuery($type)
-    {
-        return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
     }
 
     /**
