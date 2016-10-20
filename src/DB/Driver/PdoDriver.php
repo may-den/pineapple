@@ -624,21 +624,19 @@ class PdoDriver extends Common implements DriverInterface
              * n.b. Retained for compatibility, but this is untestable with sqlite
              */
             // @codeCoverageIgnoreStart
-            $id = $this->simpleQuery("SELECT * FROM $result LIMIT 0");
-            $got_string = true;
+            $tableHandle = $this->simpleQuery("SELECT * FROM $result LIMIT 0");
             // @codeCoverageIgnoreEnd
         } elseif (is_object($result) && isset($result->result)) {
             /**
              * Probably received a result object.
              * Extract the result resource identifier.
              */
-            $id = $result->result;
-            $got_string = false;
+            $tableHandle = $result->result;
         } else {
             return $this->myRaiseError();
         }
 
-        if (!is_object($id) || !($id instanceof PDOStatement)) {
+        if (!is_object($tableHandle) || !($tableHandle instanceof PDOStatement)) {
             // not easy to test without triggering a very difficult error
             // @codeCoverageIgnoreStart
             return $this->myRaiseError(DB::DB_ERROR_NEED_MORE_DATA);
@@ -646,12 +644,12 @@ class PdoDriver extends Common implements DriverInterface
         }
 
         if ($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) {
-            $case_func = 'strtolower';
+            $caseFunc = 'strtolower';
         } else {
-            $case_func = 'strval';
+            $caseFunc = 'strval';
         }
 
-        $count = $id->columnCount();
+        $count = $tableHandle->columnCount();
         $res = [];
 
         if ($mode) {
@@ -659,11 +657,11 @@ class PdoDriver extends Common implements DriverInterface
         }
 
         for ($i = 0; $i < $count; $i++) {
-            $tmp = $id->getColumnMeta($i);
+            $tmp = $tableHandle->getColumnMeta($i);
 
             $res[$i] = [
-                'table' => $case_func($tmp['table']),
-                'name' => $case_func($tmp['name']),
+                'table' => $caseFunc($tmp['table']),
+                'name' => $caseFunc($tmp['name']),
                 'type' => isset($tmp['native_type']) ? $tmp['native_type'] : 'unknown',
                 'len' => $tmp['len'],
                 'flags' => $tmp['flags'],

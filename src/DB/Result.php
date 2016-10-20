@@ -2,6 +2,7 @@
 namespace Pineapple\DB;
 
 use Pineapple\DB;
+use Pineapple\DB\Driver\DriverInterface;
 
 /**
  * This class implements a wrapper for a DB result set
@@ -52,13 +53,13 @@ class Result
      * The number of rows to fetch from a limit query
      * @var integer
      */
-    public $limit_count = null;
+    public $limitCount = null;
 
     /**
      * The row to start fetching from in limit queries
      * @var integer
      */
-    public $limit_from = null;
+    public $limitFrom = null;
 
     /**
      * The execute parameters that created this result
@@ -87,7 +88,7 @@ class Result
      * The present row being dealt with
      * @var integer
      */
-    public $row_counter = null;
+    public $rowCounter = null;
 
     /**
      * The prepared statement resource id created by PHP in $dbh
@@ -109,13 +110,13 @@ class Result
     /**
      * This constructor sets the object's properties
      *
-     * @param object   &$dbh     the DB object reference
-     * @param resource $result   the result resource id
-     * @param array    $options  an associative array with result options
+     * @param DriverInterface $dbh      the DB object
+     * @param resource        $result   the result resource id
+     * @param array           $options  an associative array with result options
      *
      * @return void
      */
-    public function __construct($dbh, $result, $options = [])
+    public function __construct(DriverInterface $dbh, $result, $options = [])
     {
         $this->autofree = $dbh->getOption('autofree');
         $this->dbh = $dbh;
@@ -142,10 +143,10 @@ class Result
     {
         switch ($key) {
             case 'limit_from':
-                $this->limit_from = $value;
+                $this->limitFrom = $value;
                 break;
             case 'limit_count':
-                $this->limit_count = $value;
+                $this->limitCount = $value;
         }
     }
 
@@ -185,11 +186,11 @@ class Result
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
             $object_class = $this->fetchModeObjectClass;
         }
-        if (is_null($rownum) && $this->limit_from !== null) {
-            if ($this->row_counter === null) {
-                $this->row_counter = $this->limit_from;
+        if (is_null($rownum) && $this->limitFrom !== null) {
+            if ($this->rowCounter === null) {
+                $this->rowCounter = $this->limitFrom;
             }
-            if ($this->row_counter >= ($this->limit_from + $this->limit_count)) {
+            if ($this->rowCounter >= ($this->limitFrom + $this->limitCount)) {
                 if ($this->autofree) {
                     $this->free();
                 }
@@ -197,7 +198,7 @@ class Result
                 return $tmp;
             }
 
-            $this->row_counter++;
+            $this->rowCounter++;
         }
         $arr = [];
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
@@ -255,18 +256,18 @@ class Result
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
             $object_class = $this->fetchModeObjectClass;
         }
-        if (is_null($rownum) && $this->limit_from !== null) {
-            if ($this->row_counter === null) {
-                $this->row_counter = $this->limit_from;
+        if (is_null($rownum) && $this->limitFrom !== null) {
+            if ($this->rowCounter === null) {
+                $this->rowCounter = $this->limitFrom;
             }
-            if ($this->row_counter >= ($this->limit_from + $this->limit_count)) {
+            if ($this->rowCounter >= ($this->limitFrom + $this->limitCount)) {
                 if ($this->autofree) {
                     $this->free();
                 }
                 return null;
             }
 
-            $this->row_counter++;
+            $this->rowCounter++;
         }
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
         if ($res === DB::DB_OK) {
@@ -383,6 +384,6 @@ class Result
      */
     public function getRowCounter()
     {
-        return $this->row_counter;
+        return $this->rowCounter;
     }
 }

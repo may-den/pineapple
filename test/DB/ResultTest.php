@@ -30,7 +30,7 @@ class ResultTest extends TestCase
 
         // ugly, but it's this or add methods to result which won't be used
         $reflectionClass = new \ReflectionClass($result);
-        $reflectionProp = $reflectionClass->getProperty('limit_from');
+        $reflectionProp = $reflectionClass->getProperty('limitFrom');
         $reflectionProp->setAccessible(true);
 
         $this->assertEquals(10, $reflectionProp->getValue($result));
@@ -45,7 +45,7 @@ class ResultTest extends TestCase
 
         // ugly, but it's this or add methods to result which won't be used
         $reflectionClass = new \ReflectionClass($result);
-        $reflectionProp = $reflectionClass->getProperty('limit_from');
+        $reflectionProp = $reflectionClass->getProperty('limitFrom');
         $reflectionProp->setAccessible(true);
 
         $this->assertEquals(12345, $reflectionProp->getValue($result));

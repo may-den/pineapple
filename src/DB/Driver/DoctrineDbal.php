@@ -3,6 +3,7 @@ namespace Pineapple\DB\Driver;
 
 use Pineapple\DB;
 use Pineapple\DB\Error;
+use Pineapple\DB\Driver\DriverInterface;
 
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\Statement as DBALStatement;
@@ -15,7 +16,7 @@ use PDO;
  * A PEAR DB driver that uses Doctrine's DBAL as an underlying database
  * layer.
  */
-class DoctrineDbal extends Common
+class DoctrineDbal extends Common implements DriverInterface
 {
     use Components\AnsiSqlErrorCodes;
 
@@ -533,21 +534,19 @@ class DoctrineDbal extends Common
              * n.b. Retained for compatibility, but this is untestable with sqlite
              */
             // @codeCoverageIgnoreStart
-            $id = $this->simpleQuery("SELECT * FROM $result LIMIT 0");
-            $gotString = true;
+            $tableHandle = $this->simpleQuery("SELECT * FROM $result LIMIT 0");
             // @codeCoverageIgnoreEnd
         } elseif (is_object($result) && isset($result->result)) {
             /**
              * Probably received a result object.
              * Extract the result resource identifier.
              */
-            $id = $result->result;
-            $gotString = false;
+            $tableHandle = $result->result;
         } else {
             return $this->myRaiseError();
         }
 
-        if (!is_object($id) || !($id instanceof DBALStatement)) {
+        if (!is_object($tableHandle) || !($tableHandle instanceof DBALStatement)) {
             // not easy to test without triggering a very difficult error
             // @codeCoverageIgnoreStart
             return $this->myRaiseError(DB::DB_ERROR_NEED_MORE_DATA);
@@ -560,7 +559,7 @@ class DoctrineDbal extends Common
             $caseFunc = 'strval';
         }
 
-        $count = $id->columnCount();
+        $count = $tableHandle->columnCount();
         $res = [];
 
         if ($mode) {
@@ -568,7 +567,7 @@ class DoctrineDbal extends Common
         }
 
         for ($i = 0; $i < $count; $i++) {
-            $tmp = $id->getColumnMeta($i);
+            $tmp = $tableHandle->getColumnMeta($i);
 
             $res[$i] = [
                 'table' => $caseFunc($tmp['table']),
