@@ -1120,40 +1120,6 @@ class CommonTest extends TestCase
         $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
     }
 
-    public function testGetSequenceName()
-    {
-        $dbh = DB::factory(TestDriver::class);
-        $seq = $dbh->getSequenceName('foo');
-        $this->assertEquals('foo_seq', $seq);
-    }
-
-    public function testNextId()
-    {
-        // this is a stub method intended to fail
-        $dbh = DB::factory(TestDriver::class);
-        $res = $dbh->nextId('foo');
-        $this->assertInstanceOf(Error::class, $res);
-        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
-    }
-
-    public function testCreateSequence()
-    {
-        // this is a stub method intended to fail
-        $dbh = DB::factory(TestDriver::class);
-        $res = $dbh->createSequence('foo');
-        $this->assertInstanceOf(Error::class, $res);
-        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
-    }
-
-    public function testDropSequence()
-    {
-        // this is a stub method intended to fail
-        $dbh = DB::factory(TestDriver::class);
-        $res = $dbh->dropSequence('foo');
-        $this->assertInstanceOf(Error::class, $res);
-        $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
-    }
-
     public function testRaiseError()
     {
         $dbh = DB::factory(TestDriver::class);
