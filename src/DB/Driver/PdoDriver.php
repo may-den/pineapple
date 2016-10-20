@@ -54,7 +54,7 @@ class PdoDriver extends Common implements DriverInterface
      * @var integer
      * @access private
      */
-    private $transaction_opcount = 0;
+    private $transactionOpcount = 0;
 
     /**
      * Set the PDO connection handle in the object
@@ -103,7 +103,7 @@ class PdoDriver extends Common implements DriverInterface
         }
 
         if (!$this->autocommit && $ismanip) {
-            if ($this->transaction_opcount === 0) {
+            if ($this->transactionOpcount === 0) {
                 try {
                     $return = $this->connection->beginTransaction();
                     // sqlite supports transactions so this can't be tested right now
@@ -125,7 +125,7 @@ class PdoDriver extends Common implements DriverInterface
                     // @codeCoverageIgnoreEnd
                 }
             }
-            $this->transaction_opcount++;
+            $this->transactionOpcount++;
         }
 
         // enable/disable result_buffering in mysql
@@ -335,8 +335,9 @@ class PdoDriver extends Common implements DriverInterface
      */
     public function autoCommit($onoff = false)
     {
-        // XXX if $this->transaction_opcount > 0, we should probably
-        // issue a warning here.
+        if ($this->options['strict_transactions'] && ($this->transactionOpcount > 0)) {
+            return $this->raiseError(DB::DB_ERROR_ACTIVE_TRANSACTIONS);
+        }
         $this->autocommit = $onoff ? true : false;
         return DB::DB_OK;
     }
@@ -349,7 +350,7 @@ class PdoDriver extends Common implements DriverInterface
      */
     public function commit()
     {
-        if ($this->transaction_opcount > 0) {
+        if ($this->transactionOpcount > 0) {
             if (!$this->connected()) {
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
@@ -375,7 +376,7 @@ class PdoDriver extends Common implements DriverInterface
                 // @codeCoverageIgnoreEnd
             }
 
-            $this->transaction_opcount = 0;
+            $this->transactionOpcount = 0;
         }
         return DB::DB_OK;
     }
@@ -388,7 +389,7 @@ class PdoDriver extends Common implements DriverInterface
      */
     public function rollback()
     {
-        if ($this->transaction_opcount > 0) {
+        if ($this->transactionOpcount > 0) {
             if (!$this->connected()) {
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
@@ -414,7 +415,7 @@ class PdoDriver extends Common implements DriverInterface
                 // @codeCoverageIgnoreEnd
             }
 
-            $this->transaction_opcount = 0;
+            $this->transactionOpcount = 0;
         }
         return DB::DB_OK;
     }

@@ -58,7 +58,7 @@ class DoctrineDbal extends Common
      * @var integer
      * @access private
      */
-    private $transaction_opcount = 0;
+    private $transactionOpcount = 0;
 
     /**
      * Set the DBAL connection handle in the object
@@ -102,12 +102,12 @@ class DoctrineDbal extends Common
             return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
         }
         if (!$this->autocommit && $ismanip) {
-            if ($this->transaction_opcount == 0) {
+            if ($this->transactionOpcount == 0) {
                 // dbal doesn't return a status for begin transaction. pdo does.
                 $this->connection->beginTransaction();
                 // ...so we can't (easily) capture an exception if this goes wrong.
             }
-            $this->transaction_opcount++;
+            $this->transactionOpcount++;
         }
 
         // @todo this needs setting on the prepare() driver options, which doctrine doesn't support
@@ -275,8 +275,9 @@ class DoctrineDbal extends Common
      */
     public function autoCommit($onoff = false)
     {
-        // XXX if $this->transaction_opcount > 0, we should probably
-        // issue a warning here.
+        if ($this->options['strict_transactions'] && ($this->transactionOpcount > 0)) {
+            return $this->raiseError(DB::DB_ERROR_ACTIVE_TRANSACTIONS);
+        }
         $this->autocommit = $onoff ? true : false;
         return DB::DB_OK;
     }
@@ -289,7 +290,7 @@ class DoctrineDbal extends Common
      */
     public function commit()
     {
-        if ($this->transaction_opcount > 0) {
+        if ($this->transactionOpcount > 0) {
             if (!$this->connected()) {
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
@@ -303,7 +304,7 @@ class DoctrineDbal extends Common
                 // @codeCoverageIgnoreEnd
             }
 
-            $this->transaction_opcount = 0;
+            $this->transactionOpcount = 0;
         }
         return DB::DB_OK;
     }
@@ -316,7 +317,7 @@ class DoctrineDbal extends Common
      */
     public function rollback()
     {
-        if ($this->transaction_opcount > 0) {
+        if ($this->transactionOpcount > 0) {
             if (!$this->connected()) {
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
@@ -330,7 +331,7 @@ class DoctrineDbal extends Common
                 // @codeCoverageIgnoreEnd
             }
 
-            $this->transaction_opcount = 0;
+            $this->transactionOpcount = 0;
         }
         return DB::DB_OK;
     }

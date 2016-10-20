@@ -153,6 +153,9 @@ class DB
     // @const It's possible you are about to do something you didn't realise was stupid
     const DB_ERROR_POSSIBLE_UNINTENDED_CONSEQUENCES = -30;
 
+    // @const There are active transactions and you're trying to enable/disable transacations
+    const DB_ERROR_ACTIVE_TRANSACTIONS = -31;
+
     /**
      * Placeholder types
      * @see DB\Driver\Common::prepare()
@@ -299,6 +302,8 @@ class DB
         self::DB_ERROR_TRUNCATED => 'truncated',
         self::DB_ERROR_VALUE_COUNT_ON_ROW => 'value count on row',
         self::DB_ERROR_POSSIBLE_UNINTENDED_CONSEQUENCES => 'you may be about to do something stupid',
+        self::DB_ERROR_ACTIVE_TRANSACTIONS => 'cannot change transaction mode whilst active transactions ' .
+                                              '(see strict_transactions)',
         self::DB_OK => 'no error',
     ];
 

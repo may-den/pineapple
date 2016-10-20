@@ -100,6 +100,7 @@ abstract class Common extends Util
         'seqname_format' => '%s_seq',
         'autofree' => false,
         'portability' => DB::DB_PORTABILITY_NONE,
+        'strict_transactions' => true,
     ];
 
     /**
