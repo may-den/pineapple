@@ -271,6 +271,17 @@ class DoctrineDbalTest extends TestCase
         $this->assertFalse($reflectionProp->getValue($this->dbh));
     }
 
+    public function testAutoCommitStrictModeWithActiveTransaction()
+    {
+        // don't like reflection, but want to test this important method
+        $this->dbh->autoCommit(false);
+        $this->dbh->query('INSERT INTO pdotest (a) VALUES (\'autcomm on\')');
+        $result = $this->dbh->autoCommit(true);
+
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_ACTIVE_TRANSACTIONS, $result->getCode());
+    }
+
     public function testCommitWithNoActiveTransaction()
     {
         $this->assertEquals(DB::DB_OK, $this->dbh->commit());
