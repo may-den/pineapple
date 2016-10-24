@@ -569,7 +569,7 @@ class PdoDriver extends Common implements DriverInterface
      * @see Pineapple\DB\Driver\Common::raiseError(),
      *      Pineapple\DB\Driver\PdoDriver::errorNative(), Pineapple\DB\Driver\Common::errorCode()
      */
-    public function myRaiseError($errno = null)
+    private function myRaiseError($errno = null)
     {
         if ($this->connected()) {
             $error = $this->connection->errorInfo();
