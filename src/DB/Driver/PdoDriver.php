@@ -219,10 +219,10 @@ class PdoDriver extends Common implements DriverInterface
      * Pineapple\DB\Result::fetchInto() instead.  It can't be declared
      * "protected" because Pineapple\DB\Result is a separate object.
      *
-     * @param resource $result    the query result resource
-     * @param array    $arr       the referenced array to put the data in
-     * @param int      $fetchmode how the resulting array should be indexed
-     * @param int      $rownum    the row number to fetch (0 = first row)
+     * @param PDOStatement $result    the query result resource
+     * @param array        $arr       the referenced array to put the data in
+     * @param int          $fetchmode how the resulting array should be indexed
+     * @param int          $rownum    the row number to fetch (0 = first row)
      *
      * @return mixed              DB_OK on success, NULL when the end of a
      *                            result set is reached or on failure
