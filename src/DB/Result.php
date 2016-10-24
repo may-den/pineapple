@@ -4,6 +4,8 @@ namespace Pineapple\DB;
 use Pineapple\DB;
 use Pineapple\DB\Driver\DriverInterface;
 
+use stdClass;
+
 /**
  * This class implements a wrapper for a DB result set
  *
@@ -206,7 +208,7 @@ class Result
             if (isset($objectClass)) {
                 // The default mode is specified in the
                 // DB\Common::fetchModeObjectClass property
-                if ($objectClass == 'stdClass') {
+                if ($objectClass == stdClass::class) {
                     $arr = (object) $arr;
                 } else {
                     $arr = new $objectClass($arr);
@@ -274,7 +276,7 @@ class Result
             if (isset($objectClass)) {
                 // default mode specified in the
                 // DB\Common::fetchModeObjectClass property
-                if ($objectClass == 'stdClass') {
+                if ($objectClass == stdClass::class) {
                     $arr = (object) $arr;
                 } else {
                     $arr = new $objectClass($arr);
