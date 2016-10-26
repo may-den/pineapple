@@ -4,6 +4,7 @@ namespace Pineapple\DB\Driver;
 use Pineapple\DB;
 use Pineapple\DB\Error;
 use Pineapple\DB\Driver\DriverInterface;
+use Pineapple\DB\StatementContainer;
 
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\Statement as DBALStatement;
@@ -616,5 +617,23 @@ class DoctrineDbal extends Common implements DriverInterface
                 return 'unknown';
                 break;
         }
+    }
+
+    /**
+     * Ensure the result is a valid type for our driver, and return the
+     * statement object after a check.
+     *
+     * @param StatementContainer $result A statement container with a PDOStatement with in it.
+     * @return PDOStatement
+     */
+    private static function getStatement(StatementContainer $result)
+    {
+        if ($result->getStatementType() === ['type' => 'object', 'class' => DBALStatement::class]) {
+            return $result->getStatement();
+        }
+        throw new DriverException(
+            'Excepted ' . StatementContainer::class . ' to contain \'' . DBALStatement::class .
+                '\', got ' . json_encode($result->getStatementType())
+        );
     }
 }

@@ -3,6 +3,8 @@ namespace Pineapple\DB\Driver;
 
 use Pineapple\DB;
 use Pineapple\DB\Error;
+use Pineapple\DB\StatementContainer;
+use Pineapple\DB\Exception\DriverException;
 
 use PDO;
 use PDOStatement;
@@ -85,7 +87,7 @@ class PdoDriver extends Common implements DriverInterface
      *
      * @param string  the SQL query string
      *
-     * @return mixed  + a PHP result resrouce for successful SELECT queries
+     * @return mixed  + a PHP result resource for successful SELECT queries
      *                + the DB_OK constant for other successful queries
      *                + a Pineapple\DB\Error object on failure
      */
@@ -173,7 +175,7 @@ class PdoDriver extends Common implements DriverInterface
 
         // fetch queries should return the result object now
         if (!$ismanip && isset($statement) && ($statement instanceof PDOStatement)) {
-            return $statement;
+            return new StatementContainer($statement);
         }
 
         // ...whilst insert/update/delete just gets a "sure, it went well" result
@@ -183,7 +185,7 @@ class PdoDriver extends Common implements DriverInterface
     /**
      * Move the internal mysql result pointer to the next available result.
      *
-     * This method has not been implemented yet.
+     * This method has not been implemented yet (PEAR DB did not implement it, likely Pineapple won't).
      *
      * @return false
      * @access public
@@ -229,15 +231,15 @@ class PdoDriver extends Common implements DriverInterface
      *
      * @see Pineapple\DB\Result::fetchInto()
      */
-    public function fetchInto(PDOStatement $result, &$arr, $fetchmode, $rownum = null)
+    public function fetchInto(StatementContainer $result, &$arr, $fetchmode, $rownum = null)
     {
         if ($fetchmode & DB::DB_FETCHMODE_ASSOC) {
-            $arr = $result->fetch(PDO::FETCH_ASSOC, null, $rownum);
+            $arr = self::getStatement($result)->fetch(PDO::FETCH_ASSOC, null, $rownum);
             if (($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) && $arr) {
                 $arr = array_change_key_case($arr, CASE_LOWER);
             }
         } else {
-            $arr = $result->fetch(PDO::FETCH_NUM);
+            $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM);
         }
 
         if (!$arr) {
@@ -267,11 +269,12 @@ class PdoDriver extends Common implements DriverInterface
      *
      * @see Pineapple\DB\Result::free()
      */
-    public function freeResult(PDOStatement &$result = null)
+    public function freeResult(StatementContainer &$result = null)
     {
         if ($result === null) {
             return false;
         }
+        $result->freeStatement();
         unset($result);
         return true;
     }
@@ -290,9 +293,9 @@ class PdoDriver extends Common implements DriverInterface
      *
      * @see Pineapple\DB\Result::numCols()
      */
-    public function numCols($result)
+    public function numCols(StatementContainer $result)
     {
-        $cols = $result->columnCount();
+        $cols = self::getStatement($result)->columnCount();
         if (!$cols) {
             return $this->myRaiseError();
         }
@@ -315,9 +318,9 @@ class PdoDriver extends Common implements DriverInterface
      * @todo This is not easily testable, since not all drivers support this for SELECTs
      * @codeCoverageIgnore
      */
-    public function numRows($result)
+    public function numRows(StatementContainer $result)
     {
-        $rows = $result->rowCount();
+        $rows = self::getStatement($result)->rowCount();
         if ($rows === null) {
             return $this->myRaiseError();
         }
@@ -631,7 +634,7 @@ class PdoDriver extends Common implements DriverInterface
              * Probably received a result object.
              * Extract the result resource identifier.
              */
-            $tableHandle = $result->result;
+            $tableHandle = self::getStatement($result)->result;
         } else {
             return $this->myRaiseError();
         }
@@ -704,5 +707,23 @@ class PdoDriver extends Common implements DriverInterface
                 return 'unknown';
                 break;
         }
+    }
+
+    /**
+     * Ensure the result is a valid type for our driver, and return the
+     * statement object after a check.
+     *
+     * @param StatementContainer $result A statement container with a PDOStatement with in it.
+     * @return PDOStatement
+     */
+    private static function getStatement(StatementContainer $result)
+    {
+        if ($result->getStatementType() === ['type' => 'object', 'class' => PDOStatement::class]) {
+            return $result->getStatement();
+        }
+        throw new DriverException(
+            'Excepted ' . StatementContainer::class . ' to contain \'' . PDOStatement::class .
+                '\', got ' . json_encode($result->getStatementType())
+        );
     }
 }
