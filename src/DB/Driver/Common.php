@@ -6,6 +6,7 @@ use Pineapple\DB;
 use Pineapple\DB\Result;
 use Pineapple\DB\Error;
 use Pineapple\DB\Exception\FeatureException;
+use Pineapple\DB\StatementContainer;
 
 /**
  * Contains the Common base class
@@ -1592,7 +1593,7 @@ abstract class Common extends Util
      *
      * @return int|Error  the number of rows.  A Pineapple\DB\Error object on failure.
      */
-    public function numRows($result)
+    public function numRows(StatementContainer $result)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }

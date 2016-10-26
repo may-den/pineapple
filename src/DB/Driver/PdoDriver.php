@@ -85,11 +85,11 @@ class PdoDriver extends Common implements DriverInterface
     /**
      * Sends a query to the database server
      *
-     * @param string  the SQL query string
+     * @param string $query the SQL query string
      *
-     * @return mixed  + a PHP result resource for successful SELECT queries
-     *                + the DB_OK constant for other successful queries
-     *                + a Pineapple\DB\Error object on failure
+     * @return mixed        a StatementContainer object for successful SELECT
+     *                      queries the DB_OK constant for other successful
+     *                      queries a Pineapple\DB\Error object on failure.
      */
     public function simpleQuery($query)
     {
@@ -190,7 +190,7 @@ class PdoDriver extends Common implements DriverInterface
      * @return false
      * @access public
      */
-    public function nextResult()
+    public function nextResult(StatementContainer $result)
     {
         return false;
     }
@@ -269,11 +269,8 @@ class PdoDriver extends Common implements DriverInterface
      *
      * @see Pineapple\DB\Result::free()
      */
-    public function freeResult(StatementContainer &$result = null)
+    public function freeResult(StatementContainer &$result)
     {
-        if ($result === null) {
-            return false;
-        }
         $result->freeStatement();
         unset($result);
         return true;
@@ -616,7 +613,6 @@ class PdoDriver extends Common implements DriverInterface
     public function tableInfo($result, $mode = null)
     {
         if (is_string($result)) {
-            // Fix for bug #11580.
             if (!$this->connected()) {
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }

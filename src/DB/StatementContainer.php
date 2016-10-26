@@ -29,6 +29,7 @@ class StatementContainer
         switch (gettype($statement)) {
             case 'object':
             case 'resource':
+            case 'array':
                 // this is fine.
                 break;
 
@@ -52,6 +53,7 @@ class StatementContainer
 
         switch (gettype($this->statement)) {
             case 'object':
+            case 'array':
                 unset($this->statement);
                 break;
 
@@ -85,6 +87,10 @@ class StatementContainer
 
             case 'resource':
                 return ['type' => 'resource'];
+                break;
+
+            case 'array':
+                return ['type' => 'array'];
                 break;
 
             default:

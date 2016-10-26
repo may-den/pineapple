@@ -40,7 +40,7 @@ interface DriverInterface
      * @return false
      * @access public
      */
-    public function nextResult($result);
+    public function nextResult(StatementContainer $result);
 
     /**
      * Places a row from the result set into the given array
@@ -77,7 +77,7 @@ interface DriverInterface
      *
      * @see Pineapple\DB\Result::free()
      */
-    public function freeResult(StatementContainer &$result = null);
+    public function freeResult(StatementContainer &$result);
 
     /**
      * Gets the number of columns in a result set

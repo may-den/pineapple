@@ -6,6 +6,7 @@ use Pineapple\DB;
 use Pineapple\DB\Driver\DriverInterface;
 use Pineapple\DB\Driver\Common;
 use Pineapple\DB\Driver\Components\AnsiSqlErrorCodes;
+use Pineapple\DB\StatementContainer;
 
 /**
  * A null 'test' driver for Pineapple. This serves two purposes: one to act as a scaffold to test scope refactoring,
@@ -90,7 +91,7 @@ class TestDriver extends Common implements DriverInterface
                     'data' => 'test' . $i,
                 ];
             }
-            return $results;
+            return new StatementContainer($results);
         } elseif (preg_match('/^(BREAKING)?SINGLECOLSEL/', $query)) {
             $this->lastQueryType = 'SELECT';
             $results = [
@@ -105,13 +106,13 @@ class TestDriver extends Common implements DriverInterface
                     'id' => $i,
                 ];
             }
-            return $results;
+            return new StatementContainer($results);
         } elseif (preg_match('/^EMPTYSEL/', $query)) {
-            return [
+            return new StatementContainer([
                 'type' => 'resultResource',
                 'breaksEasily' => false,
                 'results' => [],
-            ];
+            ]);
         } elseif (preg_match('/^INSERT/', $query)) {
             // this may not be correct
             $this->lastQueryType = 'INSERT';
@@ -121,13 +122,15 @@ class TestDriver extends Common implements DriverInterface
         }
     }
 
-    public function nextResult($result)
+    public function nextResult(StatementContainer $result)
     {
         return false;
     }
 
-    public function fetchInto($result, &$arr, $fetchmode, $rownum = null)
+    public function fetchInto(StatementContainer $result, &$arr, $fetchmode, $rownum = null)
     {
+        $result = self::getStatement($result);
+
         if ($this->lastResult !== $result) {
             $this->lastResult = $result;
         }
@@ -172,8 +175,10 @@ class TestDriver extends Common implements DriverInterface
         return $this->hasFreed;
     }
 
-    public function freeResult($result)
+    public function freeResult(StatementContainer &$result)
     {
+        $result = self::getStatement($result);
+
         if (!isset($result['type']) || ($result['type'] !== 'resultResource')) {
             return false;
         }
@@ -186,8 +191,10 @@ class TestDriver extends Common implements DriverInterface
         return true;
     }
 
-    public function numCols($result)
+    public function numCols(StatementContainer $result)
     {
+        $result = self::getStatement($result);
+
         if (!isset($result['type']) || ($result['type'] != 'resultResource')) {
             return $this->myRaiseError();
         }
@@ -200,8 +207,10 @@ class TestDriver extends Common implements DriverInterface
         return 0;
     }
 
-    public function numRows($result)
+    public function numRows(StatementContainer $result)
     {
+        $result = self::getStatement($result);
+
         if (!isset($result['type']) || ($result['type'] != 'resultResource')) {
             return $this->myRaiseError();
         }
@@ -209,7 +218,7 @@ class TestDriver extends Common implements DriverInterface
         return count($result['results']);
     }
 
-    public function stubNumRows($result)
+    public function stubNumRows(StatementContainer $result)
     {
         // call the _parent_ numRows because we overrode it above
         return parent::numRows($result);
@@ -228,6 +237,8 @@ class TestDriver extends Common implements DriverInterface
 
     public function tableInfo($result, $mode = null)
     {
+        $result = self::getStatement($result);
+
         if ($result === null) {
             return $this->myRaiseError();
         }
@@ -250,7 +261,7 @@ class TestDriver extends Common implements DriverInterface
         ];
     }
 
-    public function stubTableInfo($result, $mode = null)
+    public function stubTableInfo(StatementContainer $result, $mode = null)
     {
         return parent::tableInfo($result, $mode);
     }
@@ -305,5 +316,16 @@ class TestDriver extends Common implements DriverInterface
             return $this->raiseError(DB::DB_ERROR_SYNTAX);
         }
         return parent::modifyLimitQuery($query, $from, $count, $params);
+    }
+
+    private static function getStatement(StatementContainer $result)
+    {
+        if ($result->getStatementType() === ['type' => 'array']) {
+            return $result->getStatement();
+        }
+        throw new DriverException(
+            'Excepted ' . StatementContainer::class . ' to contain \'array\', got ' .
+                json_encode($result->getStatementType())
+        );
     }
 }
