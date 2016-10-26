@@ -41,7 +41,7 @@ class PdoDriver extends Common implements DriverInterface
      * A copy of the last pdostatement object
      * @var PDOStatement
      */
-    public $lastStatement = null;
+    private $lastStatement = null;
 
     /**
      * Should data manipulation queries be committed automatically?

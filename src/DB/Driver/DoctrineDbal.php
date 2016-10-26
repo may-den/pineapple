@@ -45,7 +45,7 @@ class DoctrineDbal extends Common implements DriverInterface
      * A copy of the last pdostatement object
      * @var DBALStatement
      */
-    public $lastStatement = null;
+    private $lastStatement = null;
 
     /**
      * Should data manipulation queries be committed automatically?
