@@ -220,8 +220,12 @@ class PdoDriver extends Common implements DriverInterface
         } else {
             try {
                 $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM);
+                // this exception handle was added as the php docs implied a potential exception, which i have thus
+                // far been unable to reproduce.
+                // @codeCoverageIgnoreStart
             } catch (PDOException $fetchException) {
                 return $this->raiseError(DB::DB_ERROR, null, null, $fetchException->getMessage());
+                // @codeCoverageIgnoreEnd
             }
         }
 

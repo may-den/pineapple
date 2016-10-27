@@ -5,7 +5,7 @@ use Pineapple\DB;
 use Pineapple\DB\Error;
 use Pineapple\DB\Driver\DriverInterface;
 use Pineapple\DB\StatementContainer;
-use Pineapple\DB\Exception\DriverException;
+use Pineapple\DB\Exception\DriverException as PineappleDriverException;
 use Pineapple\DB\Driver\Components\AnsiSqlErrorCodes;
 use Pineapple\DB\Driver\Components\PdoCommonMethods;
 
@@ -169,8 +169,12 @@ class DoctrineDbal extends Common implements DriverInterface
         } else {
             try {
                 $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM);
+                // this exception handle was added as the php docs implied a potential exception, which i have thus
+                // far been unable to reproduce.
+                // @codeCoverageIgnoreStart
             } catch (DriverException $fetchException) {
                 return $this->raiseError(DB::DB_ERROR, null, null, $fetchException->getMessage());
+                // @codeCoverageIgnoreEnd
             }
         }
 
@@ -285,7 +289,7 @@ class DoctrineDbal extends Common implements DriverInterface
         if (is_a($result->getStatement(), DBALStatement::class)) {
             return $result->getStatement();
         }
-        throw new DriverException(
+        throw new PineappleDriverException(
             'Expected ' . StatementContainer::class . ' to contain \'' . DBALStatement::class .
                 '\', got ' . json_encode($result->getStatementType())
         );

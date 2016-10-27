@@ -6,7 +6,9 @@ use Pineapple\DB\Row;
 use Pineapple\DB\Result;
 use Pineapple\DB\Error;
 use Pineapple\DB\Driver\DoctrineDbal;
+use Pineapple\Test\DB\Driver\TestDriver;
 use Pineapple\DB\Exception\StatementException;
+use Pineapple\DB\Exception\DriverException;
 
 use Doctrine\DBAL\DriverManager as DBALDriverManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
@@ -144,6 +146,15 @@ class DoctrineDbalTest extends TestCase
         $this->assertEquals(DB::DB_OK, $result);
         // and a row of data
         $this->assertEquals(['test1'], $data);
+    }
+
+    public function testFetchIntoTriggeringInvalidStatement()
+    {
+        $testDbh = DB::factory(TestDriver::class);
+        $testSth = $testDbh->simpleQuery('SELECT foo FROM bar');
+        $data = [];
+        $this->expectException(DriverException::class);
+        $result = $this->dbh->fetchInto($testSth, $data, DB::DB_FETCHMODE_DEFAULT);
     }
 
     public function testFetchIntoAssocMode()
