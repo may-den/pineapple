@@ -94,7 +94,7 @@ class StatementContainer
             case 'array':
             case 'resource':
                 if (($this->freeFunction !== null) && is_callable($this->freeFunction)) {
-                    call_user_function($this->freeFunction, $this->statement);
+                    call_user_func($this->freeFunction, $this->statement);
                     unset($this->statement);
                     return;
                 }
