@@ -161,7 +161,7 @@ class DoctrineDbalTest extends TestCase
     {
         // query and get a raw statement from the driver
         $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest LIMIT 1');
-        $this->assertInstanceOf(DBALStatement::class, $sth);
+        $this->assertInstanceOf(DBALStatement::class, $sth->getStatement());
 
         // first fetch should give us a valid row
         $data = [];
@@ -225,9 +225,9 @@ class DoctrineDbalTest extends TestCase
     {
         $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
 
-        $this->assertInstanceOf(DBALStatement::class, $sth);
+        $this->assertInstanceOf(DBALStatement::class, $sth->getStatement());
         $this->assertTrue($this->dbh->freeResult($sth));
-        $this->assertInstanceOf(DBALStatement::class, $sth);
+        $this->assertInstanceOf(DBALStatement::class, $sth->getStatement());
     }
 
     public function testFreeResultAlreadyFreed()

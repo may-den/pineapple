@@ -5,6 +5,7 @@ use Pineapple\DB;
 use Pineapple\DB\Error;
 use Pineapple\DB\Driver\DriverInterface;
 use Pineapple\DB\StatementContainer;
+use Pineapple\DB\Exception\DriverException;
 
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\Statement as DBALStatement;

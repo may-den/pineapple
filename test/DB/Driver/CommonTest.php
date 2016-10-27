@@ -1104,7 +1104,7 @@ class CommonTest extends TestCase
     {
         // this is a stub method intended to fail
         $dbh = DB::factory(TestDriver::class);
-        $result = $dbh->getAll('SELECT foo FROM bar');
+        $result = $dbh->simpleQuery('SELECT foo FROM bar');
         $res = $dbh->stubNumRows($result);
         $this->assertInstanceOf(Error::class, $res);
         $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());
@@ -1166,7 +1166,7 @@ class CommonTest extends TestCase
     {
         // this is a stub method intended to fail
         $dbh = DB::factory(TestDriver::class);
-        $result = $dbh->getAll('SELECT foo FROM bar');
+        $result = $dbh->simpleQuery('SELECT foo FROM bar');
         $res = $dbh->stubTableInfo($result);
         $this->assertInstanceOf(Error::class, $res);
         $this->assertEquals(DB::DB_ERROR_NOT_CAPABLE, $res->getCode());

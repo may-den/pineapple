@@ -1,6 +1,8 @@
 <?php
 namespace Pineapple\DB\Exception;
 
-class DriverException
+use Exception;
+
+class DriverException extends Exception
 {
 }

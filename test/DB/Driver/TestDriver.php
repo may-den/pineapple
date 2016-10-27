@@ -183,7 +183,7 @@ class TestDriver extends Common implements DriverInterface
             return false;
         }
 
-        if (isset($result['feignFailure']) && ($result['feignFailure'] === true)) {
+        if (isset($result['breaksEasily']) && ($result['breaksEasily'] === true)) {
             return $this->myRaiseError();
         }
 

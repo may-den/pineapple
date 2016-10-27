@@ -3,6 +3,7 @@ namespace Pineapple\DB;
 
 use Pineapple\DB;
 use Pineapple\DB\Driver\DriverInterface;
+use Pineapple\DB\StatementContainer;
 
 use stdClass;
 
@@ -118,7 +119,7 @@ class Result
      *
      * @return void
      */
-    public function __construct(DriverInterface $dbh, $result, $options = [])
+    public function __construct(DriverInterface $dbh, StatementContainer $result, array $options = [])
     {
         $this->autofree = $dbh->getOption('autofree');
         $this->dbh = $dbh;
@@ -364,7 +365,7 @@ class Result
         if (is_string($mode)) {
             return $this->dbh->raiseError(DB::DB_ERROR_NEED_MORE_DATA);
         }
-        return $this->dbh->tableInfo($this, $mode);
+        return $this->dbh->tableInfo($this->result, $mode);
     }
 
     /**
