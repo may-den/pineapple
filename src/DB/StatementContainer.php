@@ -3,11 +3,27 @@ namespace Pineapple\DB;
 
 use Pineapple\DB\Exception\StatementException;
 
+/**
+ * A container for objects and resources pertaining to statement handles.
+ *
+ * @author     Rob Andrews <rob@aphlor.org>
+ * @copyright  BSD-2-Clause
+ * @package    Database
+ * @version    Introduced in Pineapple 0.3.0
+ */
 class StatementContainer
 {
+    // @var mixed The statement handle (could be object, resource, array)
     private $statement = null;
+    // @var callable A function to call to destruct a statement handle (useful for mysql_*)
     private $freeFunction = null;
 
+    /**
+     * constructor
+     *
+     * @param mixed    $statement    The statement handle (can be object, resource, array)
+     * @param callable $freeFunction A callback to destroy a result handle/object
+     */
     public function __construct($statement = null, $freeFunction = null)
     {
         if ($statement !== null) {
@@ -15,6 +31,12 @@ class StatementContainer
         }
     }
 
+    /**
+     * Return the statement object/resource/array.
+     *
+     * @return mixed
+     * @throws StatementException
+     */
     public function getStatement()
     {
         if (!isset($this->statement) || ($this->statement === null)) {
@@ -24,6 +46,13 @@ class StatementContainer
         return $this->statement;
     }
 
+    /**
+     * Set the statement object/resource/array the container should hold.
+     *
+     * @param mixed    $statement    The statement handle (can be object, resource, array)
+     * @param callable $freeFunction A callback to destroy a result handle/object
+     * @return null
+     */
     public function setStatement($statement, $freeFunction = null)
     {
         switch (gettype($statement)) {
@@ -34,7 +63,10 @@ class StatementContainer
                 break;
 
             default:
-                throw new StatementException('We do not know how to deal with this type of statement handle', StatementException::UNHANDLED_TYPE);
+                throw new StatementException(
+                    'We do not know how to deal with this type of statement handle',
+                    StatementException::UNHANDLED_TYPE
+                );
                 break;
         }
 
@@ -45,6 +77,12 @@ class StatementContainer
         }
     }
 
+    /**
+     * Destroy the statement by unsetting or calling the result free callable
+     *
+     * @return null
+     * @throws StatementException
+     */
     public function freeStatement()
     {
         if (isset($this->statement) && ($this->statement === null)) {
@@ -54,23 +92,30 @@ class StatementContainer
         switch (gettype($this->statement)) {
             case 'object':
             case 'array':
-                unset($this->statement);
-                break;
-
             case 'resource':
                 if (($this->freeFunction !== null) && is_callable($this->freeFunction)) {
                     call_user_function($this->freeFunction, $this->statement);
+                    unset($this->statement);
                     return;
                 }
                 unset($this->statement);
                 break;
 
             default:
-                throw new StatementException('Stored statement is not a type we are experienced with dealing with', StatementException::UNHANDLED_TYPE);
+                throw new StatementException(
+                    'Stored statement is not a type we are experienced with dealing with',
+                    StatementException::UNHANDLED_TYPE
+                );
                 break;
         }
     }
 
+    /**
+     * Return the statement type, and if an object, the class name
+     *
+     * @return array
+     * @throws StatementException
+     */
     public function getStatementType()
     {
         if (isset($this->statement) && ($this->statement === null)) {
@@ -94,7 +139,10 @@ class StatementContainer
                 break;
 
             default:
-                throw new StatementException('Stored statement is not a type we are experienced with dealing with', StatementException::UNHANDLED_TYPE);
+                throw new StatementException(
+                    'Stored statement is not a type we are experienced with dealing with',
+                    StatementException::UNHANDLED_TYPE
+                );
                 break;
         }
     }
