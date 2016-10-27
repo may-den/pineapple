@@ -4,6 +4,8 @@ namespace Pineapple\DB\Driver;
 use Pineapple\DB;
 use Pineapple\DB\Error;
 use Pineapple\DB\Driver\DriverInterface;
+use Pineapple\DB\StatementContainer;
+use Pineapple\DB\Exception\DriverException;
 
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\Statement as DBALStatement;
@@ -11,6 +13,7 @@ use Doctrine\DBAL\Exception\DriverException as DBALDriverException;
 use Doctrine\DBAL\ConnectionException as DBALConnectionException;
 
 use PDO;
+use PDOException;
 
 /**
  * A PEAR DB driver that uses Doctrine's DBAL as an underlying database
@@ -44,7 +47,7 @@ class DoctrineDbal extends Common implements DriverInterface
      * A copy of the last pdostatement object
      * @var DBALStatement
      */
-    public $lastStatement = null;
+    private $lastStatement = null;
 
     /**
      * Should data manipulation queries be committed automatically?
@@ -88,25 +91,33 @@ class DoctrineDbal extends Common implements DriverInterface
     /**
      * Sends a query to the database server
      *
-     * @param string  the SQL query string
+     * @param string $query the SQL query string
      *
-     * @return mixed  + a PHP result resrouce for successful SELECT queries
-     *                + the DB_OK constant for other successful queries
-     *                + a Pineapple\DB\Error object on failure
+     * @return mixed        a StatementContainer object for successful SELECT
+     *                      queries the DB_OK constant for other successful
+     *                      queries a Pineapple\DB\Error object on failure.
      */
     public function simpleQuery($query)
     {
         $ismanip = $this->checkManip($query);
         $this->lastQuery = $query;
         $query = $this->modifyQuery($query);
+
         if (!$this->connected()) {
             return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
         }
+
         if (!$this->autocommit && $ismanip) {
             if ($this->transactionOpcount == 0) {
-                // dbal doesn't return a status for begin transaction. pdo does.
-                $this->connection->beginTransaction();
-                // ...so we can't (easily) capture an exception if this goes wrong.
+                // dbal doesn't return a status for begin transaction. pdo does. still, exceptions.
+                try {
+                    $this->connection->beginTransaction();
+                    // sqlite supports transactions so this can't be tested right now
+                    // @codeCoverageIgnoreStart
+                } catch (PDOException $transactionException) {
+                    return $this->raiseError(DB::DB_ERROR, null, null, $transactionException->getMessage());
+                    // @codeCoverageIgnoreEnd
+                }
             }
             $this->transactionOpcount++;
         }
@@ -119,17 +130,17 @@ class DoctrineDbal extends Common implements DriverInterface
         // @codeCoverageIgnoreEnd
 
         try {
-            $result = $this->connection->query($query);
+            $statement = $this->connection->query($query);
         } catch (DBALDriverException $exception) {
             return $this->raiseError(DB::DB_ERROR, null, null, $exception->getMessage());
         }
 
         // keep this so we can perform rowCount and suchlike later
-        $this->lastStatement = $result;
+        $this->lastStatement = $statement;
 
         // fetch queries should return the result object now
-        if (!$ismanip && isset($result) && ($result instanceof DBALStatement)) {
-            return $result;
+        if (!$ismanip && isset($statement) && ($statement instanceof DBALStatement)) {
+            return new StatementContainer($statement);
         }
 
         // ...whilst insert/update/delete just gets a "sure, it went well" result
@@ -141,13 +152,28 @@ class DoctrineDbal extends Common implements DriverInterface
      *
      * This method has not been implemented yet.
      *
-     * @param resource $result a valid sql result resource
      * @return false
      * @access public
      */
-    public function nextResult($result)
+    public function nextResult(StatementContainer $result)
     {
         return false;
+    }
+
+    /**
+     * Format a PDO errorInfo block as a legible string
+     *
+     * @param array $errorInfo The output from PDO/PDOStatement::errorInfo
+     * @return string
+     */
+    private static function formatErrorInfo(array $errorInfo)
+    {
+        return sprintf(
+            'SQLSTATE[%d]: (Driver code %d) %s',
+            $errorInfo[0],
+            $errorInfo[1],
+            $errorInfo[2]
+        );
     }
 
     /**
@@ -160,25 +186,25 @@ class DoctrineDbal extends Common implements DriverInterface
      * Pineapple\DB\Result::fetchInto() instead.  It can't be declared
      * "protected" because Pineapple\DB\Result is a separate object.
      *
-     * @param resource $result    the query result resource
-     * @param array    $arr       the referenced array to put the data in
-     * @param int      $fetchmode how the resulting array should be indexed
-     * @param int      $rownum    the row number to fetch (0 = first row)
+     * @param DBALStatement $result    the query result resource
+     * @param array         $arr       the referenced array to put the data in
+     * @param int           $fetchmode how the resulting array should be indexed
+     * @param int           $rownum    the row number to fetch (0 = first row)
      *
      * @return mixed              DB_OK on success, NULL when the end of a
      *                            result set is reached or on failure
      *
      * @see Pineapple\DB\Result::fetchInto()
      */
-    public function fetchInto(DBALStatement $result, &$arr, $fetchmode, $rownum = null)
+    public function fetchInto(StatementContainer $result, &$arr, $fetchmode, $rownum = null)
     {
         if ($fetchmode & DB::DB_FETCHMODE_ASSOC) {
-            $arr = $result->fetch(PDO::FETCH_ASSOC, null, $rownum);
+            $arr = self::getStatement($result)->fetch(PDO::FETCH_ASSOC, null, $rownum);
             if (($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) && $arr) {
                 $arr = array_change_key_case($arr, CASE_LOWER);
             }
         } else {
-            $arr = $result->fetch(PDO::FETCH_NUM);
+            $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM);
         }
 
         if (!$arr) {
@@ -208,11 +234,9 @@ class DoctrineDbal extends Common implements DriverInterface
      *
      * @see Pineapple\DB\Result::free()
      */
-    public function freeResult(DBALStatement &$result = null)
+    public function freeResult(StatementContainer &$result)
     {
-        if ($result === null) {
-            return false;
-        }
+        $result->freeStatement();
         unset($result);
         return true;
     }
@@ -231,9 +255,9 @@ class DoctrineDbal extends Common implements DriverInterface
      *
      * @see Pineapple\DB\Result::numCols()
      */
-    public function numCols($result)
+    public function numCols(StatementContainer $result)
     {
-        $cols = $result->columnCount();
+        $cols = self::getStatement($result)->columnCount();
         if (!$cols) {
             return $this->myRaiseError();
         }
@@ -256,9 +280,9 @@ class DoctrineDbal extends Common implements DriverInterface
      * @todo This is not easily testable, since not all drivers support this for SELECTs
      * @codeCoverageIgnore
      */
-    public function numRows($result)
+    public function numRows(StatementContainer $result)
     {
-        $rows = $result->rowCount();
+        $rows = self::getStatement($result)->rowCount();
         if ($rows === null) {
             return $this->myRaiseError();
         }
@@ -417,6 +441,13 @@ class DoctrineDbal extends Common implements DriverInterface
             case 'sqlite':
                 $quotedString = $this->connection->quote($str);
 
+                if ($quotedString === false) {
+                    // @codeCoverageIgnoreStart
+                    // quoting is supported in sqlite so we'll skip testing for it
+                    return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
+                    // @codeCoverageIgnoreEnd
+                }
+
                 if (preg_match('/^(["\']).*\g1$/', $quotedString) && ((strlen($quotedString) - strlen($str)) >= 2)) {
                     // it's a quoted string, it's 2 or more characters longer, let's strip
                     return preg_replace('/^(["\'])(.*)\g1$/', '$2', $quotedString);
@@ -432,7 +463,7 @@ class DoctrineDbal extends Common implements DriverInterface
             // not going to try covering this
             // @codeCoverageIgnoreStart
             default:
-                return $this->myRaiseError(DB::DB_ERROR_UNSUPPORTED);
+                return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
                 break;
             // @codeCoverageIgnoreEnd
         }
@@ -479,7 +510,7 @@ class DoctrineDbal extends Common implements DriverInterface
      * @see Pineapple\DB\Driver\Common::raiseError(),
      *      Pineapple\DB\Driver\DoctrineDbal::errorNative(), Pineapple\DB\Driver\Common::errorCode()
      */
-    public function myRaiseError($errno = null)
+    private function myRaiseError($errno = null)
     {
         if ($this->connected()) {
             $error = $this->connection->errorInfo();
@@ -523,7 +554,6 @@ class DoctrineDbal extends Common implements DriverInterface
     public function tableInfo($result, $mode = null)
     {
         if (is_string($result)) {
-            // Fix for bug #11580.
             if (!$this->connected()) {
                 return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
             }
@@ -541,7 +571,7 @@ class DoctrineDbal extends Common implements DriverInterface
              * Probably received a result object.
              * Extract the result resource identifier.
              */
-            $tableHandle = $result->result;
+            $tableHandle = self::getStatement($result->result);
         } else {
             return $this->myRaiseError();
         }
@@ -617,5 +647,23 @@ class DoctrineDbal extends Common implements DriverInterface
                 return 'unknown';
                 break;
         }
+    }
+
+    /**
+     * Ensure the result is a valid type for our driver, and return the
+     * statement object after a check.
+     *
+     * @param StatementContainer $result A statement container with a PDOStatement with in it.
+     * @return PDOStatement
+     */
+    private static function getStatement(StatementContainer $result)
+    {
+        if (is_a($result->getStatement(), DBALStatement::class)) {
+            return $result->getStatement();
+        }
+        throw new DriverException(
+            'Expected ' . StatementContainer::class . ' to contain \'' . DBALStatement::class .
+                '\', got ' . json_encode($result->getStatementType())
+        );
     }
 }

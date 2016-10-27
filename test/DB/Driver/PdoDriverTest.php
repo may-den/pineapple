@@ -6,6 +6,7 @@ use Pineapple\DB\Row;
 use Pineapple\DB\Result;
 use Pineapple\DB\Error;
 use Pineapple\DB\Driver\PdoDriver;
+use Pineapple\DB\Exception\StatementException;
 
 use PDO;
 use PDOStatement;
@@ -181,7 +182,7 @@ class PdoDriverTest extends TestCase
     {
         // query and get a raw statement from the driver
         $sth = $this->dbh->simpleQuery('SELECT * FROM pdotest LIMIT 1');
-        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth->getStatement());
 
         // first fetch should give us a valid row
         $data = [];
@@ -245,15 +246,11 @@ class PdoDriverTest extends TestCase
     {
         $sth = $this->dbh->simpleQuery('SELECT * FROM pdotest');
 
-        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth->getStatement());
         $this->assertTrue($this->dbh->freeResult($sth));
-        $this->assertInstanceOf(PDOStatement::class, $sth);
-    }
-
-    public function testFreeResultAlreadyFreed()
-    {
-        $sth = null;
-        $this->assertFalse($this->dbh->freeResult($sth));
+        $this->expectException(StatementException::class);
+        $this->expectExceptionCode(StatementException::NO_STATEMENT);
+        $sth->getStatement();
     }
 
     public function testNumCols()

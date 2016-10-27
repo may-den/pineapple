@@ -3,6 +3,9 @@ namespace Pineapple\DB;
 
 use Pineapple\DB;
 use Pineapple\DB\Driver\DriverInterface;
+use Pineapple\DB\StatementContainer;
+
+use stdClass;
 
 /**
  * This class implements a wrapper for a DB result set
@@ -116,7 +119,7 @@ class Result
      *
      * @return void
      */
-    public function __construct(DriverInterface $dbh, $result, $options = [])
+    public function __construct(DriverInterface $dbh, StatementContainer $result, array $options = [])
     {
         $this->autofree = $dbh->getOption('autofree');
         $this->dbh = $dbh;
@@ -184,7 +187,7 @@ class Result
         }
         if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
-            $object_class = $this->fetchModeObjectClass;
+            $objectClass = $this->fetchModeObjectClass;
         }
         if (is_null($rownum) && $this->limitFrom !== null) {
             if ($this->rowCounter === null) {
@@ -203,13 +206,13 @@ class Result
         $arr = [];
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
         if ($res === DB::DB_OK) {
-            if (isset($object_class)) {
+            if (isset($objectClass)) {
                 // The default mode is specified in the
                 // DB\Common::fetchModeObjectClass property
-                if ($object_class == 'stdClass') {
+                if ($objectClass == stdClass::class) {
                     $arr = (object) $arr;
                 } else {
-                    $arr = new $object_class($arr);
+                    $arr = new $objectClass($arr);
                 }
             }
             return $arr;
@@ -254,7 +257,7 @@ class Result
         }
         if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
-            $object_class = $this->fetchModeObjectClass;
+            $objectClass = $this->fetchModeObjectClass;
         }
         if (is_null($rownum) && $this->limitFrom !== null) {
             if ($this->rowCounter === null) {
@@ -271,13 +274,13 @@ class Result
         }
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
         if ($res === DB::DB_OK) {
-            if (isset($object_class)) {
+            if (isset($objectClass)) {
                 // default mode specified in the
                 // DB\Common::fetchModeObjectClass property
-                if ($object_class == 'stdClass') {
+                if ($objectClass == stdClass::class) {
                     $arr = (object) $arr;
                 } else {
-                    $arr = new $object_class($arr);
+                    $arr = new $objectClass($arr);
                 }
             }
             return DB::DB_OK;
@@ -362,7 +365,7 @@ class Result
         if (is_string($mode)) {
             return $this->dbh->raiseError(DB::DB_ERROR_NEED_MORE_DATA);
         }
-        return $this->dbh->tableInfo($this, $mode);
+        return $this->dbh->tableInfo($this->result, $mode);
     }
 
     /**

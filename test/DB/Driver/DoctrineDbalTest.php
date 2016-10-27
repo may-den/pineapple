@@ -6,6 +6,7 @@ use Pineapple\DB\Row;
 use Pineapple\DB\Result;
 use Pineapple\DB\Error;
 use Pineapple\DB\Driver\DoctrineDbal;
+use Pineapple\DB\Exception\StatementException;
 
 use Doctrine\DBAL\DriverManager as DBALDriverManager;
 use Doctrine\DBAL\Configuration as DBALConfiguration;
@@ -161,7 +162,7 @@ class DoctrineDbalTest extends TestCase
     {
         // query and get a raw statement from the driver
         $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest LIMIT 1');
-        $this->assertInstanceOf(DBALStatement::class, $sth);
+        $this->assertInstanceOf(DBALStatement::class, $sth->getStatement());
 
         // first fetch should give us a valid row
         $data = [];
@@ -225,15 +226,11 @@ class DoctrineDbalTest extends TestCase
     {
         $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
 
-        $this->assertInstanceOf(DBALStatement::class, $sth);
+        $this->assertInstanceOf(DBALStatement::class, $sth->getStatement());
         $this->assertTrue($this->dbh->freeResult($sth));
-        $this->assertInstanceOf(DBALStatement::class, $sth);
-    }
-
-    public function testFreeResultAlreadyFreed()
-    {
-        $sth = null;
-        $this->assertFalse($this->dbh->freeResult($sth));
+        $this->expectException(StatementException::class);
+        $this->expectExceptionCode(StatementException::NO_STATEMENT);
+        $sth->getStatement();
     }
 
     public function testNumCols()

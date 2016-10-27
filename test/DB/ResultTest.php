@@ -405,10 +405,7 @@ class ResultTest extends TestCase
     public function testFreeWithDbError()
     {
         $dbh = DB::factory(TestDriver::class);
-        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
-
-        // inject our magic value to make us fail
-        $sth['feignFailure'] = true;
+        $sth = $dbh->simpleQuery('BREAKINGSELECT things FROM a_table');
 
         $result = new Result($dbh, $sth);
         $this->assertInstanceOf(Result::class, $result);
