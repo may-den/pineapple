@@ -24,6 +24,8 @@ trait PdoCommonMethods
      *
      * @return false
      * @access public
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function nextResult(StatementContainer $result)
     {
@@ -106,6 +108,8 @@ trait PdoCommonMethods
      * @return int|Error   DB_OK on success. A Pineapple\DB\Error object if
      *                     the driver doesn't support auto-committing
      *                     transactions.
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function autoCommit($onoff = false)
     {
@@ -217,6 +221,8 @@ trait PdoCommonMethods
      * @return string  the query string with LIMIT clauses added
      *
      * @access protected
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function modifyLimitQuery($query, $from, $count, $params = [])
     {

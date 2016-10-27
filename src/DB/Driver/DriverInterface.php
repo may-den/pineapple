@@ -119,6 +119,8 @@ interface DriverInterface
      * @return int|Error   DB_OK on success. A Pineapple\DB\Error object if
      *                     the driver doesn't support auto-committing
      *                     transactions.
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function autoCommit($onoff = false);
 

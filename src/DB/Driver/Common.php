@@ -234,6 +234,8 @@ abstract class Common extends Util
      *
      * @param boolean $flag true to make UPDATE without WHERE work
      * @since Method available since Pineapple 0.1.0
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function setAcceptConsequencesOfPoorCodingChoices($flag = false)
     {
@@ -753,6 +755,8 @@ abstract class Common extends Util
      * @return mixed                the query handle
      *
      * @uses Common::prepare(), Common::buildManipSQL()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function autoPrepare($table, $tableFields, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
     {
@@ -781,6 +785,8 @@ abstract class Common extends Util
      *                A Pineapple\DB\Error object on failure.
      *
      * @uses Common::autoPrepare(), Common::execute()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function autoExecute($table, $fieldsValues, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
     {
@@ -900,6 +906,8 @@ abstract class Common extends Util
      * {@internal ibase and oci8 have their own execute() methods.}}
      *
      * @see Common::prepare()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function execute($stmt, $data = [])
     {
@@ -988,6 +996,8 @@ abstract class Common extends Util
      * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::prepare(), Common::execute()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function executeMultiple($stmt, $data)
     {
@@ -1011,6 +1021,8 @@ abstract class Common extends Util
      * @return bool  TRUE on success, FALSE if $result is invalid
      *
      * @see Common::prepare()
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function freePrepared($stmt, $freeResource = true)
     {
@@ -1084,6 +1096,8 @@ abstract class Common extends Util
      *                 A Pineapple\DB\Error object on failure.
      *
      * @see Result, Common::prepare(), Common::execute()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function query($query, $params = [])
     {
@@ -1122,6 +1136,8 @@ abstract class Common extends Util
      * @return mixed  a new Result object for successful SELECT queries
      *                 or DB_OK for successul data manipulation queries.
      *                 A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function limitQuery($query, $from, $count, $params = [])
     {
@@ -1151,6 +1167,8 @@ abstract class Common extends Util
      *
      * @return mixed  the returned value of the query.
      *                 A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getOne($query, $params = [])
     {
@@ -1197,6 +1215,8 @@ abstract class Common extends Util
      *
      * @return array|Error    the first row of results as an array.
      *                        A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getRow($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
@@ -1259,6 +1279,8 @@ abstract class Common extends Util
      * @return array  the results as an array.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::query()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getCol($query, $col = 0, $params = [])
     {
@@ -1387,6 +1409,9 @@ abstract class Common extends Util
      *
      * @return array|Error         the associative array containing the query results.
      *                             A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getAssoc(
         $query,
@@ -1500,6 +1525,8 @@ abstract class Common extends Util
      *                            + DB_FETCHMODE_ASSOC | DB_FETCHMODE_FLIPPED
      *
      * @return array  the nested array.  A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getAll($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
@@ -1560,6 +1587,8 @@ abstract class Common extends Util
      *
      * @return int|Error   DB_OK on success. A Pineapple\DB\Error object if
      *                     the driver doesn't support auto-committing transactions.
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function autoCommit($onoff = false)
     {
@@ -1637,6 +1666,8 @@ abstract class Common extends Util
      * @return Error  the Pineapple\Error object
      *
      * @see Pineapple\Error
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function raiseError(
         $code = DB::DB_ERROR,
@@ -1701,6 +1732,8 @@ abstract class Common extends Util
      *                  submitted.  FALSE if the error code is unknown.
      *
      * @see DB::errorMessage()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function errorMessage($dbcode)
     {
