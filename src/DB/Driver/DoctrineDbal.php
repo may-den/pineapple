@@ -552,24 +552,26 @@ class DoctrineDbal extends Common implements DriverInterface
              * n.b. Retained for compatibility, but this is untestable with sqlite
              */
             // @codeCoverageIgnoreStart
-            $tableHandle = $this->simpleQuery("SELECT * FROM $result LIMIT 0");
+            $tableHandle = new StatementContainer($this->simpleQuery("SELECT * FROM $result LIMIT 0"));
             // @codeCoverageIgnoreEnd
         } elseif (is_object($result) && isset($result->result)) {
             /**
              * Probably received a result object.
              * Extract the result resource identifier.
              */
-            $tableHandle = self::getStatement($result->result);
+            $tableHandle = $result->result;
         } else {
             return $this->myRaiseError();
         }
 
-        if (!is_object($tableHandle) || !($tableHandle instanceof DBALStatement)) {
+        if (!is_object($tableHandle) || !($tableHandle instanceof StatementContainer)) {
             // not easy to test without triggering a very difficult error
             // @codeCoverageIgnoreStart
             return $this->myRaiseError(DB::DB_ERROR_NEED_MORE_DATA);
             // @codeCoverageIgnoreEnd
         }
+
+        $tableHandle = self::getStatement($tableHandle);
 
         if ($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) {
             $caseFunc = 'strtolower';
