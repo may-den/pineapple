@@ -1023,6 +1023,7 @@ abstract class Common extends Util
      * @see Common::prepare()
      *
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function freePrepared($stmt, $freeResource = true)
     {
@@ -1071,6 +1072,8 @@ abstract class Common extends Util
      * @return string  the query string with LIMIT clauses added
      *
      * @access protected
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function modifyLimitQuery($query, $from, $count, $params = [])
     {
@@ -1589,6 +1592,7 @@ abstract class Common extends Util
      *                     the driver doesn't support auto-committing transactions.
      *
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function autoCommit($onoff = false)
     {
@@ -1621,6 +1625,8 @@ abstract class Common extends Util
      * @param resource $result  the query result idenifier produced by PHP
      *
      * @return int|Error  the number of rows.  A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function numRows(StatementContainer $result)
     {
@@ -1668,6 +1674,7 @@ abstract class Common extends Util
      * @see Pineapple\Error
      *
      * @SuppressWarnings(PHPMD.StaticAccess)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function raiseError(
         $code = DB::DB_ERROR,
@@ -1859,6 +1866,8 @@ abstract class Common extends Util
      *                      A Pineapple\DB\Error object on failure.
      *
      * @see Common::setOption()
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function tableInfo($result, $mode = null)
     {
