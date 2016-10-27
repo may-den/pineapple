@@ -5,31 +5,32 @@ use Pineapple\DB;
 use Pineapple\DB\Row;
 use Pineapple\DB\Result;
 use Pineapple\DB\Error;
-use Pineapple\DB\Driver\DoctrineDbal;
+use Pineapple\DB\Driver\PdoDriver;
 use Pineapple\Test\DB\Driver\TestDriver;
 use Pineapple\DB\Exception\StatementException;
 use Pineapple\DB\Exception\DriverException;
 
-use Doctrine\DBAL\DriverManager as DBALDriverManager;
-use Doctrine\DBAL\Configuration as DBALConfiguration;
-use Doctrine\DBAL\Connection as DBALConnection;
-use Doctrine\DBAL\Driver\Statement as DBALStatement;
+use PDO;
+use PDOStatement;
 
 use PHPUnit\Framework\TestCase;
 
-class DoctrineDbalTest extends TestCase
+class PdoDriverTest extends TestCase
 {
-    // @var DoctrineDbal
+    // @var PdoDriver Our Pineapple DB connection
     private $dbh = null;
-    private $dbalConn = null;
 
+    // @var PDO The PDO connection object
+    private $pdoConn = null;
+
+    // @var array
     private static $setupDb = [
         // general data testing
-        'CREATE TABLE dbaltest (a TEXT)',
-        'INSERT INTO dbaltest (a) VALUES (\'test1\')',
-        'INSERT INTO dbaltest (a) VALUES (\'test2\')',
-        'INSERT INTO dbaltest (a) VALUES (\'test3\')',
-        'INSERT INTO dbaltest (a) VALUES (\'trimming test    \')',
+        'CREATE TABLE pdotest (a TEXT UNIQUE)',
+        'INSERT INTO pdotest (a) VALUES (\'test1\')',
+        'INSERT INTO pdotest (a) VALUES (\'test2\')',
+        'INSERT INTO pdotest (a) VALUES (\'test3\')',
+        'INSERT INTO pdotest (a) VALUES (\'trimming test    \')',
 
         // testing key cases
         'CREATE TABLE keycasetest (MixedCaseColumn TEXT)',
@@ -46,44 +47,40 @@ class DoctrineDbalTest extends TestCase
     /**
      * @before
      */
-    public function setupDbalInstance()
+    public function setupPdoInstance()
     {
-        $this->dbh = DB::factory(DoctrineDbal::class);
-
-        $dbalConfig = new DBALConfiguration();
-        $this->dbalConn = DBALDriverManager::getConnection([
-            'url' => 'sqlite:///:memory:',
-        ], $dbalConfig);
+        $this->dbh = DB::factory(PdoDriver::class);
+        $this->pdoConn = new PDO('sqlite::memory:');
 
         foreach (self::$setupDb as $sql) {
-            $this->dbalConn->query($sql);
+            $this->pdoConn->query($sql);
         }
 
-        $this->dbh->setConnectionHandle($this->dbalConn);
+        $this->dbh->setConnectionHandle($this->pdoConn);
     }
 
     /**
      * @after
      */
-    public function teardownDbalInstance()
+    public function teardownPdoInstance()
     {
         unset($this->dbh);
-        unset($this->dbalConn);
+        unset($this->pdoConn);
     }
 
     public function testConstruct()
     {
-        $this->assertInstanceOf(DoctrineDbal::class, $this->dbh);
+        $this->assertInstanceOf(PdoDriver::class, $this->dbh);
     }
 
     public function testSetConnectionHandle()
     {
-        // use reflection to ensure the connection handle is a dbal instance
+        // use reflection to ensure the connection handle is a pdo instance
         $reflectionClass = new \ReflectionClass($this->dbh);
         $reflectionProp = $reflectionClass->getProperty('connection');
         $reflectionProp->setAccessible(true);
 
-        $this->assertInstanceOf(DBALConnection::class, $reflectionProp->getValue($this->dbh));
+        $this->assertInstanceOf(PDO::class, $reflectionProp->getValue($this->dbh));
         $this->assertTrue($this->dbh->connected());
     }
 
@@ -95,7 +92,7 @@ class DoctrineDbalTest extends TestCase
 
     public function testSimpleQuery()
     {
-        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $sth = $this->dbh->simpleQuery('SELECT * FROM pdotest');
         $result = new Result($this->dbh, $sth);
         $this->assertEquals(['test1'], $result->fetchRow());
     }
@@ -103,21 +100,21 @@ class DoctrineDbalTest extends TestCase
     public function testSimpleQueryWithNoConnection()
     {
         $this->dbh->disconnect();
-        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $sth = $this->dbh->simpleQuery('SELECT * FROM pdotest');
         $this->assertInstanceOf(Error::class, $sth);
         $this->assertEquals(DB::DB_ERROR_NODBSELECTED, $sth->getCode());
     }
 
     public function testSimpleQueryWithInsert()
     {
-        $result = $this->dbh->simpleQuery('INSERT INTO dbaltest (a) VALUES (\'onyx\')');
+        $result = $this->dbh->simpleQuery('INSERT INTO pdotest (a) VALUES (\'onyx\')');
         $this->assertEquals(DB::DB_OK, $result);
     }
 
     public function testSimpleQueryWithInsertAndWithoutAutocommit()
     {
         $this->dbh->autoCommit(false);
-        $result = $this->dbh->simpleQuery('INSERT INTO dbaltest (a) VALUES (\'onyx\')');
+        $result = $this->dbh->simpleQuery('INSERT INTO pdotest (a) VALUES (\'onyx\')');
         $this->assertEquals(DB::DB_OK, $result);
     }
 
@@ -128,9 +125,32 @@ class DoctrineDbalTest extends TestCase
         $this->assertEquals(DB::DB_ERROR, $sth->getCode());
     }
 
+    public function testSimpleQueryWithSyntaxErrorExceptionMode()
+    {
+        $this->pdoConn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $sth = $this->dbh->simpleQuery('BLUMFRUB');
+        $this->assertInstanceOf(Error::class, $sth);
+        $this->assertEquals(DB::DB_ERROR, $sth->getCode());
+    }
+
+    public function testSimpleQueryWithExecuteTimeFailure()
+    {
+        $sth = $this->dbh->simpleQuery('INSERT INTO pdotest (a) VALUES (\'test1\')');
+        $this->assertInstanceOf(Error::class, $sth);
+        $this->assertEquals(DB::DB_ERROR, $sth->getCode());
+    }
+
+    public function testSimpleQueryWithExecuteTimeFailureExceptionMode()
+    {
+        $this->pdoConn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $sth = $this->dbh->simpleQuery('INSERT INTO pdotest (a) VALUES (\'test1\')');
+        $this->assertInstanceOf(Error::class, $sth);
+        $this->assertEquals(DB::DB_ERROR, $sth->getCode());
+    }
+
     public function testNextResult()
     {
-        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $sth = $this->dbh->simpleQuery('SELECT * FROM pdotest');
         // not all drivers support stacked queries. detecting which is a fine art.
         // in honesty, it's more trouble than it's worth in terms of this legacy library.
         $this->assertFalse($this->dbh->nextResult($sth));
@@ -138,7 +158,7 @@ class DoctrineDbalTest extends TestCase
 
     public function testFetchInto()
     {
-        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $sth = $this->dbh->simpleQuery('SELECT * FROM pdotest');
         $data = [];
         $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_DEFAULT);
 
@@ -159,7 +179,7 @@ class DoctrineDbalTest extends TestCase
 
     public function testFetchIntoAssocMode()
     {
-        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $sth = $this->dbh->simpleQuery('SELECT * FROM pdotest');
         $data = [];
         $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_ASSOC);
 
@@ -172,8 +192,8 @@ class DoctrineDbalTest extends TestCase
     public function testFetchIntoAssocModeWithNoData()
     {
         // query and get a raw statement from the driver
-        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest LIMIT 1');
-        $this->assertInstanceOf(DBALStatement::class, $sth->getStatement());
+        $sth = $this->dbh->simpleQuery('SELECT * FROM pdotest LIMIT 1');
+        $this->assertInstanceOf(PDOStatement::class, $sth->getStatement());
 
         // first fetch should give us a valid row
         $data = [];
@@ -203,7 +223,7 @@ class DoctrineDbalTest extends TestCase
     public function testFetchIntoWithTrimming()
     {
         $this->dbh->setOption('portability', DB::DB_PORTABILITY_RTRIM);
-        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest WHERE a LIKE \'trimming%\'');
+        $sth = $this->dbh->simpleQuery('SELECT * FROM pdotest WHERE a LIKE \'trimming%\'');
         $data = [];
         $result = $this->dbh->fetchInto($sth, $data, DB::DB_FETCHMODE_DEFAULT);
 
@@ -235,9 +255,9 @@ class DoctrineDbalTest extends TestCase
 
     public function testFreeResult()
     {
-        $sth = $this->dbh->simpleQuery('SELECT * FROM dbaltest');
+        $sth = $this->dbh->simpleQuery('SELECT * FROM pdotest');
 
-        $this->assertInstanceOf(DBALStatement::class, $sth->getStatement());
+        $this->assertInstanceOf(PDOStatement::class, $sth->getStatement());
         $this->assertTrue($this->dbh->freeResult($sth));
         $this->expectException(StatementException::class);
         $this->expectExceptionCode(StatementException::NO_STATEMENT);
@@ -252,7 +272,7 @@ class DoctrineDbalTest extends TestCase
 
     public function testNumColsWithNoColumns()
     {
-        $sth = $this->dbh->simpleQuery('REINDEX dbaltest');
+        $sth = $this->dbh->simpleQuery('REINDEX pdotest');
         $this->assertInstanceOf(Error::class, $this->dbh->numCols($sth));
     }
 
@@ -347,14 +367,9 @@ class DoctrineDbalTest extends TestCase
     public function testAffectedRowsWithNoLastStatement()
     {
         // use our own connection so we don't have rowCount from test fixture setup
-        $myDbh = DB::factory(DoctrineDbal::class);
-
-        $dbalConfig = new DBALConfiguration();
-        $myDbalConn = DBALDriverManager::getConnection([
-            'url' => 'sqlite:///:memory:',
-        ], $dbalConfig);
-
-        $myDbh->setConnectionHandle($myDbalConn);
+        $myDbh = DB::factory(PdoDriver::class);
+        $myPdoConn = new PDO('sqlite::memory:');
+        $myDbh->setConnectionHandle($myPdoConn);
 
         $result = $myDbh->affectedRows();
 
@@ -364,7 +379,7 @@ class DoctrineDbalTest extends TestCase
 
     public function testAffectedRowsOnNonManipulativeQuery()
     {
-        $this->dbh->query('SELECT * FROM dbaltest');
+        $this->dbh->query('SELECT * FROM pdotest');
         $this->assertEquals(0, $this->dbh->affectedRows());
     }
 
@@ -399,7 +414,7 @@ class DoctrineDbalTest extends TestCase
     public function testModifyLimitQuery()
     {
         $result = $this->dbh->limitQuery(
-            'SELECT a FROM dbaltest',
+            'SELECT a FROM pdotest',
             1,
             1
         );
@@ -418,7 +433,7 @@ class DoctrineDbalTest extends TestCase
 
     public function testTableInfo()
     {
-        $result = $this->dbh->query('SELECT * FROM dbaltest');
+        $result = $this->dbh->query('SELECT * FROM pdotest');
         $tableInfo = $this->dbh->tableInfo($result);
 
         $this->assertEquals(1, count($tableInfo));
@@ -426,7 +441,7 @@ class DoctrineDbalTest extends TestCase
         unset($tableInfo[0]['len']);
         $this->assertEquals([
             [
-                'table' => 'dbaltest',
+                'table' => 'pdotest',
                 'name' => 'a',
                 'type' => 'string',
                 'flags' => [],
@@ -437,7 +452,7 @@ class DoctrineDbalTest extends TestCase
     public function testTableInfoWithStringOnDisconnectedConnection()
     {
         $this->dbh->disconnect();
-        $tableInfo = $this->dbh->tableInfo('dbaltest');
+        $tableInfo = $this->dbh->tableInfo('pdotest');
 
         $this->assertInstanceOf(Error::class, $tableInfo);
     }
@@ -472,7 +487,7 @@ class DoctrineDbalTest extends TestCase
 
     public function testTableInfoWithModeOrder()
     {
-        $result = $this->dbh->query('SELECT * FROM dbaltest');
+        $result = $this->dbh->query('SELECT * FROM pdotest');
         $tableInfo = $this->dbh->tableInfo($result, DB::DB_TABLEINFO_ORDER);
 
         $this->assertEquals(3, count($tableInfo));
@@ -480,7 +495,7 @@ class DoctrineDbalTest extends TestCase
         unset($tableInfo[0]['len']);
         $this->assertEquals([
             [
-                'table' => 'dbaltest',
+                'table' => 'pdotest',
                 'name' => 'a',
                 'type' => 'string',
                 'flags' => [],
@@ -492,7 +507,7 @@ class DoctrineDbalTest extends TestCase
 
     public function testTableInfoWithModeOrderTable()
     {
-        $result = $this->dbh->query('SELECT * FROM dbaltest');
+        $result = $this->dbh->query('SELECT * FROM pdotest');
         $tableInfo = $this->dbh->tableInfo($result, DB::DB_TABLEINFO_ORDERTABLE);
 
         $this->assertEquals(3, count($tableInfo));
@@ -500,14 +515,14 @@ class DoctrineDbalTest extends TestCase
         unset($tableInfo[0]['len']);
         $this->assertEquals([
             [
-                'table' => 'dbaltest',
+                'table' => 'pdotest',
                 'name' => 'a',
                 'type' => 'string',
                 'flags' => [],
             ],
             'num_fields' => 1,
             'ordertable' => [
-                'dbaltest' => [
+                'pdotest' => [
                     'a' => 0,
                 ],
             ],

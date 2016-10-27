@@ -7,7 +7,11 @@
         "PHP-3.0"
     ],
     "require": {
-        "doctrine/dbal": "^2.5"
+        "php": ">=5.4",
+        "ext-pdo": "*"
+    },
+    "suggest": {
+        "doctrine/dbal": "DoctrineDbal driver requires Doctrine DBAL to be installed"
     },
     "scripts": {
         "test": "phpunit --coverage-html='coverage/' --coverage-text='php://stdout' --colors=auto test/"
@@ -24,6 +28,7 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^5.4",
-        "diablomedia/phpunit-pretty-printer": "^1.0"
+        "diablomedia/phpunit-pretty-printer": "^1.0",
+        "ext-pdo_sqlite": "*"
     }
 }

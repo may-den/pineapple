@@ -3,25 +3,19 @@ namespace Pineapple\DB\Driver;
 
 use Pineapple\DB;
 use Pineapple\DB\Error;
-use Pineapple\DB\Driver\DriverInterface;
 use Pineapple\DB\StatementContainer;
-use Pineapple\DB\Exception\DriverException as PineappleDriverException;
+use Pineapple\DB\Exception\DriverException;
 use Pineapple\DB\Driver\Components\AnsiSqlErrorCodes;
 use Pineapple\DB\Driver\Components\PdoCommonMethods;
 
-use Doctrine\DBAL\Connection as DBALConnection;
-use Doctrine\DBAL\Driver\Statement as DBALStatement;
-use Doctrine\DBAL\Exception\DriverException as DBALDriverException;
-use Doctrine\DBAL\ConnectionException as DBALConnectionException;
-
 use PDO;
+use PDOStatement;
 use PDOException;
 
 /**
- * A PEAR DB driver that uses Doctrine's DBAL as an underlying database
- * layer.
+ * A PEAR DB driver that uses PDO as an underlying database layer.
  */
-class DoctrineDbal extends Common implements DriverInterface
+class PdoDriver extends Common implements DriverInterface
 {
     use AnsiSqlErrorCodes;
     use PdoCommonMethods;
@@ -43,7 +37,7 @@ class DoctrineDbal extends Common implements DriverInterface
         'transactions' => true,
     ];
 
-    // @var DBALConnection Our Doctrine DBAL connection
+    // @var PDO Our PDO connection
     protected $connection = null;
 
     /**
@@ -68,12 +62,12 @@ class DoctrineDbal extends Common implements DriverInterface
     private $transactionOpcount = 0;
 
     /**
-     * Set the DBAL connection handle in the object
+     * Set the PDO connection handle in the object
      *
-     * @param DBALConnection   $connection A constructed DBAL connection handle
-     * @return DoctrineDbal    The constructed Pineapple\DB\Driver\DoctrineDbal object
+     * @param PDO        $connection A constructed PDO connection handle
+     * @return PdoDriver             The constructed Pineapple\DB\Driver\PdoDriver object
      */
-    public function setConnectionHandle(DBALConnection $connection)
+    public function setConnectionHandle(PDO $connection)
     {
         $this->connection = $connection;
 
@@ -95,36 +89,77 @@ class DoctrineDbal extends Common implements DriverInterface
         $this->lastQuery = $query;
         $query = $this->modifyQuery($query);
 
+        // query driver options, none by default
+        $queryDriverOptions = [];
+
         if (!$this->connected()) {
             return $this->myRaiseError(DB::DB_ERROR_NODBSELECTED);
         }
 
         if (!$this->autocommit && $ismanip) {
-            if ($this->transactionOpcount == 0) {
-                // dbal doesn't return a status for begin transaction. pdo does. still, exceptions.
+            if ($this->transactionOpcount === 0) {
                 try {
-                    $this->connection->beginTransaction();
+                    $return = $this->connection->beginTransaction();
                     // sqlite supports transactions so this can't be tested right now
                     // @codeCoverageIgnoreStart
                 } catch (PDOException $transactionException) {
                     return $this->raiseError(DB::DB_ERROR, null, null, $transactionException->getMessage());
                     // @codeCoverageIgnoreEnd
                 }
+
+                if ($return === false) {
+                    // sqlite supports transactions so this can't be tested right now
+                    // @codeCoverageIgnoreStart
+                    return $this->raiseError(
+                        DB::ERROR,
+                        null,
+                        null,
+                        self::formatErrorInfo($this->connection->errorInfo())
+                    );
+                    // @codeCoverageIgnoreEnd
+                }
             }
             $this->transactionOpcount++;
         }
 
-        // @todo this needs setting on the prepare() driver options, which doctrine doesn't support
+        // enable/disable result_buffering in mysql
         // @codeCoverageIgnoreStart
+        // @todo test this *thoroughly*
         if (($this->getPlatform() === 'mysql') && !$this->options['result_buffering']) {
-            return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
+            $queryDriverOptions[PDO::MYSQL_ATTR_USE_BUFFERED_QUERY] = false;
         }
         // @codeCoverageIgnoreEnd
 
+        // prepare the query for execution (we can only inject the unbuffered query parameter on prepared statements)
         try {
-            $statement = $this->connection->query($query);
-        } catch (DBALDriverException $exception) {
-            return $this->raiseError(DB::DB_ERROR, null, null, $exception->getMessage());
+            $statement = $this->connection->prepare($query);
+        } catch (PDOException $prepareException) {
+            return $this->raiseError(DB::DB_ERROR, null, null, $prepareException->getMessage());
+        }
+
+        if ($statement === false) {
+            return $this->raiseError(
+                DB::DB_ERROR,
+                null,
+                null,
+                self::formatErrorInfo($this->connection->errorInfo())
+            );
+        }
+
+        // execute the query
+        try {
+            $executeResult = $statement->execute();
+        } catch (PDOException $executeException) {
+            return $this->raiseError(DB::DB_ERROR, null, null, $executeException->getMessage());
+        }
+
+        if ($executeResult === false) {
+            return $this->raiseError(
+                DB::DB_ERROR,
+                null,
+                null,
+                self::formatErrorInfo($statement->errorInfo())
+            );
         }
 
         // keep this so we can perform rowCount and suchlike later
@@ -140,6 +175,22 @@ class DoctrineDbal extends Common implements DriverInterface
     }
 
     /**
+     * Format a PDO errorInfo block as a legible string
+     *
+     * @param array $errorInfo The output from PDO/PDOStatement::errorInfo
+     * @return string
+     */
+    private static function formatErrorInfo(array $errorInfo)
+    {
+        return sprintf(
+            'SQLSTATE[%d]: (Driver code %d) %s',
+            $errorInfo[0],
+            $errorInfo[1],
+            $errorInfo[2]
+        );
+    }
+
+    /**
      * Places a row from the result set into the given array
      *
      * Formating of the array and the data therein are configurable.
@@ -149,10 +200,10 @@ class DoctrineDbal extends Common implements DriverInterface
      * Pineapple\DB\Result::fetchInto() instead.  It can't be declared
      * "protected" because Pineapple\DB\Result is a separate object.
      *
-     * @param DBALStatement $result    the query result resource
-     * @param array         $arr       the referenced array to put the data in
-     * @param int           $fetchmode how the resulting array should be indexed
-     * @param int           $rownum    the row number to fetch (0 = first row)
+     * @param PDOStatement $result    the query result resource
+     * @param array        $arr       the referenced array to put the data in
+     * @param int          $fetchmode how the resulting array should be indexed
+     * @param int          $rownum    the row number to fetch (0 = first row)
      *
      * @return mixed              DB_OK on success, NULL when the end of a
      *                            result set is reached or on failure
@@ -172,7 +223,7 @@ class DoctrineDbal extends Common implements DriverInterface
                 // this exception handle was added as the php docs implied a potential exception, which i have thus
                 // far been unable to reproduce.
                 // @codeCoverageIgnoreStart
-            } catch (DriverException $fetchException) {
+            } catch (PDOException $fetchException) {
                 return $this->raiseError(DB::DB_ERROR, null, null, $fetchException->getMessage());
                 // @codeCoverageIgnoreEnd
             }
@@ -206,11 +257,23 @@ class DoctrineDbal extends Common implements DriverInterface
             }
 
             try {
-                $this->connection->commit();
-                // @todo honestly, i don't know how to generate a failed transaction commit
+                $commitResult = $this->connection->commit();
+                // @todo cannot easily generate a failed transaction commit, don't cover this
                 // @codeCoverageIgnoreStart
-            } catch (DBALConnectionException $e) {
-                return $this->myRaiseError();
+            } catch (PDOException $commitException) {
+                return $this->raiseError(DB::DB_ERROR, null, null, $commitException->getMessage());
+                // @codeCoverageIgnoreEnd
+            }
+
+            if ($commitResult === false) {
+                // @todo cannot easily generate a failed transaction commit, don't cover this
+                // @codeCoverageIgnoreStart
+                return $this->raiseError(
+                    DB::DB_ERROR,
+                    null,
+                    null,
+                    self::formatErrorInfo($this->connection->errorInfo())
+                );
                 // @codeCoverageIgnoreEnd
             }
 
@@ -233,11 +296,23 @@ class DoctrineDbal extends Common implements DriverInterface
             }
 
             try {
-                $this->connection->rollBack();
-                // @todo honestly, i don't know how to generate a failed tranascation rollback
+                $rollbackResult = $this->connection->rollBack();
+                // @todo cannot easily generate a failed transaction rollback, don't cover this
                 // @codeCoverageIgnoreStart
-            } catch (DBALConnectionException $e) {
-                return $this->myRaiseError();
+            } catch (PDOException $rollbackException) {
+                return $this->raiseError(DB::DB_ERROR, null, null, $rollbackException->getMessage());
+                // @codeCoverageIgnoreEnd
+            }
+
+            if ($rollbackResult === false) {
+                // @todo cannot easily generate a failed transaction rollback, don't cover this
+                // @codeCoverageIgnoreStart
+                return $this->raiseError(
+                    DB::DB_ERROR,
+                    null,
+                    null,
+                    self::formatErrorInfo($this->connection->errorInfo())
+                );
                 // @codeCoverageIgnoreEnd
             }
 
@@ -260,15 +335,12 @@ class DoctrineDbal extends Common implements DriverInterface
         }
 
         // we're not going to support everything
-        switch ($name = $this->connection->getDatabasePlatform()->getName()) {
+        switch ($name = $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME)) {
             case 'mysql':
+            case 'pgsql':
             case 'sqlite':
                 // verbatim name
                 return $name;
-                break;
-
-            case 'postgresql':
-                return 'pgsql'; // this shortened name is intentional
                 break;
 
             default:
@@ -286,11 +358,11 @@ class DoctrineDbal extends Common implements DriverInterface
      */
     protected static function getStatement(StatementContainer $result)
     {
-        if (is_a($result->getStatement(), DBALStatement::class)) {
+        if ($result->getStatementType() === ['type' => 'object', 'class' => PDOStatement::class]) {
             return $result->getStatement();
         }
-        throw new PineappleDriverException(
-            'Expected ' . StatementContainer::class . ' to contain \'' . DBALStatement::class .
+        throw new DriverException(
+            'Expected ' . StatementContainer::class . ' to contain \'' . PDOStatement::class .
                 '\', got ' . json_encode($result->getStatementType())
         );
     }

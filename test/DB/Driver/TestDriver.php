@@ -3,63 +3,31 @@ namespace Pineapple\Test\DB\Driver;
 
 use Pineapple\Util;
 use Pineapple\DB;
+use Pineapple\DB\Driver\DriverInterface;
 use Pineapple\DB\Driver\Common;
+use Pineapple\DB\Driver\Components\AnsiSqlErrorCodes;
+use Pineapple\DB\StatementContainer;
 
 /**
  * A null 'test' driver for Pineapple. This serves two purposes: one to act as a scaffold to test scope refactoring,
  * and to provide a test facility for higher levels of abstraction.
  */
-class TestDriver extends Common
+class TestDriver extends Common implements DriverInterface
 {
+    use AnsiSqlErrorCodes;
+
     private $lastResult = null;
     private $hasFreed = false;
 
-    var $phptype = 'test';
-    var $dbsyntax = 'test';
-    var $features = [
+    protected $features = [
         'limit' => 'alter',
-        'new_link' => false,
         'numrows' => true,
-        'pconnect' => false,
         'prepare' => false,
-        'ssl' => true,
         'transactions' => true,
-    ];
-
-    var $errorcode_map = [
-        1000 => DB::DB_OK,
-        1001 => DB::DB_ERROR,
-        1002 => DB::DB_ERROR_ACCESS_VIOLATION,
-        1003 => DB::DB_ERROR_ALREADY_EXISTS,
-        1004 => DB::DB_ERROR_CANNOT_CREATE,
-        1005 => DB::DB_ERROR_CANNOT_DROP,
-        1006 => DB::DB_ERROR_CONNECT_FAILED,
-        1007 => DB::DB_ERROR_CONSTRAINT,
-        1008 => DB::DB_ERROR_CONSTRAINT_NOT_NULL,
-        1009 => DB::DB_ERROR_DIVZERO,
-        1010 => DB::DB_ERROR_EXTENSION_NOT_FOUND,
-        1011 => DB::DB_ERROR_INVALID,
-        1012 => DB::DB_ERROR_INVALID_DATE,
-        1013 => DB::DB_ERROR_INVALID_DSN,
-        1014 => DB::DB_ERROR_INVALID_NUMBER,
-        1015 => DB::DB_ERROR_MISMATCH,
-        1016 => DB::DB_ERROR_NEED_MORE_DATA,
-        1017 => DB::DB_ERROR_NODBSELECTED,
-        1018 => DB::DB_ERROR_NOSUCHDB,
-        1019 => DB::DB_ERROR_NOSUCHFIELD,
-        1020 => DB::DB_ERROR_NOSUCHTABLE,
-        1021 => DB::DB_ERROR_NOT_CAPABLE,
-        1022 => DB::DB_ERROR_NOT_FOUND,
-        1023 => DB::DB_ERROR_NOT_LOCKED,
-        1024 => DB::DB_ERROR_SYNTAX,
-        1025 => DB::DB_ERROR_UNSUPPORTED,
-        1026 => DB::DB_ERROR_TRUNCATED,
-        1027 => DB::DB_ERROR_VALUE_COUNT_ON_ROW,
     ];
 
     private $lastQueryType = null;
     private $sequenceCounter = 1000;
-    protected $dsn = null;
     protected $connection = false;
     protected $autocommit = false;
 
@@ -73,15 +41,9 @@ class TestDriver extends Common
         $this->features['prepare'] = $flag ? true : false;
     }
 
-    public function connect($dsn, $persistent = false)
+    public function stubConnect()
     {
-        $this->dsn = $dsn;
-        $debug = $this->getOption('debug');
-        if (!Util::isError($debug) && ($debug === 'please fail')) {
-            return $this->myRaiseError();
-        }
         $this->connection = true;
-        return DB::DB_OK;
     }
 
     public function disconnect()
@@ -129,7 +91,7 @@ class TestDriver extends Common
                     'data' => 'test' . $i,
                 ];
             }
-            return $results;
+            return new StatementContainer($results);
         } elseif (preg_match('/^(BREAKING)?SINGLECOLSEL/', $query)) {
             $this->lastQueryType = 'SELECT';
             $results = [
@@ -144,13 +106,13 @@ class TestDriver extends Common
                     'id' => $i,
                 ];
             }
-            return $results;
+            return new StatementContainer($results);
         } elseif (preg_match('/^EMPTYSEL/', $query)) {
-            return [
+            return new StatementContainer([
                 'type' => 'resultResource',
                 'breaksEasily' => false,
                 'results' => [],
-            ];
+            ]);
         } elseif (preg_match('/^INSERT/', $query)) {
             // this may not be correct
             $this->lastQueryType = 'INSERT';
@@ -160,13 +122,15 @@ class TestDriver extends Common
         }
     }
 
-    public function nextResult($result)
+    public function nextResult(StatementContainer $result)
     {
         return false;
     }
 
-    public function fetchInto($result, &$arr, $fetchmode, $rownum = null)
+    public function fetchInto(StatementContainer $result, &$arr, $fetchmode, $rownum = null)
     {
+        $result = self::getStatement($result);
+
         if ($this->lastResult !== $result) {
             $this->lastResult = $result;
         }
@@ -211,13 +175,15 @@ class TestDriver extends Common
         return $this->hasFreed;
     }
 
-    public function freeResult($result)
+    public function freeResult(StatementContainer &$result)
     {
+        $result = self::getStatement($result);
+
         if (!isset($result['type']) || ($result['type'] !== 'resultResource')) {
             return false;
         }
 
-        if (isset($result['feignFailure']) && ($result['feignFailure'] === true)) {
+        if (isset($result['breaksEasily']) && ($result['breaksEasily'] === true)) {
             return $this->myRaiseError();
         }
 
@@ -225,8 +191,10 @@ class TestDriver extends Common
         return true;
     }
 
-    public function numCols($result)
+    public function numCols(StatementContainer $result)
     {
+        $result = self::getStatement($result);
+
         if (!isset($result['type']) || ($result['type'] != 'resultResource')) {
             return $this->myRaiseError();
         }
@@ -239,8 +207,10 @@ class TestDriver extends Common
         return 0;
     }
 
-    public function numRows($result)
+    public function numRows(StatementContainer $result)
     {
+        $result = self::getStatement($result);
+
         if (!isset($result['type']) || ($result['type'] != 'resultResource')) {
             return $this->myRaiseError();
         }
@@ -248,7 +218,7 @@ class TestDriver extends Common
         return count($result['results']);
     }
 
-    public function stubNumRows($result)
+    public function stubNumRows(StatementContainer $result)
     {
         // call the _parent_ numRows because we overrode it above
         return parent::numRows($result);
@@ -267,6 +237,8 @@ class TestDriver extends Common
 
     public function tableInfo($result, $mode = null)
     {
+        $result = self::getStatement($result);
+
         if ($result === null) {
             return $this->myRaiseError();
         }
@@ -289,7 +261,7 @@ class TestDriver extends Common
         ];
     }
 
-    public function stubTableInfo($result, $mode = null)
+    public function stubTableInfo(StatementContainer $result, $mode = null)
     {
         return parent::tableInfo($result, $mode);
     }
@@ -301,17 +273,17 @@ class TestDriver extends Common
 
     public function stubCheckManip($query)
     {
-        return parent::_checkManip($query);
+        return parent::checkManip($query);
     }
 
     public function stubRtrimArrayValues(&$array)
     {
-        return $this->_rtrimArrayValues($array);
+        return $this->rtrimArrayValues($array);
     }
 
     public function stubConvertNullArrayValuesToEmpty(&$array)
     {
-        return $this->_convertNullArrayValuesToEmpty($array);
+        return $this->convertNullArrayValuesToEmpty($array);
     }
 
     public function buildDetokenisedQuery($stmt, $data = [])
@@ -346,23 +318,14 @@ class TestDriver extends Common
         return parent::modifyLimitQuery($query, $from, $count, $params);
     }
 
-    protected function getSpecialQuery($type)
+    private static function getStatement(StatementContainer $result)
     {
-        switch ($type) {
-            case 'returnnull':
-                return null;
-                break;
-
-            case 'thing':
-                return ['thing', 'stuff'];
-                break;
-
-            case 'query':
-                return 'SELECT foo FROM bar';
-                break;
-
-            default:
-                return $this->raiseError(DB::DB_ERROR_DIVZERO);
+        if ($result->getStatementType() === ['type' => 'array']) {
+            return $result->getStatement();
         }
+        throw new DriverException(
+            'Excepted ' . StatementContainer::class . ' to contain \'array\', got ' .
+                json_encode($result->getStatementType())
+        );
     }
 }

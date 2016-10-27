@@ -20,7 +20,7 @@ namespace Pineapple;
  */
 class Error
 {
-    public $error_message_prefix = '';
+    private $errorMessagePrefix = '';
     private $mode = Util::PEAR_ERROR_RETURN;
     private $level = E_USER_NOTICE;
     private $code = -1;
@@ -111,8 +111,7 @@ class Error
                 'PEAR_ERROR_EXCEPTION is obsolete, use class Pineapple\Exception for exceptions',
                 E_USER_WARNING
             );
-            $e = new Exception($this->message, $this->code);
-            throw($e);
+            throw new Exception($this->message, $this->code);
         }
     }
 
@@ -146,7 +145,7 @@ class Error
      */
     public function getMessage()
     {
-        return $this->error_message_prefix . $this->message;
+        return $this->errorMessagePrefix . $this->message;
     }
 
     /**
@@ -253,7 +252,7 @@ class Error
                 $this->message,
                 $this->code,
                 $callback,
-                $this->error_message_prefix,
+                $this->errorMessagePrefix,
                 $this->userInfo
             );
         }
@@ -279,7 +278,7 @@ class Error
             $this->code,
             implode('|', $modes),
             $levels[$this->level],
-            $this->error_message_prefix,
+            $this->errorMessagePrefix,
             $this->userInfo
         );
     }

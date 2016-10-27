@@ -2,6 +2,10 @@
 namespace Pineapple\DB;
 
 use Pineapple\DB;
+use Pineapple\DB\Driver\DriverInterface;
+use Pineapple\DB\StatementContainer;
+
+use stdClass;
 
 /**
  * This class implements a wrapper for a DB result set
@@ -52,13 +56,13 @@ class Result
      * The number of rows to fetch from a limit query
      * @var integer
      */
-    public $limit_count = null;
+    public $limitCount = null;
 
     /**
      * The row to start fetching from in limit queries
      * @var integer
      */
-    public $limit_from = null;
+    public $limitFrom = null;
 
     /**
      * The execute parameters that created this result
@@ -87,7 +91,7 @@ class Result
      * The present row being dealt with
      * @var integer
      */
-    public $row_counter = null;
+    public $rowCounter = null;
 
     /**
      * The prepared statement resource id created by PHP in $dbh
@@ -109,13 +113,13 @@ class Result
     /**
      * This constructor sets the object's properties
      *
-     * @param object   &$dbh     the DB object reference
-     * @param resource $result   the result resource id
-     * @param array    $options  an associative array with result options
+     * @param DriverInterface $dbh      the DB object
+     * @param resource        $result   the result resource id
+     * @param array           $options  an associative array with result options
      *
      * @return void
      */
-    public function __construct($dbh, $result, $options = array())
+    public function __construct(DriverInterface $dbh, StatementContainer $result, array $options = [])
     {
         $this->autofree = $dbh->getOption('autofree');
         $this->dbh = $dbh;
@@ -142,10 +146,10 @@ class Result
     {
         switch ($key) {
             case 'limit_from':
-                $this->limit_from = $value;
+                $this->limitFrom = $value;
                 break;
             case 'limit_count':
-                $this->limit_count = $value;
+                $this->limitCount = $value;
         }
     }
 
@@ -183,13 +187,13 @@ class Result
         }
         if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
-            $object_class = $this->fetchModeObjectClass;
+            $objectClass = $this->fetchModeObjectClass;
         }
-        if (is_null($rownum) && $this->limit_from !== null) {
-            if ($this->row_counter === null) {
-                $this->row_counter = $this->limit_from;
+        if (is_null($rownum) && $this->limitFrom !== null) {
+            if ($this->rowCounter === null) {
+                $this->rowCounter = $this->limitFrom;
             }
-            if ($this->row_counter >= ($this->limit_from + $this->limit_count)) {
+            if ($this->rowCounter >= ($this->limitFrom + $this->limitCount)) {
                 if ($this->autofree) {
                     $this->free();
                 }
@@ -197,18 +201,18 @@ class Result
                 return $tmp;
             }
 
-            $this->row_counter++;
+            $this->rowCounter++;
         }
         $arr = [];
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
         if ($res === DB::DB_OK) {
-            if (isset($object_class)) {
+            if (isset($objectClass)) {
                 // The default mode is specified in the
                 // DB\Common::fetchModeObjectClass property
-                if ($object_class == 'stdClass') {
+                if ($objectClass == stdClass::class) {
                     $arr = (object) $arr;
                 } else {
-                    $arr = new $object_class($arr);
+                    $arr = new $objectClass($arr);
                 }
             }
             return $arr;
@@ -253,30 +257,30 @@ class Result
         }
         if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
-            $object_class = $this->fetchModeObjectClass;
+            $objectClass = $this->fetchModeObjectClass;
         }
-        if (is_null($rownum) && $this->limit_from !== null) {
-            if ($this->row_counter === null) {
-                $this->row_counter = $this->limit_from;
+        if (is_null($rownum) && $this->limitFrom !== null) {
+            if ($this->rowCounter === null) {
+                $this->rowCounter = $this->limitFrom;
             }
-            if ($this->row_counter >= ($this->limit_from + $this->limit_count)) {
+            if ($this->rowCounter >= ($this->limitFrom + $this->limitCount)) {
                 if ($this->autofree) {
                     $this->free();
                 }
                 return null;
             }
 
-            $this->row_counter++;
+            $this->rowCounter++;
         }
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
         if ($res === DB::DB_OK) {
-            if (isset($object_class)) {
+            if (isset($objectClass)) {
                 // default mode specified in the
                 // DB\Common::fetchModeObjectClass property
-                if ($object_class == 'stdClass') {
+                if ($objectClass == stdClass::class) {
                     $arr = (object) $arr;
                 } else {
-                    $arr = new $object_class($arr);
+                    $arr = new $objectClass($arr);
                 }
             }
             return DB::DB_OK;
@@ -305,7 +309,7 @@ class Result
     public function numRows()
     {
         if ($this->dbh->getOption('portability') & DB::DB_PORTABILITY_NUMROWS) {
-            if ($this->dbh->features['prepare']) {
+            if ($this->dbh->getFeature('prepare')) {
                 $res = $this->dbh->query($this->query, $this->parameters);
             } else {
                 $res = $this->dbh->query($this->query);
@@ -361,7 +365,7 @@ class Result
         if (is_string($mode)) {
             return $this->dbh->raiseError(DB::DB_ERROR_NEED_MORE_DATA);
         }
-        return $this->dbh->tableInfo($this, $mode);
+        return $this->dbh->tableInfo($this->result, $mode);
     }
 
     /**
@@ -383,6 +387,6 @@ class Result
      */
     public function getRowCounter()
     {
-        return $this->row_counter;
+        return $this->rowCounter;
     }
 }

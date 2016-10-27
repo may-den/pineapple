@@ -12,7 +12,7 @@ class ResultTest extends TestCase
 {
     public function testConstruct()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $this->assertInstanceOf(Result::class, $result);
@@ -20,7 +20,7 @@ class ResultTest extends TestCase
 
     public function testConstructWithOptions()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth, [
             'limit_from' => 10,
@@ -30,7 +30,7 @@ class ResultTest extends TestCase
 
         // ugly, but it's this or add methods to result which won't be used
         $reflectionClass = new \ReflectionClass($result);
-        $reflectionProp = $reflectionClass->getProperty('limit_from');
+        $reflectionProp = $reflectionClass->getProperty('limitFrom');
         $reflectionProp->setAccessible(true);
 
         $this->assertEquals(10, $reflectionProp->getValue($result));
@@ -38,14 +38,14 @@ class ResultTest extends TestCase
 
     public function testSetOption()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $result->setOption('limit_from', 12345);
 
         // ugly, but it's this or add methods to result which won't be used
         $reflectionClass = new \ReflectionClass($result);
-        $reflectionProp = $reflectionClass->getProperty('limit_from');
+        $reflectionProp = $reflectionClass->getProperty('limitFrom');
         $reflectionProp->setAccessible(true);
 
         $this->assertEquals(12345, $reflectionProp->getValue($result));
@@ -53,7 +53,7 @@ class ResultTest extends TestCase
 
     public function testFetchRow()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
 
@@ -63,7 +63,7 @@ class ResultTest extends TestCase
 
     public function testFetchRowByAssoc()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
 
@@ -76,7 +76,7 @@ class ResultTest extends TestCase
 
     public function testFetchRowByObject()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $expected = new \stdClass();
@@ -89,7 +89,7 @@ class ResultTest extends TestCase
 
     public function testFetchRowByRowObject()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $dbh->setFetchMode(DB::DB_FETCHMODE_OBJECT, Row::class);
 
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
@@ -107,7 +107,7 @@ class ResultTest extends TestCase
 
     public function testFetchRowWithLimit()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         // i am 99% sure this is a bug in Result, that if from is specified without count,
         // then the result is null. not fixing as it's probably been there for ~10 years,
@@ -124,7 +124,7 @@ class ResultTest extends TestCase
 
     public function testFetchRowWithLimitBeyondAvailableResults()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
 
         $result = new Result($dbh, $sth, [
@@ -143,7 +143,7 @@ class ResultTest extends TestCase
 
     public function testFetchRowAutofreeWithLimit()
     {
-        $dbh = DB::connect(TestDriver::class . '://', ['autofree' => true]);
+        $dbh = DB::factory(TestDriver::class, ['autofree' => true]);
         $dbh->resetFreeFlag();
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         // i am 99% sure this is a bug in Result, that if from is specified without count,
@@ -166,7 +166,7 @@ class ResultTest extends TestCase
 
     public function testFetchRowAutofreeWithoutLimit()
     {
-        $dbh = DB::connect(TestDriver::class . '://', ['autofree' => true]);
+        $dbh = DB::factory(TestDriver::class, ['autofree' => true]);
         $dbh->resetFreeFlag();
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         // i am 99% sure this is a bug in Result, that if from is specified without count,
@@ -188,7 +188,7 @@ class ResultTest extends TestCase
 
     public function testFetchInto()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
 
@@ -199,7 +199,7 @@ class ResultTest extends TestCase
 
     public function testFetchIntoByAssoc()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
 
@@ -213,7 +213,7 @@ class ResultTest extends TestCase
 
     public function testFetchIntoByObject()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $expected = new \stdClass();
@@ -227,7 +227,7 @@ class ResultTest extends TestCase
 
     public function testFetchIntoByRowObject()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $dbh->setFetchMode(DB::DB_FETCHMODE_OBJECT, Row::class);
 
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
@@ -246,7 +246,7 @@ class ResultTest extends TestCase
 
     public function testFetchIntoWithLimit()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         // i am 99% sure this is a bug in Result, that if from is specified without count,
         // then the result is null. not fixing as it's probably been there for ~10 years,
@@ -264,7 +264,7 @@ class ResultTest extends TestCase
 
     public function testFetchIntoWithLimitBeyondAvailableResults()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
 
         $result = new Result($dbh, $sth, [
@@ -284,7 +284,7 @@ class ResultTest extends TestCase
 
     public function testFetchIntoAutofreeWithLimit()
     {
-        $dbh = DB::connect(TestDriver::class . '://', ['autofree' => true]);
+        $dbh = DB::factory(TestDriver::class, ['autofree' => true]);
         $dbh->resetFreeFlag();
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         // i am 99% sure this is a bug in Result, that if from is specified without count,
@@ -309,7 +309,7 @@ class ResultTest extends TestCase
 
     public function testFetchIntoAutofreeWithoutLimit()
     {
-        $dbh = DB::connect(TestDriver::class . '://', ['autofree' => true]);
+        $dbh = DB::factory(TestDriver::class, ['autofree' => true]);
         $dbh->resetFreeFlag();
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         // i am 99% sure this is a bug in Result, that if from is specified without count,
@@ -332,7 +332,7 @@ class ResultTest extends TestCase
 
     public function testNumCols()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $this->assertEquals(2, $result->numCols());
@@ -340,7 +340,7 @@ class ResultTest extends TestCase
 
     public function testNumRows()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $this->assertEquals(20, $result->numRows());
@@ -350,7 +350,7 @@ class ResultTest extends TestCase
     {
         // tempted to rip out numRows' 'portability' facility entirely.
         // really, it should be avoided if at all possible. i hope it is never used.
-        $dbh = DB::connect(TestDriver::class . '://', ['portability' => DB::DB_PORTABILITY_NUMROWS]);
+        $dbh = DB::factory(TestDriver::class, ['portability' => DB::DB_PORTABILITY_NUMROWS]);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
 
@@ -359,8 +359,7 @@ class ResultTest extends TestCase
 
     public function testNumRowsWithPortabilityAndPreparedStatements()
     {
-        // $this->markTestIncomplete('this test is broken due to storing expanded query after variable sub');
-        $dbh = DB::connect(TestDriver::class . '://', ['portability' => DB::DB_PORTABILITY_NUMROWS]);
+        $dbh = DB::factory(TestDriver::class, ['portability' => DB::DB_PORTABILITY_NUMROWS]);
         // "enable" prepared queries
         $dbh->setPrepareFeature(true);
         $sth = $dbh->prepare('SELECT things FROM a_table WHERE foo = ?');
@@ -375,7 +374,7 @@ class ResultTest extends TestCase
 
     public function testNumRowsWithPortabilityQueryFailure()
     {
-        $dbh = DB::connect(TestDriver::class . '://', ['portability' => DB::DB_PORTABILITY_NUMROWS]);
+        $dbh = DB::factory(TestDriver::class, ['portability' => DB::DB_PORTABILITY_NUMROWS]);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $dbh->simpleQuery('BREAK DELIBERATELY');
         $result = new Result($dbh, $sth);
@@ -386,7 +385,7 @@ class ResultTest extends TestCase
     {
         // this tests the next query in sequence for stacked queries.
         // testdriver does not implement this, but the pricinple stands.
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $this->assertInstanceOf(Result::class, $result);
@@ -395,7 +394,7 @@ class ResultTest extends TestCase
 
     public function testFree()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
 
         $result = new Result($dbh, $sth);
@@ -405,11 +404,8 @@ class ResultTest extends TestCase
 
     public function testFreeWithDbError()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
-        $sth = $dbh->simpleQuery('SELECT things FROM a_table');
-
-        // inject our magic value to make us fail
-        $sth['feignFailure'] = true;
+        $dbh = DB::factory(TestDriver::class);
+        $sth = $dbh->simpleQuery('BREAKINGSELECT things FROM a_table');
 
         $result = new Result($dbh, $sth);
         $this->assertInstanceOf(Result::class, $result);
@@ -418,7 +414,7 @@ class ResultTest extends TestCase
 
     public function testTableInfo()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $this->assertInstanceOf(Result::class, $result);
@@ -442,7 +438,7 @@ class ResultTest extends TestCase
 
     public function testTableInfoWithModeString()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $this->assertInstanceOf(Result::class, $result);
@@ -454,7 +450,7 @@ class ResultTest extends TestCase
 
     public function testGetQuery()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth);
         $this->assertEquals('SELECT things FROM a_table', $result->getQuery());
@@ -462,7 +458,7 @@ class ResultTest extends TestCase
 
     public function testGetRowCounter()
     {
-        $dbh = DB::connect(TestDriver::class . '://');
+        $dbh = DB::factory(TestDriver::class);
         $sth = $dbh->simpleQuery('SELECT things FROM a_table');
         $result = new Result($dbh, $sth, [
             'limit_from' => 5,

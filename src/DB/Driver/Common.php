@@ -5,6 +5,8 @@ use Pineapple\Util;
 use Pineapple\DB;
 use Pineapple\DB\Result;
 use Pineapple\DB\Error;
+use Pineapple\DB\Exception\FeatureException;
+use Pineapple\DB\StatementContainer;
 
 /**
  * Contains the Common base class
@@ -47,18 +49,6 @@ use Pineapple\DB\Error;
 abstract class Common extends Util
 {
     /**
-     * The DB driver type (mysql, oci8, odbc, etc.)
-     * @var string
-     */
-    protected $phptype;
-
-    /**
-     * The database syntax variant to be used (db2, access, etc.), if any
-     * @var string
-     */
-    protected $dbsyntax;
-
-    /**
      * The current default fetch mode
      * @var integer
      */
@@ -94,12 +84,6 @@ abstract class Common extends Util
     protected $acceptConsequencesOfPoorCodingChoices = false;
 
     /**
-     * The DSN information for connecting to a database
-     * @var array
-     */
-    protected $dsn = [];
-
-    /**
      * @var mixed Database connection handle
      */
     protected $connection = null;
@@ -107,21 +91,17 @@ abstract class Common extends Util
     /**
      * Run-time configuration options
      *
-     * The 'optimize' option has been deprecated.  Use the 'portability'
-     * option instead.
-     *
      * @var array
      * @see Common::setOption()
      */
     protected $options = [
         'result_buffering' => 500,
         'persistent' => false,
-        'ssl' => false,
         'debug' => 0,
         'seqname_format' => '%s_seq',
         'autofree' => false,
         'portability' => DB::DB_PORTABILITY_NONE,
-        'optimize' => 'performance',  // Deprecated.  Use 'portability'.
+        'strict_transactions' => true,
     ];
 
     /**
@@ -168,9 +148,6 @@ abstract class Common extends Util
     /**
      * The capabilities of the DB implementation
      *
-     * The 'new_link' element contains the PHP version that first provided
-     * new_link support for this DBMS.  Contains false if it's unsupported.
-     *
      * Meaning of the 'limit' element:
      *   + 'emulate' = emulate with fetch row by number
      *   + 'alter'   = alter the query
@@ -179,12 +156,6 @@ abstract class Common extends Util
      * @var array
      */
     protected $features = [];
-
-    /**
-     * A mapping of native error codes to DB error codes
-     * @var array
-     */
-    protected $errorcode_map = [];
 
     /**
      * This constructor calls <kbd>parent::__construct('Pineapple\DB\Error')</kbd>
@@ -206,14 +177,12 @@ abstract class Common extends Util
     {
         $this->wasConnected = false;
 
-        if ($this->connection) {
+        if ($this->connected()) {
             // Don't disconnect(), people use serialize() for many reasons
             $this->wasConnected = true;
         }
 
         $toSerialize = [
-            'dbsyntax',
-            'dsn',
             'features',
             'fetchmode',
             'fetchModeObjectClass',
@@ -228,22 +197,6 @@ abstract class Common extends Util
     }
 
     /**
-     * Automatically reconnects to the database when PHP's unserialize()
-     * function is called
-     *
-     * The reconnection attempt is only performed if the object was connected
-     * at the time PHP's serialize() function was run.
-     *
-     * @return void
-     */
-    public function __wakeup()
-    {
-        if ($this->wasConnected) {
-            $this->connect($this->dsn, $this->options['persistent']);
-        }
-    }
-
-    /**
      * Automatic string conversion for PHP 5
      *
      * @return string  a string describing the current PEAR DB object
@@ -253,13 +206,26 @@ abstract class Common extends Util
     public function __toString()
     {
         $info = get_class($this);
-        $info .=  ': (phptype=' . $this->phptype .
-                  ', dbsyntax=' . $this->dbsyntax .
-                  ')';
-        if ($this->connection) {
+
+        if ($this->connected()) {
             $info .= ' [connected]';
         }
+
         return $info;
+    }
+
+
+    /**
+     * Gets an advertised feature of the driver
+     *
+     * @param string $feature Name of the feature to return
+     */
+    public function getFeature($feature)
+    {
+        if (!isset($this->features[$feature])) {
+            throw new FeatureException('Feature \"{$feature}\" not advertised by driver');
+        }
+        return $this->features[$feature];
     }
 
     /**
@@ -268,6 +234,8 @@ abstract class Common extends Util
      *
      * @param boolean $flag true to make UPDATE without WHERE work
      * @since Method available since Pineapple 0.1.0
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
     public function setAcceptConsequencesOfPoorCodingChoices($flag = false)
     {
@@ -322,10 +290,10 @@ abstract class Common extends Util
      * The output depends on the PHP data type of input and the database
      * type being used.
      *
-     * @param mixed $in  the data to be formatted
+     * @param mixed $property the data to be formatted
      *
-     * @return mixed  the formatted data.  The format depends on the input's
-     *                 PHP type:
+     * @return mixed          the formatted data.  The format depends on the
+     *                        input's PHP type:
      * <ul>
      *  <li>
      *    <kbd>input</kbd> -> <samp>returns</samp>
@@ -417,18 +385,18 @@ abstract class Common extends Util
      * @see Common::escapeSimple()
      * @since Method available since Release 1.6.0
      */
-    public function quoteSmart($in)
+    public function quoteSmart($property)
     {
-        if (is_int($in)) {
-            return $in;
-        } elseif (is_float($in)) {
-            return $this->quoteFloat($in);
-        } elseif (is_bool($in)) {
-            return $this->quoteBoolean($in);
-        } elseif (is_null($in)) {
+        if (is_int($property)) {
+            return $property;
+        } elseif (is_float($property)) {
+            return $this->quoteFloat($property);
+        } elseif (is_bool($property)) {
+            return $this->quoteBoolean($property);
+        } elseif (is_null($property)) {
             return 'NULL';
         } else {
-            return "'" . $this->escapeSimple($in) . "'";
+            return "'" . $this->escapeSimple($property) . "'";
         }
     }
 
@@ -497,7 +465,7 @@ abstract class Common extends Util
      *
      * @param integer $fetchmode    DB_FETCHMODE_ORDERED, DB_FETCHMODE_ASSOC
      *                               or DB_FETCHMODE_OBJECT
-     * @param string $object_class  the class name of the object to be returned
+     * @param string $objectClass   the class name of the object to be returned
      *                               by the fetch methods when the
      *                               DB_FETCHMODE_OBJECT mode is selected.
      *                               If no class is specified by default a cast
@@ -507,11 +475,11 @@ abstract class Common extends Util
      *
      * @see DB_FETCHMODE_ORDERED, DB_FETCHMODE_ASSOC, DB_FETCHMODE_OBJECT
      */
-    public function setFetchMode($fetchmode, $object_class = \stdClass::class)
+    public function setFetchMode($fetchmode, $objectClass = \stdClass::class)
     {
         switch ($fetchmode) {
             case DB::DB_FETCHMODE_OBJECT:
-                $this->fetchModeObjectClass = $object_class;
+                $this->fetchModeObjectClass = $objectClass;
                 // no break here deliberately
             case DB::DB_FETCHMODE_ORDERED:
             case DB::DB_FETCHMODE_ASSOC:
@@ -578,9 +546,6 @@ abstract class Common extends Util
      *      <br />the sprintf() format string used on sequence names.  This
      *            format is applied to sequence names passed to
      *            createSequence(), nextID() and dropSequence().
-     * </li><li>
-     * <var>ssl</var> <kbd>boolean</kbd> = <samp>false</samp>
-     *      <br />use ssl to connect?
      * </li>
      * </ul>
      *
@@ -595,19 +560,9 @@ abstract class Common extends Util
      * <samp>DB_PORTABILITY_NONE</samp>
      * turn off all portability features
      *
-     * This mode gets automatically turned on if the deprecated
-     * <var>optimize</var> option gets set to <samp>performance</samp>.
-     *
-     *
      * <samp>DB_PORTABILITY_LOWERCASE</samp>
      * convert names of tables and fields to lower case when using
      * <kbd>get*()</kbd>, <kbd>fetch*()</kbd> and <kbd>tableInfo()</kbd>
-     *
-     * This mode gets automatically turned on in the following databases
-     * if the deprecated option <var>optimize</var> gets set to
-     * <samp>portability</samp>:
-     * + oci8
-     *
      *
      * <samp>DB_PORTABILITY_RTRIM</samp>
      * right trim the data output by <kbd>get*()</kbd> <kbd>fetch*()</kbd>
@@ -621,23 +576,8 @@ abstract class Common extends Util
      * mode tricks such DBMS's into telling the count by adding
      * <samp>WHERE 1=1</samp> to the end of <kbd>DELETE</kbd> queries.
      *
-     * This mode gets automatically turned on in the following databases
-     * if the deprecated option <var>optimize</var> gets set to
-     * <samp>portability</samp>:
-     * + fbsql
-     * + mysql
-     * + mysqli
-     * + sqlite
-     *
-     *
      * <samp>DB_PORTABILITY_NUMROWS</samp>
      * enable hack that makes <kbd>numRows()</kbd> work in Oracle
-     *
-     * This mode gets automatically turned on in the following databases
-     * if the deprecated option <var>optimize</var> gets set to
-     * <samp>portability</samp>:
-     * + oci8
-     *
      *
      * <samp>DB_PORTABILITY_ERRORS</samp>
      * makes certain error messages in certain drivers compatible
@@ -710,6 +650,19 @@ abstract class Common extends Util
             return $this->options[$option];
         }
         return $this->raiseError("unknown option $option");
+    }
+
+    /**
+     * Determine if we're connected
+     *
+     * @return bool true if connected, false if not
+     */
+    public function connected()
+    {
+        if (isset($this->connection) && $this->connection) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -792,7 +745,7 @@ abstract class Common extends Util
      * Automaticaly generates an insert or update query and pass it to prepare()
      *
      * @param string $table         the table name
-     * @param array  $table_fields  the array of field names
+     * @param array  $tableFields   the array of field names
      * @param int    $mode          a type of query to make:
      *                              DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
      * @param string $where         for update queries: the WHERE clause to
@@ -802,10 +755,12 @@ abstract class Common extends Util
      * @return mixed                the query handle
      *
      * @uses Common::prepare(), Common::buildManipSQL()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    public function autoPrepare($table, $table_fields, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
+    public function autoPrepare($table, $tableFields, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
     {
-        $query = $this->buildManipSQL($table, $table_fields, $mode, $where);
+        $query = $this->buildManipSQL($table, $tableFields, $mode, $where);
         if (DB::isError($query)) {
             return $query;
         }
@@ -817,7 +772,7 @@ abstract class Common extends Util
      * and execute() with it
      *
      * @param string $table         the table name
-     * @param array  $fields_values the associative array where $key is a
+     * @param array  $fieldsValues  the associative array where $key is a
      *                              field name and $value its value
      * @param int    $mode          a type of query to make:
      *                              DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
@@ -830,14 +785,16 @@ abstract class Common extends Util
      *                A Pineapple\DB\Error object on failure.
      *
      * @uses Common::autoPrepare(), Common::execute()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    public function autoExecute($table, $fields_values, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
+    public function autoExecute($table, $fieldsValues, $mode = DB::DB_AUTOQUERY_INSERT, $where = null)
     {
-        $sth = $this->autoPrepare($table, array_keys($fields_values), $mode, $where);
+        $sth = $this->autoPrepare($table, array_keys($fieldsValues), $mode, $where);
         if (DB::isError($sth)) {
             return $sth;
         }
-        $ret = $this->execute($sth, array_values($fields_values));
+        $ret = $this->execute($sth, array_values($fieldsValues));
         $this->freePrepared($sth);
         return $ret;
     }
@@ -863,7 +820,7 @@ abstract class Common extends Util
      *     query, all the records of the table will be updated!
      *
      * @param string $table         the table name
-     * @param array  $table_fields  the array of field names
+     * @param array  $tableFields   the array of field names
      * @param int    $mode          a type of query to make:
      *                              DB_AUTOQUERY_INSERT or DB_AUTOQUERY_UPDATE
      * @param string $where         for update queries: the WHERE clause to
@@ -873,9 +830,9 @@ abstract class Common extends Util
      * @return string|Error         the sql query for autoPrepare(), or an Error
      *                              object in the case of failure
      */
-    public function buildManipSQL($table, $table_fields, $mode, $where = null)
+    public function buildManipSQL($table, $tableFields, $mode, $where = null)
     {
-        if (count($table_fields) == 0) {
+        if (count($tableFields) == 0) {
             return $this->raiseError(DB::DB_ERROR_NEED_MORE_DATA);
         }
         $first = true;
@@ -883,7 +840,7 @@ abstract class Common extends Util
             case DB::DB_AUTOQUERY_INSERT:
                 $values = '';
                 $names = '';
-                foreach ($table_fields as $value) {
+                foreach ($tableFields as $value) {
                     if ($first) {
                         $first = false;
                     } else {
@@ -902,7 +859,7 @@ abstract class Common extends Util
 
                 $set = '';
 
-                foreach ($table_fields as $value) {
+                foreach ($tableFields as $value) {
                     if ($first) {
                         $first = false;
                     } else {
@@ -949,6 +906,8 @@ abstract class Common extends Util
      * {@internal ibase and oci8 have their own execute() methods.}}
      *
      * @see Common::prepare()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function execute($stmt, $data = [])
     {
@@ -997,11 +956,11 @@ abstract class Common extends Util
 
         $realquery = $this->prepareTokens[$stmt][0];
 
-        $i = 0;
+        $bindPosition = 0;
         foreach ($data as $value) {
-            if ($this->prepareTypes[$stmt][$i] == DB::DB_PARAM_SCALAR) {
+            if ($this->prepareTypes[$stmt][$bindPosition] == DB::DB_PARAM_SCALAR) {
                 $realquery .= $this->quoteSmart($value);
-            } elseif ($this->prepareTypes[$stmt][$i] == DB::DB_PARAM_OPAQUE) {
+            } elseif ($this->prepareTypes[$stmt][$bindPosition] == DB::DB_PARAM_OPAQUE) {
                 $fp = @fopen($value, 'rb');
                 if (!$fp) {
                     // @codeCoverageIgnoreStart
@@ -1015,7 +974,7 @@ abstract class Common extends Util
                 $realquery .= $value;
             }
 
-            $realquery .= $this->prepareTokens[$stmt][++$i];
+            $realquery .= $this->prepareTokens[$stmt][++$bindPosition];
         }
 
         return $realquery;
@@ -1037,6 +996,8 @@ abstract class Common extends Util
      * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::prepare(), Common::execute()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function executeMultiple($stmt, $data)
     {
@@ -1052,16 +1013,19 @@ abstract class Common extends Util
     /**
      * Frees the internal resources associated with a prepared query
      *
-     * @param resource $stmt           the prepared statement's PHP resource
-     * @param bool     $free_resource  should the PHP resource be freed too?
-     *                                  Use false if you need to get data
-     *                                  from the result set later.
+     * @param resource $stmt         the prepared statement's PHP resource
+     * @param bool     $freeResource should the PHP resource be freed too?
+     *                               Use false if you need to get data
+     *                               from the result set later.
      *
      * @return bool  TRUE on success, FALSE if $result is invalid
      *
      * @see Common::prepare()
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function freePrepared($stmt, $free_resource = true)
+    public function freePrepared($stmt, $freeResource = true)
     {
         $stmt = (int)$stmt;
         if (isset($this->prepareTokens[$stmt])) {
@@ -1108,6 +1072,8 @@ abstract class Common extends Util
      * @return string  the query string with LIMIT clauses added
      *
      * @access protected
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function modifyLimitQuery($query, $from, $count, $params = [])
     {
@@ -1133,6 +1099,8 @@ abstract class Common extends Util
      *                 A Pineapple\DB\Error object on failure.
      *
      * @see Result, Common::prepare(), Common::execute()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function query($query, $params = [])
     {
@@ -1171,6 +1139,8 @@ abstract class Common extends Util
      * @return mixed  a new Result object for successful SELECT queries
      *                 or DB_OK for successul data manipulation queries.
      *                 A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function limitQuery($query, $from, $count, $params = [])
     {
@@ -1200,6 +1170,8 @@ abstract class Common extends Util
      *
      * @return mixed  the returned value of the query.
      *                 A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getOne($query, $params = [])
     {
@@ -1246,6 +1218,8 @@ abstract class Common extends Util
      *
      * @return array|Error    the first row of results as an array.
      *                        A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getRow($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
@@ -1266,7 +1240,7 @@ abstract class Common extends Util
             }
         }
         // modifyLimitQuery() would be nice here, but it causes BC issues
-        if (sizeof($params) > 0) {
+        if (count($params) > 0) {
             $sth = $this->prepare($query);
             if (DB::isError($sth)) {
                 return $sth;
@@ -1308,6 +1282,8 @@ abstract class Common extends Util
      * @return array  the results as an array.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::query()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getCol($query, $col = 0, $params = [])
     {
@@ -1361,7 +1337,7 @@ abstract class Common extends Util
      * will be an array of the values from column 2-n.  If the result
      * set contains only two columns, the returned value will be a
      * scalar with the value of the second column (unless forced to an
-     * array with the $force_array parameter).  A DB error code is
+     * array with the $forceArray parameter).  A DB error code is
      * returned on errors.  If the result set contains fewer than two
      * columns, a DB_ERROR_TRUNCATED error is returned.
      *
@@ -1416,7 +1392,7 @@ abstract class Common extends Util
      * values for results regardless of the database's internal type.
      *
      * @param string $query        the SQL query
-     * @param bool   $force_array  used only when the query returns
+     * @param bool   $forceArray   used only when the query returns
      *                             exactly two columns.  If true, the values
      *                             of the returned array will be one-element
      *                             arrays instead of scalars.
@@ -1436,10 +1412,13 @@ abstract class Common extends Util
      *
      * @return array|Error         the associative array containing the query results.
      *                             A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getAssoc(
         $query,
-        $force_array = false,
+        $forceArray = false,
         $params = [],
         $fetchmode = DB::DB_FETCHMODE_DEFAULT,
         $group = false
@@ -1474,9 +1453,9 @@ abstract class Common extends Util
 
         $results = [];
 
-        if ($cols > 2 || $force_array) {
+        if ($cols > 2 || $forceArray) {
             // return array values
-            // XXX this part can be optimized
+            // @todo this part can be optimized
             if ($fetchmode == DB::DB_FETCHMODE_ASSOC) {
                 while (is_array($row = $res->fetchRow(DB::DB_FETCHMODE_ASSOC))) {
                     reset($row);
@@ -1549,6 +1528,8 @@ abstract class Common extends Util
      *                            + DB_FETCHMODE_ASSOC | DB_FETCHMODE_FLIPPED
      *
      * @return array  the nested array.  A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function getAll($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
@@ -1609,6 +1590,9 @@ abstract class Common extends Util
      *
      * @return int|Error   DB_OK on success. A Pineapple\DB\Error object if
      *                     the driver doesn't support auto-committing transactions.
+     *
+     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function autoCommit($onoff = false)
     {
@@ -1641,8 +1625,10 @@ abstract class Common extends Util
      * @param resource $result  the query result idenifier produced by PHP
      *
      * @return int|Error  the number of rows.  A Pineapple\DB\Error object on failure.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
-    public function numRows($result)
+    public function numRows(StatementContainer $result)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1655,80 +1641,6 @@ abstract class Common extends Util
      * @return int|Error  the number of rows.  A Pineapple\DB\Error object on failure.
      */
     public function affectedRows()
-    {
-        return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
-    }
-
-    /**
-     * Generates the name used inside the database for a sequence
-     *
-     * The createSequence() docblock contains notes about storing sequence
-     * names.
-     *
-     * @param string $sqn  the sequence's public name
-     *
-     * @return string  the sequence's name in the backend
-     *
-     * @access protected
-     * @see Common::createSequence(), Common::dropSequence(),
-     *      Common::nextID(), Common::setOption()
-     */
-    public function getSequenceName($sqn)
-    {
-        return sprintf($this->getOption('seqname_format'), preg_replace('/[^a-z0-9_.]/i', '_', $sqn));
-    }
-
-    /**
-     * Returns the next free id in a sequence
-     *
-     * @param string  $seq_name  name of the sequence
-     * @param boolean $ondemand  when true, the seqence is automatically
-     *                           created if it does not exist
-     *
-     * @return int|Error         the next id number in the sequence.
-     *                           A Pineapple\DB\Error object on failure.
-     *
-     * @see Common::createSequence(), Common::dropSequence(),
-     *      Common::getSequenceName()
-     */
-    public function nextId($seq_name, $ondemand = true)
-    {
-        return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
-    }
-
-    /**
-     * Creates a new sequence
-     *
-     * The name of a given sequence is determined by passing the string
-     * provided in the <var>$seq_name</var> argument through PHP's sprintf()
-     * function using the value from the <var>seqname_format</var> option as
-     * the sprintf()'s format argument.
-     *
-     * <var>seqname_format</var> is set via setOption().
-     *
-     * @param string $seq_name  name of the new sequence
-     *
-     * @return int|Error        DB_OK on success. A Pineapple\DB\Error object on failure.
-     *
-     * @see Common::dropSequence(), Common::getSequenceName(),
-     *      Common::nextID()
-     */
-    public function createSequence($seq_name)
-    {
-        return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
-    }
-
-    /**
-     * Deletes a sequence
-     *
-     * @param string $seq_name  name of the sequence to be deleted
-     *
-     * @return int|Error  DB_OK on success. A Pineapple\DB\Error object on failure.
-     *
-     * @see Common::createSequence(), Common::getSequenceName(),
-     *      Common::nextID()
-     */
-    public function dropSequence($seq_name)
     {
         return $this->raiseError(DB::DB_ERROR_NOT_CAPABLE);
     }
@@ -1760,6 +1672,9 @@ abstract class Common extends Util
      * @return Error  the Pineapple\Error object
      *
      * @see Pineapple\Error
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function raiseError(
         $code = DB::DB_ERROR,
@@ -1803,21 +1718,16 @@ abstract class Common extends Util
     /**
      * Maps native error codes to DB's portable ones
      *
-     * Uses the <var>$errorcode_map</var> property defined in each driver.
-     *
      * @param string|int $nativecode  the error code returned by the DBMS
      *
      * @return int  the portable DB error code.  Return DB_ERROR if the
-     *               current driver doesn't have a mapping for the
-     *               $nativecode submitted.
+     *              current driver doesn't have a mapping for the
+     *              $nativecode submitted.
      */
     public function errorCode($nativecode)
     {
-        if (isset($this->errorcode_map[$nativecode])) {
-            return $this->errorcode_map[$nativecode];
-        }
-        // Fall back to DB_ERROR if there was no mapping.
-        return DB::DB_ERROR;
+        // @todo put this into -compat and refactor out this method
+        return $this->getNativeErrorCode($nativecode);
     }
 
     /**
@@ -1829,10 +1739,12 @@ abstract class Common extends Util
      *                  submitted.  FALSE if the error code is unknown.
      *
      * @see DB::errorMessage()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
      */
     public function errorMessage($dbcode)
     {
-        return DB::errorMessage($this->errorcode_map[$dbcode]);
+        return DB::errorMessage($this->getNativeErrorCode($dbcode));
     }
 
     /**
@@ -1954,6 +1866,8 @@ abstract class Common extends Util
      *                      A Pineapple\DB\Error object on failure.
      *
      * @see Common::setOption()
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function tableInfo($result, $mode = null)
     {
@@ -1966,52 +1880,8 @@ abstract class Common extends Util
     }
 
     /**
-     * Lists internal database information
-     *
-     * @param string $type  type of information being sought.
-     *                      Common items being sought are:
-     *                      tables, databases, users, views, functions
-     *                      Each DBMS's has its own capabilities.
-     *
-     * @return array|Error  an array listing the items sought.
-     *                      A DB Pineapple\DB\Error object on failure.
-     */
-    public function getListOf($type)
-    {
-        $sql = $this->getSpecialQuery($type);
-        if ($sql === null) {
-            $this->lastQuery = '';
-            return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
-        } elseif (is_int($sql) || DB::isError($sql)) {
-            // Previous error
-            return $this->raiseError($sql);
-        } elseif (is_array($sql)) {
-            // Already the result
-            return $sql;
-        }
-        // Launch this query
-        return $this->getCol($sql);
-    }
-
-    /**
-     * Obtains the query string needed for listing a given type of objects
-     *
-     * @param string $type  the kind of objects you want to retrieve
-     *
-     * @return string  the SQL query string or null if the driver doesn't
-     *                  support the object type requested
-     *
-     * @access protected
-     * @see Common::getListOf()
-     */
-    protected function getSpecialQuery($type)
-    {
-        return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
-    }
-
-    /**
      * Sets (or unsets) a flag indicating that the next query will be a
-     * manipulation query, regardless of the usual DB::isManip() heuristics.
+     * manipulation query, regardless of the usual self::isManip() heuristics.
      *
      * @param boolean true to set the flag overriding the isManip() behaviour,
      * false to clear it and fall back onto isManip()
@@ -2026,6 +1896,41 @@ abstract class Common extends Util
     }
 
     /**
+     * Tell whether a query is a data manipulation or data definition query
+     *
+     * Examples of data manipulation queries are INSERT, UPDATE and DELETE.
+     * Examples of data definition queries are CREATE, DROP, ALTER, GRANT,
+     * REVOKE.
+     *
+     * @param string $query  the query
+     *
+     * @return boolean  whether $query is a data manipulation query
+     */
+    public static function isManip($query)
+    {
+        $manips = implode('|', [
+            'INSERT',
+            'UPDATE',
+            'DELETE',
+            'REPLACE',
+            'CREATE',
+            'DROP',
+            'LOAD DATA',
+            'SELECT .* INTO .* FROM',
+            'COPY',
+            'ALTER',
+            'GRANT',
+            'REVOKE',
+            'LOCK',
+            'UNLOCK'
+        ]);
+        if (preg_match('/^\s*"?(' . $manips . ')\s+/si', $query)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Checks if the given query is a manipulation query. This also takes into
      * account the nextQueryManip flag and sets the lastQueryManip flag
      * (and resets nextQueryManip) according to the result.
@@ -2037,13 +1942,9 @@ abstract class Common extends Util
      *
      * @access protected
      */
-    protected function _checkManip($query)
+    protected function checkManip($query)
     {
-        if ($this->nextQueryManip || DB::isManip($query)) {
-            $this->lastQueryManip = true;
-        } else {
-            $this->lastQueryManip = false;
-        }
+        $this->lastQueryManip = $this->nextQueryManip || self::isManip($query);
         $this->nextQueryManip = false;
         return $this->lastQueryManip;
     }
@@ -2057,7 +1958,7 @@ abstract class Common extends Util
      *
      * @access protected
      */
-    protected function _rtrimArrayValues(&$array)
+    protected function rtrimArrayValues(&$array)
     {
         foreach ($array as $key => $value) {
             if (is_string($value)) {
@@ -2075,7 +1976,7 @@ abstract class Common extends Util
      *
      * @access protected
      */
-    protected function _convertNullArrayValuesToEmpty(&$array)
+    protected function convertNullArrayValuesToEmpty(&$array)
     {
         foreach ($array as $key => $value) {
             if (is_null($value)) {
