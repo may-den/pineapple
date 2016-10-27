@@ -571,7 +571,7 @@ class DoctrineDbal extends Common implements DriverInterface
              * Probably received a result object.
              * Extract the result resource identifier.
              */
-            $tableHandle = self::getStatement($result)->result;
+            $tableHandle = self::getStatement($result->result);
         } else {
             return $this->myRaiseError();
         }
@@ -658,11 +658,11 @@ class DoctrineDbal extends Common implements DriverInterface
      */
     private static function getStatement(StatementContainer $result)
     {
-        if ($result->getStatementType() === ['type' => 'object', 'class' => DBALStatement::class]) {
+        if (is_a($result->getStatement(), DBALStatement::class)) {
             return $result->getStatement();
         }
         throw new DriverException(
-            'Excepted ' . StatementContainer::class . ' to contain \'' . DBALStatement::class .
+            'Expected ' . StatementContainer::class . ' to contain \'' . DBALStatement::class .
                 '\', got ' . json_encode($result->getStatementType())
         );
     }

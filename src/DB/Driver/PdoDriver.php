@@ -630,7 +630,7 @@ class PdoDriver extends Common implements DriverInterface
              * Probably received a result object.
              * Extract the result resource identifier.
              */
-            $tableHandle = self::getStatement($result)->result;
+            $tableHandle = self::getStatement($result->result);
         } else {
             return $this->myRaiseError();
         }
@@ -718,7 +718,7 @@ class PdoDriver extends Common implements DriverInterface
             return $result->getStatement();
         }
         throw new DriverException(
-            'Excepted ' . StatementContainer::class . ' to contain \'' . PDOStatement::class .
+            'Expected ' . StatementContainer::class . ' to contain \'' . PDOStatement::class .
                 '\', got ' . json_encode($result->getStatementType())
         );
     }

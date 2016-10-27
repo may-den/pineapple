@@ -7,6 +7,17 @@ class StatementContainer
 {
     private $statement = null;
     private $freeFunction = null;
+    private $whitelist = ['statement', 'freeFunction'];
+
+    public function __set($name, $value)
+    {
+        // for debugging
+        if (in_array($name, $this->whitelist)) {
+            $this->$name = $value;
+            return;
+        }
+        throw new StatementException('garg');
+    }
 
     public function __construct($statement = null, $freeFunction = null)
     {
@@ -17,8 +28,8 @@ class StatementContainer
 
     public function getStatement()
     {
-        if (isset($this->statement) && ($this->statement === null)) {
-            throw new StatementException('No statement set');
+        if (!isset($this->statement) || ($this->statement === null)) {
+            throw new StatementException('No statement set', StatementException::NO_STATEMENT);
         }
 
         return $this->statement;
@@ -34,7 +45,7 @@ class StatementContainer
                 break;
 
             default:
-                throw new StatementException('We do not know how to deal with this type of statement handle');
+                throw new StatementException('We do not know how to deal with this type of statement handle', StatementException::UNHANDLED_TYPE);
                 break;
         }
 
@@ -48,7 +59,7 @@ class StatementContainer
     public function freeStatement()
     {
         if (isset($this->statement) && ($this->statement === null)) {
-            throw new StatementException('No statement set');
+            throw new StatementException('No statement set', StatementException::NO_STATEMENT);
         }
 
         switch (gettype($this->statement)) {
@@ -66,7 +77,7 @@ class StatementContainer
                 break;
 
             default:
-                throw new StatementException('Stored statement is not a type we are experienced with dealing with');
+                throw new StatementException('Stored statement is not a type we are experienced with dealing with', StatementException::UNHANDLED_TYPE);
                 break;
         }
     }
@@ -74,7 +85,7 @@ class StatementContainer
     public function getStatementType()
     {
         if (isset($this->statement) && ($this->statement === null)) {
-            throw new StatementException('No statement set');
+            throw new StatementException('No statement set', StatementException::NO_STATEMENT);
         }
 
         switch (gettype($this->statement)) {
@@ -94,7 +105,7 @@ class StatementContainer
                 break;
 
             default:
-                throw new StatementException('Stored statement is not a type we are experienced with dealing with');
+                throw new StatementException('Stored statement is not a type we are experienced with dealing with', StatementException::UNHANDLED_TYPE);
                 break;
         }
     }
