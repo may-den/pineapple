@@ -7,17 +7,6 @@ class StatementContainer
 {
     private $statement = null;
     private $freeFunction = null;
-    private $whitelist = ['statement', 'freeFunction'];
-
-    public function __set($name, $value)
-    {
-        // for debugging
-        if (in_array($name, $this->whitelist)) {
-            $this->$name = $value;
-            return;
-        }
-        throw new StatementException('garg');
-    }
 
     public function __construct($statement = null, $freeFunction = null)
     {
