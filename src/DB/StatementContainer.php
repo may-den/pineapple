@@ -85,7 +85,7 @@ class StatementContainer
      */
     public function freeStatement()
     {
-        if (isset($this->statement) && ($this->statement === null)) {
+        if (!isset($this->statement) || ($this->statement === null)) {
             throw new StatementException('No statement set', StatementException::NO_STATEMENT);
         }
 
@@ -102,11 +102,26 @@ class StatementContainer
                 break;
 
             default:
+                // because we're rigid about what we accept, this is a "future expansion" fault
+                // @codeCoverageIgnoreStart
                 throw new StatementException(
                     'Stored statement is not a type we are experienced with dealing with',
                     StatementException::UNHANDLED_TYPE
                 );
                 break;
+                // @codeCoverageIgnoreEnd
+        }
+    }
+
+    /**
+     * Call the destroy function for the contained result.
+     *
+     * @codeCoverageIgnore
+     */
+    public function __destruct()
+    {
+        if (isset($this->statement) && ($this->statement !== null)) {
+            $this->freeStatement();
         }
     }
 
@@ -118,7 +133,7 @@ class StatementContainer
      */
     public function getStatementType()
     {
-        if (isset($this->statement) && ($this->statement === null)) {
+        if (!isset($this->statement) || ($this->statement === null)) {
             throw new StatementException('No statement set', StatementException::NO_STATEMENT);
         }
 
@@ -128,22 +143,34 @@ class StatementContainer
                     'type' => 'object',
                     'class' => get_class($this->statement),
                 ];
+                // we've returned above, so this isn't run
+                // @codeCoverageIgnoreStart
                 break;
+                // @codeCoverageIgnoreEnd
 
             case 'resource':
                 return ['type' => 'resource'];
+                // we've returned above, so this isn't run
+                // @codeCoverageIgnoreStart
                 break;
+                // @codeCoverageIgnoreEnd
 
             case 'array':
                 return ['type' => 'array'];
+                // we've returned above, so this isn't run
+                // @codeCoverageIgnoreStart
                 break;
+                // @codeCoverageIgnoreEnd
 
             default:
+                // because we're rigid about what we accept, this is a "future expansion" fault
+                // @codeCoverageIgnoreStart
                 throw new StatementException(
                     'Stored statement is not a type we are experienced with dealing with',
                     StatementException::UNHANDLED_TYPE
                 );
                 break;
+                // @codeCoverageIgnoreEnd
         }
     }
 }
