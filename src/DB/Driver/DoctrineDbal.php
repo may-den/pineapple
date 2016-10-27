@@ -48,7 +48,7 @@ class DoctrineDbal extends Common implements DriverInterface
 
     /**
      * A copy of the last pdostatement object
-     * @var DBALStatement
+     * @var StatementContainer
      */
     private $lastStatement = null;
 
@@ -128,11 +128,11 @@ class DoctrineDbal extends Common implements DriverInterface
         }
 
         // keep this so we can perform rowCount and suchlike later
-        $this->lastStatement = $statement;
+        $this->lastStatement = new StatementContainer($statement);
 
         // fetch queries should return the result object now
-        if (!$ismanip && isset($statement) && ($statement instanceof DBALStatement)) {
-            return new StatementContainer($statement);
+        if (!$ismanip && isset($statement) && self::getStatement($this->lastStatement)) {
+            return $this->lastStatement;
         }
 
         // ...whilst insert/update/delete just gets a "sure, it went well" result
@@ -240,28 +240,6 @@ class DoctrineDbal extends Common implements DriverInterface
             $this->transactionOpcount = 0;
         }
         return DB::DB_OK;
-    }
-
-    /**
-     * Determines the number of rows affected by a data maniuplation query
-     *
-     * 0 is returned for queries that don't manipulate data.
-     *
-     * @return int|Error  the number of rows. A Pineapple\DB\Error object
-     *                    on failure.
-     * @todo fix up with StatementContainer & move to PdoCommonMethods
-     */
-    public function affectedRows()
-    {
-        if (!isset($this->lastStatement) || !($this->lastStatement instanceof DBALStatement)) {
-            return $this->myRaiseError();
-        }
-
-        if ($this->lastQueryManip) {
-            return $this->lastStatement->rowCount();
-        }
-
-        return 0;
     }
 
     /**

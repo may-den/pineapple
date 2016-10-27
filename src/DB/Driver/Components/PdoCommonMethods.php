@@ -276,6 +276,27 @@ trait PdoCommonMethods
     }
 
     /**
+     * Determines the number of rows affected by a data maniuplation query
+     *
+     * 0 is returned for queries that don't manipulate data.
+     *
+     * @return int|Error  the number of rows. A Pineapple\DB\Error object
+     *                    on failure.
+     */
+    public function affectedRows()
+    {
+        if (!isset($this->lastStatement) || !($this->lastStatement instanceof StatementContainer)) {
+            return $this->myRaiseError();
+        }
+
+        if ($this->lastQueryManip) {
+            return self::getStatement($this->lastStatement)->rowCount();
+        }
+
+        return 0;
+    }
+
+    /**
      * Returns information about a table or a result set
      *
      * @param PDOStatement|string $result Pineapple\DB\Result object from a query or a
