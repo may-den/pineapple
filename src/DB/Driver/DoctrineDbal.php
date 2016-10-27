@@ -161,22 +161,6 @@ class DoctrineDbal extends Common implements DriverInterface
     }
 
     /**
-     * Format a PDO errorInfo block as a legible string
-     *
-     * @param array $errorInfo The output from PDO/PDOStatement::errorInfo
-     * @return string
-     */
-    private static function formatErrorInfo(array $errorInfo)
-    {
-        return sprintf(
-            'SQLSTATE[%d]: (Driver code %d) %s',
-            $errorInfo[0],
-            $errorInfo[1],
-            $errorInfo[2]
-        );
-    }
-
-    /**
      * Places a row from the result set into the given array
      *
      * Formating of the array and the data therein are configurable.
@@ -204,7 +188,11 @@ class DoctrineDbal extends Common implements DriverInterface
                 $arr = array_change_key_case($arr, CASE_LOWER);
             }
         } else {
-            $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM);
+            try {
+                $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM);
+            } catch (DriverException $fetchException) {
+                return $this->raiseError(DB::DB_ERROR, null, null, $fetchException->getMessage());
+            }
         }
 
         if (!$arr) {
@@ -377,9 +365,9 @@ class DoctrineDbal extends Common implements DriverInterface
 
         if ($this->lastQueryManip) {
             return $this->lastStatement->rowCount();
-        } else {
-            return 0;
         }
+
+        return 0;
     }
 
     /**

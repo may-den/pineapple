@@ -239,7 +239,11 @@ class PdoDriver extends Common implements DriverInterface
                 $arr = array_change_key_case($arr, CASE_LOWER);
             }
         } else {
-            $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM);
+            try {
+                $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM);
+            } catch (PDOException $fetchException) {
+                return $this->raiseError(DB::DB_ERROR, null, null, $fetchException->getMessage());
+            }
         }
 
         if (!$arr) {
@@ -440,7 +444,6 @@ class PdoDriver extends Common implements DriverInterface
 
         return 0;
     }
-
 
     /**
      * Quotes a string so it can be safely used as a table or column name
