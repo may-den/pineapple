@@ -3,6 +3,14 @@ namespace Pineapple\DB\Driver\Components;
 
 use Pineapple\DB;
 
+/**
+ * ANSI SQL error codes, taken from the PHP PDO source code.
+ *
+ * @author     Rob Andrews <rob@aphlor.org>
+ * @license    BSD-2-Clause
+ * @package    Database
+ * @version    Introduced in Pineapple 0.3.0
+ */
 trait AnsiSqlErrorCodes
 {
     /**
@@ -65,7 +73,6 @@ trait AnsiSqlErrorCodes
      * returning a standard 'generic error' if unmappable.
      *
      * @param string $code The driver error code to map to native
-     *
      * @return int         The DB::DB_ERROR_* constant
      */
     public function getNativeErrorCode($code)

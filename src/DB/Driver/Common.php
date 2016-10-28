@@ -8,8 +8,22 @@ use Pineapple\DB\Error;
 use Pineapple\DB\Exception\FeatureException;
 use Pineapple\DB\StatementContainer;
 
+use stdClass;
+
 /**
- * Contains the Common base class
+ * Pineapple Common driver functions. Override in drivers to provide
+ * implementation-specific differences.
+ *
+ * Mostly _not_ written by (see below for authors), slightly modernised by:
+ *
+ * @author     Rob Andrews <rob@aphlor.org>
+ *
+ * Retained comment & license from DB:
+ *
+ * Common is the base class from which each database driver class extends
+ *
+ * All common methods are declared here.  If a given DBMS driver contains
+ * a particular method, that method will overload the one here.
  *
  * PHP version 5
  *
@@ -26,24 +40,6 @@ use Pineapple\DB\StatementContainer;
  * @author     Daniel Convissor <danielc@php.net>
  * @copyright  1997-2007 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    CVS: $Id$
- * @link       http://pear.php.net/package/DB
- */
-
-/**
- * Common is the base class from which each database driver class extends
- *
- * All common methods are declared here.  If a given DBMS driver contains
- * a particular method, that method will overload the one here.
- *
- * @category   Database
- * @package    DB
- * @author     Stig Bakken <ssb@php.net>
- * @author     Tomas V.V. Cox <cox@idecnet.com>
- * @author     Daniel Convissor <danielc@php.net>
- * @copyright  1997-2007 The PHP Group
- * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    Release: 1.8.2
  * @link       http://pear.php.net/package/DB
  */
 abstract class Common extends Util
@@ -60,11 +56,12 @@ abstract class Common extends Util
      *
      * @var string
      */
-    protected $fetchModeObjectClass = \stdClass::class;
+    protected $fetchModeObjectClass = stdClass::class;
 
     /**
-     * Was a connection present when the object was serialized()?
-     * @var bool
+     * Was a connection present when the object was `serialize()`ed?
+     *
+     * @var boolean
      * @see Common::__sleep(), Common::__wake()
      */
     protected $wasConnected = null;
@@ -96,9 +93,8 @@ abstract class Common extends Util
      */
     protected $options = [
         'result_buffering' => 500,
-        'persistent' => false,
         'debug' => 0,
-        'seqname_format' => '%s_seq',
+        'seqname_format' => '%s_seq', // Still referenced in pineapple-compat
         'autofree' => false,
         'portability' => DB::DB_PORTABILITY_NONE,
         'strict_transactions' => true,
@@ -475,7 +471,7 @@ abstract class Common extends Util
      *
      * @see DB_FETCHMODE_ORDERED, DB_FETCHMODE_ASSOC, DB_FETCHMODE_OBJECT
      */
-    public function setFetchMode($fetchmode, $objectClass = \stdClass::class)
+    public function setFetchMode($fetchmode, $objectClass = stdClass::class)
     {
         switch ($fetchmode) {
             case DB::DB_FETCHMODE_OBJECT:
@@ -517,114 +513,91 @@ abstract class Common extends Util
     }
 
     /**
-     * Sets run-time configuration options for PEAR DB
+     * Sets run-time configuration options
      *
      * Options, their data types, default values and description:
-     * <ul>
-     * <li>
-     * <var>autofree</var> <kbd>boolean</kbd> = <samp>false</samp>
-     *      <br />should results be freed automatically when there are no
-     *            more rows?
-     * </li><li>
-     * <var>result_buffering</var> <kbd>integer</kbd> = <samp>500</samp>
-     *      <br />how many rows of the result set should be buffered?
-     *      <br />In mysql: mysql_unbuffered_query() is used instead of
-     *            mysql_query() if this value is 0.  (Release 1.7.0)
-     *      <br />In oci8: this value is passed to ocisetprefetch().
-     *            (Release 1.7.0)
-     * </li><li>
-     * <var>debug</var> <kbd>integer</kbd> = <samp>0</samp>
-     *      <br />debug level
-     * </li><li>
-     * <var>persistent</var> <kbd>boolean</kbd> = <samp>false</samp>
-     *      <br />should the connection be persistent?
-     * </li><li>
-     * <var>portability</var> <kbd>integer</kbd> = <samp>DB_PORTABILITY_NONE</samp>
-     *      <br />portability mode constant (see below)
-     * </li><li>
-     * <var>seqname_format</var> <kbd>string</kbd> = <samp>%s_seq</samp>
-     *      <br />the sprintf() format string used on sequence names.  This
-     *            format is applied to sequence names passed to
-     *            createSequence(), nextID() and dropSequence().
-     * </li>
-     * </ul>
+     *
+     * - `autofree` (boolean) = `false`
+     *   should results be freed automatically when there are no more rows?
+     *
+     * - `result_buffering` (integer) = `500`
+     *   how many rows of the result set should be buffered?
+     *   Supported by `PdoDriver`, not by `DoctrineDbal`
+     *
+     * - `debug` (integer) = `0`
+     *   debug level
+     *
+     * - `portability` (integer) = `DB_PORTABILITY_NONE`
+     *   portability mode constant (see below)
+     *
+     * - `seqname_format` (string) = `%s_seq`
+     *   the sprintf() format string used on sequence names. This format is
+     *   applied to sequence names passed to `createSequence()`, `nextID()`
+     *   and `dropSequence()`.
      *
      * -----------------------------------------
      *
      * PORTABILITY MODES
      *
-     * These modes are bitwised, so they can be combined using <kbd>|</kbd>
-     * and removed using <kbd>^</kbd>.  See the examples section below on how
-     * to do this.
+     * These modes are bitwised, so they can be combined using `|` and
+     * removed using `^`. See the examples section below on how to do this.
      *
-     * <samp>DB_PORTABILITY_NONE</samp>
-     * turn off all portability features
+     * - `DB_PORTABILITY_NONE`
+     *   turn off all portability features
      *
-     * <samp>DB_PORTABILITY_LOWERCASE</samp>
-     * convert names of tables and fields to lower case when using
-     * <kbd>get*()</kbd>, <kbd>fetch*()</kbd> and <kbd>tableInfo()</kbd>
+     * - `DB_PORTABILITY_LOWERCASE`
+     *   convert names of tables and fields to lower case when using
+     *   `get*()`, `fetch*()` and `tableInfo()`
      *
-     * <samp>DB_PORTABILITY_RTRIM</samp>
-     * right trim the data output by <kbd>get*()</kbd> <kbd>fetch*()</kbd>
+     * - `DB_PORTABILITY_RTRIM`
+     *   right trim the data output by `get*()` `fetch*()`
      *
+     * - `DB_PORTABILITY_DELETE_COUNT`
+     *   force reporting the number of rows deleted
      *
-     * <samp>DB_PORTABILITY_DELETE_COUNT</samp>
-     * force reporting the number of rows deleted
+     *   Some DBMS's don't count the number of rows deleted when performing
+     *   simple `DELETE FROM tablename` queries.  This portability
+     *   mode tricks such DBMS's into telling the count by adding
+     *   `WHERE 1=1` to the end of `DELETE` queries.
      *
-     * Some DBMS's don't count the number of rows deleted when performing
-     * simple <kbd>DELETE FROM tablename</kbd> queries.  This portability
-     * mode tricks such DBMS's into telling the count by adding
-     * <samp>WHERE 1=1</samp> to the end of <kbd>DELETE</kbd> queries.
+     * - `DB_PORTABILITY_NUMROWS`
+     *   enable hack that makes `numRows()` work in Oracle
      *
-     * <samp>DB_PORTABILITY_NUMROWS</samp>
-     * enable hack that makes <kbd>numRows()</kbd> work in Oracle
+     *   + mysql, mysqli:  change unique/primary key constraints
+     *     DB_ERROR_ALREADY_EXISTS -> DB_ERROR_CONSTRAINT
      *
-     * <samp>DB_PORTABILITY_ERRORS</samp>
-     * makes certain error messages in certain drivers compatible
-     * with those from other DBMS's
+     * - `DB_PORTABILITY_NULL_TO_EMPTY</samp>
+     *   convert null values to empty strings in data output by get*() and
+     *   fetch*().  Needed because Oracle considers empty strings to be null,
+     *   while most other DBMS's know the difference between empty and null.
      *
-     * + mysql, mysqli:  change unique/primary key constraints
-     *   DB_ERROR_ALREADY_EXISTS -> DB_ERROR_CONSTRAINT
-     *
-     * + odbc(access):  MS's ODBC driver reports 'no such field' as code
-     *   07001, which means 'too few parameters.'  When this option is on
-     *   that code gets mapped to DB_ERROR_NOSUCHFIELD.
-     *   DB_ERROR_MISMATCH -> DB_ERROR_NOSUCHFIELD
-     *
-     * <samp>DB_PORTABILITY_NULL_TO_EMPTY</samp>
-     * convert null values to empty strings in data output by get*() and
-     * fetch*().  Needed because Oracle considers empty strings to be null,
-     * while most other DBMS's know the difference between empty and null.
-     *
-     *
-     * <samp>DB_PORTABILITY_ALL</samp>
-     * turn on all portability features
+     * - `DB_PORTABILITY_ALL</samp>
+     *   turn on all portability features
      *
      * -----------------------------------------
      *
      * Example 1. Simple setOption() example
-     * <code>
+     * ```php
      * $db->setOption('autofree', true);
-     * </code>
+     * ```
      *
      * Example 2. Portability for lowercasing and trimming
-     * <code>
+     * ```php
      * $db->setOption('portability',
      *                 DB_PORTABILITY_LOWERCASE | DB_PORTABILITY_RTRIM);
-     * </code>
+     * ```
      *
      * Example 3. All portability options except trimming
-     * <code>
+     * ```php
      * $db->setOption(
      *     'portability',
      *     DB::DB_PORTABILITY_ALL ^ DB::DB_PORTABILITY_RTRIM
       * );
-     * </code>
+     * ```
      *
      * @param string $option option name
-     * @param mixed  $value value for the option
-     *
-     * @return mixed DB_OK on success. A Pineapple\DB\Error object on failure.
+     * @param mixed  $value  value for the option
+     * @return mixed         DB_OK on success. A Pineapple\DB\Error object on failure.
      *
      * @see Common::$options
      */
@@ -641,7 +614,6 @@ abstract class Common extends Util
      * Returns the value of an option
      *
      * @param string $option  the option name you're curious about
-     *
      * @return mixed  the option's value
      */
     public function getOption($option)
@@ -655,7 +627,7 @@ abstract class Common extends Util
     /**
      * Determine if we're connected
      *
-     * @return bool true if connected, false if not
+     * @return boolean true if connected, false if not
      */
     public function connected()
     {
@@ -673,15 +645,14 @@ abstract class Common extends Util
      * execute()'s $data argument.
      *
      * Three types of placeholders can be used:
-     *   + <kbd>?</kbd>  scalar value (i.e. strings, integers).  The system
-     *                   will automatically quote and escape the data.
-     *   + <kbd>!</kbd>  value is inserted 'as is'
-     *   + <kbd>&</kbd>  requires a file name.  The file's contents get
-     *                   inserted into the query (i.e. saving binary
-     *                   data in a db)
+     *   + `?`  scalar value (i.e. strings, integers).  The system will
+     *          automatically quote and escape the data.
+     *   + `!`  value is inserted 'as is'
+     *   + `&`  requires a file name.  The file's contents get inserted
+     *          into the query (i.e. saving binary data in a db)
      *
      * Example 1.
-     * <code>
+     * ```php
      * $sth = $db->prepare('INSERT INTO tbl (a, b, c) VALUES (?, !, &)');
      * $data = [
      *     "John's text",
@@ -689,22 +660,19 @@ abstract class Common extends Util
      *     'filename.txt'
      * ];
      * $res = $db->execute($sth, $data);
-     * </code>
+     * ```
      *
      * Use backslashes to escape placeholder characters if you don't want
      * them to be interpreted as placeholders:
-     * <pre>
-     *    "UPDATE foo SET col=? WHERE col='over \& under'"
-     * </pre>
+     * ```sql
+     * UPDATE foo SET col=? WHERE col='over \& under'
+     * ```
      *
      * With some database backends, this is emulated.
      *
-     * {@internal ibase and oci8 have their own prepare() methods.}}
-     *
      * @param string $query  the query to be prepared
-     *
-     * @return mixed  DB statement resource on success. A Pineapple\DB\Error
-     *                object on failure.
+     * @return mixed         DB statement resource on success. A Pineapple\DB\Error
+     *                       object on failure.
      *
      * @see Common::execute()
      */
@@ -734,11 +702,11 @@ abstract class Common extends Util
         $this->prepareTokens[] = &$newtokens;
         end($this->prepareTokens);
 
-        $k = key($this->prepareTokens);
-        $this->prepareTypes[$k] = $types;
-        $this->preparedQueries[$k] = implode(' ', $newtokens);
+        $key = key($this->prepareTokens);
+        $this->prepareTypes[$key] = $types;
+        $this->preparedQueries[$key] = implode(' ', $newtokens);
 
-        return $k;
+        return $key;
     }
 
     /**
@@ -751,7 +719,6 @@ abstract class Common extends Util
      * @param string $where         for update queries: the WHERE clause to
      *                              append to the SQL statement.  Don't
      *                              include the "WHERE" keyword.
-     *
      * @return mixed                the query handle
      *
      * @uses Common::prepare(), Common::buildManipSQL()
@@ -779,10 +746,9 @@ abstract class Common extends Util
      * @param string $where         for update queries: the WHERE clause to
      *                              append to the SQL statement.  Don't
      *                              include the "WHERE" keyword.
-     *
-     * @return mixed  a new Result object for successful SELECT queries
-     *                or DB_OK for successul data manipulation queries.
-     *                A Pineapple\DB\Error object on failure.
+     * @return mixed                a new Result object for successful SELECT queries
+     *                              or DB_OK for successul data manipulation queries.
+     *                              A Pineapple\DB\Error object on failure.
      *
      * @uses Common::autoPrepare(), Common::execute()
      *
@@ -803,15 +769,15 @@ abstract class Common extends Util
      * Produces an SQL query string for autoPrepare()
      *
      * Example:
-     * <pre>
+     * ```php
      * buildManipSQL('table_sql', ['field1', 'field2', 'field3'],
      *               DB_AUTOQUERY_INSERT);
-     * </pre>
+     * ```
      *
      * That returns
-     * <samp>
+     * ```sql
      * INSERT INTO table_sql (field1,field2,field3) VALUES (?,?,?)
-     * </samp>
+     * ```
      *
      * NOTES:
      *   - This belongs more to a SQL Builder class, but this is a simple
@@ -826,7 +792,6 @@ abstract class Common extends Util
      * @param string $where         for update queries: the WHERE clause to
      *                              append to the SQL statement.  Don't
      *                              include the "WHERE" keyword.
-     *
      * @return string|Error         the sql query for autoPrepare(), or an Error
      *                              object in the case of failure
      */
@@ -882,7 +847,7 @@ abstract class Common extends Util
      * Executes a DB statement prepared with prepare()
      *
      * Example 1.
-     * <code>
+     * ```php
      * $sth = $db->prepare('INSERT INTO tbl (a, b, c) VALUES (?, !, &)');
      * $data = [
      *     "John's text",
@@ -890,7 +855,7 @@ abstract class Common extends Util
      *     'filename.txt'
      * ];
      * $res = $db->execute($sth, $data);
-     * </code>
+     * ```
      *
      * @param resource $stmt  a DB statement resource returned from prepare()
      * @param mixed    $data  array, string or numeric data to be used in
@@ -898,12 +863,9 @@ abstract class Common extends Util
      *                        passed must match quantity of placeholders in
      *                        query:  meaning 1 placeholder for non-array
      *                        parameters or 1 placeholder per array element.
-     *
-     * @return mixed  a new Result object for successful SELECT queries
-     *                or DB_OK for successul data manipulation queries.
-     *                A Pineapple\DB\Error object on failure.
-     *
-     * {@internal ibase and oci8 have their own execute() methods.}}
+     * @return mixed          a new Result object for successful SELECT queries
+     *                        or DB_OK for successul data manipulation queries.
+     *                        A Pineapple\DB\Error object on failure.
      *
      * @see Common::prepare()
      *
@@ -925,28 +887,24 @@ abstract class Common extends Util
         }
     }
 
-    abstract public function simpleQuery($query);
-
     /**
      * Emulates executing prepared statements if the DBMS not support them
      *
-     * @param resource $stmt  a DB statement resource returned from execute()
-     * @param mixed    $data  array, string or numeric data to be used in
-     *                         execution of the statement.  Quantity of items
-     *                         passed must match quantity of placeholders in
-     *                         query:  meaning 1 placeholder for non-array
-     *                         parameters or 1 placeholder per array element.
+     * @param int   $stmt  a DB statement number returned from execute()
+     * @param mixed $data  array, string or numeric data to be used in
+     *                     execution of the statement.  Quantity of items
+     *                     passed must match quantity of placeholders in
+     *                     query:  meaning 1 placeholder for non-array
+     *                     parameters or 1 placeholder per array element.
+     * @return mixed       a string containing the real query run when emulating
+     *                     prepare/execute.  A Pineapple\DB\Error object on failure.
      *
-     * @return mixed  a string containing the real query run when emulating
-     *                 prepare/execute.  A Pineapple\DB\Error object on failure.
-     *
-     * @access protected
      * @see Common::execute()
      */
     protected function executeEmulateQuery($stmt, $data = [])
     {
-        $stmt = (int)$stmt;
-        $data = (array)$data;
+        $stmt = (int) $stmt;
+        $data = (array) $data;
         $this->lastParameters = $data;
 
         if (count($this->prepareTypes[$stmt]) != count($data)) {
@@ -989,17 +947,16 @@ abstract class Common extends Util
      * If an error occurs during execute(), executeMultiple() does not
      * execute the unfinished rows, but rather returns that error.
      *
-     * @param resource $stmt  query handle from prepare()
-     * @param array    $data  numeric array containing the
-     *                         data to insert into the query
-     *
-     * @return int  DB_OK on success.  A Pineapple\DB\Error object on failure.
+     * @param int   $stmt  query handle from prepare()
+     * @param array $data  numeric array containing the data to insert
+     *                     into the query
+     * @return int         DB_OK on success. A Pineapple\DB\Error object on failure.
      *
      * @see Common::prepare(), Common::execute()
      *
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    public function executeMultiple($stmt, $data)
+    public function executeMultiple($stmt, array $data)
     {
         foreach ($data as $value) {
             $res = $this->execute($stmt, $value);
@@ -1013,12 +970,11 @@ abstract class Common extends Util
     /**
      * Frees the internal resources associated with a prepared query
      *
-     * @param resource $stmt         the prepared statement's PHP resource
-     * @param bool     $freeResource should the PHP resource be freed too?
-     *                               Use false if you need to get data
-     *                               from the result set later.
-     *
-     * @return bool  TRUE on success, FALSE if $result is invalid
+     * @param int  $stmt         the prepared statement's ID number
+     * @param bool $freeResource should the PHP resource be freed too? Use
+     *                           false if you need to get data from the
+     *                           result set later.
+     * @return bool              true on success, false if $result is invalid
      *
      * @see Common::prepare()
      *
@@ -1043,10 +999,8 @@ abstract class Common extends Util
      * It is defined here to ensure all drivers have this method available.
      *
      * @param string $query  the query string to modify
+     * @return string        the modified query string
      *
-     * @return string  the modified query string
-     *
-     * @access protected
      * @see DB\Driver\DoctrineDbal::modifyQuery()
      */
     protected function modifyQuery($query)
@@ -1064,14 +1018,12 @@ abstract class Common extends Util
      * @param int    $from    the row to start to fetching (0 = the first row)
      * @param int    $count   the numbers of rows to fetch
      * @param mixed  $params  array, string or numeric data to be used in
-     *                         execution of the statement.  Quantity of items
-     *                         passed must match quantity of placeholders in
-     *                         query:  meaning 1 placeholder for non-array
-     *                         parameters or 1 placeholder per array element.
+     *                        execution of the statement.  Quantity of items
+     *                        passed must match quantity of placeholders in
+     *                        query:  meaning 1 placeholder for non-array
+     *                        parameters or 1 placeholder per array element.
      *
      * @return string  the query string with LIMIT clauses added
-     *
-     * @access protected
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
@@ -1089,14 +1041,13 @@ abstract class Common extends Util
      *
      * @param string $query   the SQL query or the statement to prepare
      * @param mixed  $params  array, string or numeric data to be used in
-     *                         execution of the statement.  Quantity of items
-     *                         passed must match quantity of placeholders in
-     *                         query:  meaning 1 placeholder for non-array
-     *                         parameters or 1 placeholder per array element.
-     *
-     * @return mixed  a new Result object for successful SELECT queries
-     *                 or DB_OK for successul data manipulation queries.
-     *                 A Pineapple\DB\Error object on failure.
+     *                        execution of the statement.  Quantity of items
+     *                        passed must match quantity of placeholders in
+     *                        query:  meaning 1 placeholder for non-array
+     *                        parameters or 1 placeholder per array element.
+     * @return mixed          a new Result object for successful SELECT queries
+     *                        or DB_OK for successul data manipulation queries.
+     *                        A Pineapple\DB\Error object on failure.
      *
      * @see Result, Common::prepare(), Common::execute()
      *
@@ -1112,16 +1063,16 @@ abstract class Common extends Util
             $ret = $this->execute($sth, $params);
             $this->freePrepared($sth, false);
             return $ret;
-        } else {
-            $this->lastParameters = [];
-            $result = $this->simpleQuery($query);
-            if ($result === DB::DB_OK || DB::isError($result)) {
-                return $result;
-            } else {
-                $tmp = new Result($this, $result);
-                return $tmp;
-            }
         }
+
+        $this->lastParameters = [];
+        $result = $this->simpleQuery($query);
+        if ($result === DB::DB_OK || DB::isError($result)) {
+            return $result;
+        }
+
+        $tmp = new Result($this, $result);
+        return $tmp;
     }
 
     /**
@@ -1131,14 +1082,13 @@ abstract class Common extends Util
      * @param int    $from    the row to start to fetching (0 = the first row)
      * @param int    $count   the numbers of rows to fetch
      * @param mixed  $params  array, string or numeric data to be used in
-     *                         execution of the statement.  Quantity of items
-     *                         passed must match quantity of placeholders in
-     *                         query:  meaning 1 placeholder for non-array
-     *                         parameters or 1 placeholder per array element.
-     *
-     * @return mixed  a new Result object for successful SELECT queries
-     *                 or DB_OK for successul data manipulation queries.
-     *                 A Pineapple\DB\Error object on failure.
+     *                        execution of the statement.  Quantity of items
+     *                        passed must match quantity of placeholders in
+     *                        query:  meaning 1 placeholder for non-array
+     *                        parameters or 1 placeholder per array element.
+     * @return mixed          a new Result object for successful SELECT queries
+     *                        or DB_OK for successul data manipulation queries.
+     *                        A Pineapple\DB\Error object on failure.
      *
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
@@ -1163,13 +1113,12 @@ abstract class Common extends Util
      *
      * @param string $query   the SQL query
      * @param mixed  $params  array, string or numeric data to be used in
-     *                         execution of the statement.  Quantity of items
-     *                         passed must match quantity of placeholders in
-     *                         query:  meaning 1 placeholder for non-array
-     *                         parameters or 1 placeholder per array element.
-     *
-     * @return mixed  the returned value of the query.
-     *                 A Pineapple\DB\Error object on failure.
+     *                        execution of the statement.  Quantity of items
+     *                        passed must match quantity of placeholders in
+     *                        query:  meaning 1 placeholder for non-array
+     *                        parameters or 1 placeholder per array element.
+     * @return mixed          the returned value of the query.
+     *                        A Pineapple\DB\Error object on failure.
      *
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
@@ -1215,7 +1164,6 @@ abstract class Common extends Util
      *                        query:  meaning 1 placeholder for non-array
      *                        parameters or 1 placeholder per array element.
      * @param int $fetchmode  the fetch mode to use
-     *
      * @return array|Error    the first row of results as an array.
      *                        A Pineapple\DB\Error object on failure.
      *
@@ -1272,14 +1220,13 @@ abstract class Common extends Util
      *
      * @param string $query   the SQL query
      * @param mixed  $col     which column to return (integer [column number,
-     *                         starting at 0] or string [column name])
+     *                        starting at 0] or string [column name])
      * @param mixed  $params  array, string or numeric data to be used in
-     *                         execution of the statement.  Quantity of items
-     *                         passed must match quantity of placeholders in
-     *                         query:  meaning 1 placeholder for non-array
-     *                         parameters or 1 placeholder per array element.
-     *
-     * @return array  the results as an array.  A Pineapple\DB\Error object on failure.
+     *                        execution of the statement.  Quantity of items
+     *                        passed must match quantity of placeholders in
+     *                        query:  meaning 1 placeholder for non-array
+     *                        parameters or 1 placeholder per array element.
+     * @return array          the results as an array.  A Pineapple\DB\Error object on failure.
      *
      * @see Common::query()
      *

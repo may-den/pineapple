@@ -253,21 +253,11 @@ class DB
     // @const Enable hack that makes numRows() work in Oracle
     const DB_PORTABILITY_NUMROWS = 8;
 
-    /**
-     * Makes certain error messages in certain drivers compatible
-     * with those from other DBMS's
-     *
-     * + mysql, mysqli:  change unique/primary key constraints
-     *   DB_ERROR_ALREADY_EXISTS -> DB_ERROR_CONSTRAINT
-     */
-    // @const Convert error messages to a consistent type across DB layers
-    const DB_PORTABILITY_ERRORS = 16;
-
     // @const Convert null values to empty strings in data output by get*() and fetch*()
     const DB_PORTABILITY_NULL_TO_EMPTY = 32;
 
     // @const Turn on all portability features
-    const DB_PORTABILITY_ALL = 63;
+    const DB_PORTABILITY_ALL = 47;
 
     // @const Driver class namespace prefix
     const INTERNAL_DRIVER_PREFIX = '\\Pineapple\\DB\\Driver\\';
@@ -312,22 +302,15 @@ class DB
      * connect to the database
      *
      * @param string $type     the database driver name (eg "PdoDriver")
-     * @param mixed  $options  an associative array of option names and values,
-     *                         or a true/false value for the 'persistent'
-     *                         option
-     *
+     * @param array  $options  an associative array of option names and values
      * @return object          a new DB object. A DB\Error object on failure.
      *
      * @see DB\Driver\Common::setOption()
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    public static function factory($type, $options = false)
+    public static function factory($type, array $options = [])
     {
-        if (!is_array($options)) {
-            $options = ['persistent' => $options];
-        }
-
         $classname = self::qualifyClassname($type);
 
         if (!class_exists($classname)) {

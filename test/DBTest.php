@@ -13,7 +13,6 @@ class DBTest extends TestCase
     {
         $dbh = DB::factory(TestDriver::class);
         $this->assertInstanceOf(TestDriver::class, $dbh);
-        $this->assertFalse($dbh->getOption('persistent'));
     }
 
     public function testFactoryWithArrayOptions()
@@ -21,13 +20,6 @@ class DBTest extends TestCase
         $dbh = DB::factory(TestDriver::class, ['debug' => 'q who?']);
         $this->assertInstanceOf(TestDriver::class, $dbh);
         $this->assertEquals('q who?', $dbh->getOption('debug'));
-    }
-
-    public function testFactoryWithLegacyOption()
-    {
-        $dbh = DB::factory(TestDriver::class, true);
-        $this->assertInstanceOf(TestDriver::class, $dbh);
-        $this->assertTrue($dbh->getOption('persistent'));
     }
 
     public function testFactoryWithBadDriver()
