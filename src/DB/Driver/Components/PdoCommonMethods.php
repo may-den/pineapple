@@ -4,12 +4,20 @@ namespace Pineapple\DB\Driver\Components;
 use Pineapple\DB;
 use Pineapple\DB\StatementContainer;
 
+/**
+ * Common methods shared amongst PDO and PDO-alike drivers.
+ *
+ * @author     Rob Andrews <rob@aphlor.org>
+ * @license    BSD-2-Clause
+ * @package    Database
+ * @version    Introduced in Pineapple 0.3.0
+ */
 trait PdoCommonMethods
 {
     /**
      * Disconnects from the database server
      *
-     * @return bool  TRUE on success, FALSE on failure
+     * @return bool     true on success, false on failure
      */
     public function disconnect()
     {
@@ -22,8 +30,7 @@ trait PdoCommonMethods
      *
      * This method has not been implemented yet.
      *
-     * @return false
-     * @access public
+     * @return bool     will always be false
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
@@ -39,9 +46,8 @@ trait PdoCommonMethods
      * Pineapple\DB\Result::free() instead.  It can't be declared "protected"
      * because Pineapple\DB\Result is a separate object.
      *
-     * @param PDOStatement $result PHP's query result resource
-     *
-     * @return bool                TRUE on success, FALSE if $result is invalid
+     * @param StatementContainer $result PHP query statement handle
+     * @return bool                      true on success, false if $result is invalid
      *
      * @see Pineapple\DB\Result::free()
      */
@@ -59,10 +65,9 @@ trait PdoCommonMethods
      * Pineapple\DB\Result::numCols() instead.  It can't be declared
      * "protected" because Pineapple\DB\Result is a separate object.
      *
-     * @param resource $result  PHP's query result resource
-     *
-     * @return int|Error        the number of columns. A Pineapple\DB\Error
-     *                          object on failure.
+     * @param StatementContainer $result PHP query statement handle
+     * @return int|Error                 the number of columns. A Pineapple\DB\Error
+     *                                   object on failure.
      *
      * @see Pineapple\DB\Result::numCols()
      */
@@ -82,10 +87,9 @@ trait PdoCommonMethods
      * Pineapple\DB\Result::numRows() instead.  It can't be declared "protected"
      * because Pineapple\DB\Result is a separate object.
      *
-     * @param resource $result  PHP's query result resource
-     *
-     * @return int|Error        the number of rows. A Pineapple\DB\Error
-     *                          object on failure.
+     * @param StatementContainer $result PHP query statement handle
+     * @return int|Error                 the number of rows. A Pineapple\DB\Error
+     *                                   object on failure.
      *
      * @see Pineapple\DB\Result::numRows()
      * @todo This is not easily testable, since not all drivers support this for SELECTs
@@ -104,7 +108,6 @@ trait PdoCommonMethods
      * Enables or disables automatic commits
      *
      * @param bool $onoff  true turns it on, false turns it off
-     *
      * @return int|Error   DB_OK on success. A Pineapple\DB\Error object if
      *                     the driver doesn't support auto-committing
      *                     transactions.
@@ -128,7 +131,6 @@ trait PdoCommonMethods
      * character (<kbd>`</kbd>) in table or column names.
      *
      * @param string $str  identifier name to be quoted
-     *
      * @return string      quoted identifier string
      *
      * @see Pineapple\DB\Driver\Common::quoteIdentifier()
@@ -143,7 +145,6 @@ trait PdoCommonMethods
      * Escapes a string according to the current DBMS's standards
      *
      * @param string $str   the string to be escaped
-     *
      * @return string|Error the escaped string, or an error
      *
      * @see Pineapple\DB\Driver\Common::quoteSmart()
@@ -217,10 +218,7 @@ trait PdoCommonMethods
      *                        passed must match quantity of placeholders in
      *                        query:  meaning 1 placeholder for non-array
      *                        parameters or 1 placeholder per array element.
-     *
-     * @return string  the query string with LIMIT clauses added
-     *
-     * @access protected
+     * @return string         the query string with LIMIT clauses added
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
@@ -232,9 +230,9 @@ trait PdoCommonMethods
             // @codeCoverageIgnoreStart
             return $query . " LIMIT $count";
             // @codeCoverageIgnoreEnd
-        } else {
-            return $query . " LIMIT $from, $count";
         }
+
+        return $query . " LIMIT $from, $count";
     }
 
     /**
@@ -243,19 +241,17 @@ trait PdoCommonMethods
      * @param int $errno  if the error is being manually raised pass a
      *                    DB_ERROR* constant here.  If this isn't passed
      *                    the error information gathered from the DBMS.
-     *
-     * @return object  the Pineapple\DB\Error object
+     * @return object     the Pineapple\DB\Error object
      *
      * @see Pineapple\DB\Driver\Common::raiseError(),
      *      Pineapple\DB\Driver\DoctrineDbal::errorNative(), Pineapple\DB\Driver\Common::errorCode()
      */
     private function myRaiseError($errno = null)
     {
-        if ($this->connected()) {
-            $error = $this->connection->errorInfo();
-        } else {
-            $error = ['Disconnected', null, 'No active connection'];
-        }
+        $error = $this->connected() ?
+            $this->connection->errorInfo() :
+            ['Disconnected', null, 'No active connection'];
+
         return $this->raiseError(
             $errno,
             null,
@@ -299,13 +295,12 @@ trait PdoCommonMethods
     /**
      * Returns information about a table or a result set
      *
-     * @param PDOStatement|string $result Pineapple\DB\Result object from a query or a
-     *                                    string containing the name of a table.
-     *                                    While this also accepts a query result
-     *                                    resource identifier, this behavior is
-     *                                    deprecated.
-     * @param int                 $mode   a valid tableInfo mode
-     *
+     * @param StatementContainer|string $result Pineapple\DB\Result object from a query or a
+     *                                          string containing the name of a table.
+     *                                          While this also accepts a query result
+     *                                          resource identifier, this behavior is
+     *                                          deprecated.
+     * @param int                       $mode   a valid tableInfo mode
      * @return mixed   an associative array with the information requested.
      *                 A Pineapple\DB\Error object on failure.
      *
@@ -345,11 +340,9 @@ trait PdoCommonMethods
 
         $tableHandle = self::getStatement($tableHandle);
 
-        if ($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) {
-            $caseFunc = 'strtolower';
-        } else {
-            $caseFunc = 'strval';
-        }
+        $caseFunc = ($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) ?
+            'strtolower' :
+            'strval';
 
         $count = $tableHandle->columnCount();
         $res = [];

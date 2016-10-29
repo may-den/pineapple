@@ -659,19 +659,6 @@ class CommonTest extends TestCase
         $this->assertEquals([1, 'test1'], $result);
     }
 
-    public function testGetRowWithWackyParametersAndAFetchMode()
-    {
-        $dbh = DB::factory(TestDriver::class);
-
-        // if my eyes aren't deceiving me, it appears that the first decision tree in getRow allows you
-        // to transpose the params and fetchmode parameters. to what end i'm not sure.
-        $result = $dbh->getRow('SELECT foo FROM bar WHERE foo = ?', DB::DB_FETCHMODE_ASSOC, ['bar']);
-        $this->assertEquals([
-            'id' => 1,
-            'data' => 'test1',
-        ], $result);
-    }
-
     public function testGetRowWithParametersAndSyntaxError()
     {
         $dbh = DB::factory(TestDriver::class);
@@ -1015,14 +1002,6 @@ class CommonTest extends TestCase
         $this->assertEquals(self::$orderedAllData, $result);
     }
 
-    public function testGetAllWithScalarParamsAndModeTransposed()
-    {
-        $dbh = DB::factory(TestDriver::class);
-
-        $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = ?', DB::DB_FETCHMODE_ORDERED, ['bar']);
-        $this->assertEquals(self::$orderedAllData, $result);
-    }
-
     public function testGetAllWithParamsAndSyntaxError()
     {
         $dbh = DB::factory(TestDriver::class);
@@ -1049,6 +1028,38 @@ class CommonTest extends TestCase
         $this->assertEquals([
             [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
             [
+                'test1',
+                'test2',
+                'test3',
+                'test4',
+                'test5',
+                'test6',
+                'test7',
+                'test8',
+                'test9',
+                'test10',
+                'test11',
+                'test12',
+                'test13',
+                'test14',
+                'test15',
+                'test16',
+                'test17',
+                'test18',
+                'test19',
+                'test20',
+            ],
+        ], $result);
+    }
+
+    public function testGetAllAssocTransposed()
+    {
+        $dbh = DB::factory(TestDriver::class);
+
+        $result = $dbh->getAll('SELECT foo FROM bar', [], DB::DB_FETCHMODE_ASSOC | DB::DB_FETCHMODE_FLIPPED);
+        $this->assertEquals([
+            'id' => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+            'data' => [
                 'test1',
                 'test2',
                 'test3',

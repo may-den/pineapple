@@ -24,8 +24,6 @@ class Row
      * The constructor places a row's data into properties of this object
      *
      * @param array  the array containing the row's data
-     *
-     * @return void
      */
     public function __construct(&$arr)
     {

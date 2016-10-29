@@ -67,7 +67,10 @@ class StatementContainer
                     'We do not know how to deal with this type of statement handle',
                     StatementException::UNHANDLED_TYPE
                 );
+                // unreachable.
+                // @codeCoverageIgnoreStart
                 break;
+                // @codeCoverageIgnoreEnd
         }
 
         $this->statement = $statement;

@@ -66,7 +66,6 @@ class Util
      * Which class to use for error objects.
      *
      * @var     string
-     * @access  protected
      */
     protected $errorClass = Error::class;
 
@@ -75,8 +74,6 @@ class Util
      *
      * @param string $errorClass  (optional) which class to use for
      *                            error objects, defaults to Pineapple\Error.
-     * @access public
-     * @return void
      */
     public function __construct($errorClass = null)
     {
@@ -134,13 +131,12 @@ class Util
     /**
      * Tell whether a value is a Pineapple\Error.
      *
-     * @param   mixed $data   the value to test
-     * @param   int   $code   if $data is an error object, return true
-     *                        only if $code is a string and
-     *                        $obj->getMessage() == $code or
-     *                        $code is an integer and $obj->getCode() == $code
-     *
-     * @return  bool    true if parameter is an error
+     * @param  mixed $data the value to test
+     * @param  int   $code if $data is an error object, return true
+     *                     only if $code is a string and
+     *                     $obj->getMessage() == $code or
+     *                     $code is an integer and $obj->getCode() == $code
+     * @return boolean     true if parameter is an error
      */
     public static function staticIsError($data, $code = null)
     {
@@ -163,34 +159,26 @@ class Util
      * handling applied.  If the $mode and $options parameters are not
      * specified, the object's defaults are used.
      *
-     * @param mixed $message a text error message or a Pineapple\Error object
-     *
-     * @param int $code      a numeric error code (it is up to your class
-     *                       to define these if you want to use codes)
-     *
-     * @param int $mode      One of PEAR_ERROR_RETURN, PEAR_ERROR_PRINT,
-     *                       PEAR_ERROR_TRIGGER, PEAR_ERROR_DIE,
-     *                       PEAR_ERROR_CALLBACK, PEAR_ERROR_EXCEPTION.
-     *
-     * @param mixed $options If $mode is PEAR_ERROR_TRIGGER, this parameter
-     *                       specifies the PHP-internal error level (one of
-     *                       E_USER_NOTICE, E_USER_WARNING or E_USER_ERROR).
-     *                       If $mode is PEAR_ERROR_CALLBACK, this
-     *                       parameter specifies the callback function or
-     *                       method.  In other error modes this parameter
-     *                       is ignored.
-     *
-     * @param string $userInfo If you need to pass along for example debug
-     *                         information, this parameter is meant for that.
-     *
+     * @param mixed $message     a text error message or a Pineapple\Error object
+     * @param int $code          a numeric error code (it is up to your class
+     *                           to define these if you want to use codes)
+     * @param int $mode          One of PEAR_ERROR_RETURN, PEAR_ERROR_PRINT,
+     *                           PEAR_ERROR_TRIGGER, PEAR_ERROR_DIE,
+     *                           PEAR_ERROR_CALLBACK, PEAR_ERROR_EXCEPTION.
+     * @param mixed $options     If $mode is PEAR_ERROR_TRIGGER, this parameter
+     *                           specifies the PHP-internal error level (one of
+     *                           E_USER_NOTICE, E_USER_WARNING or E_USER_ERROR).
+     *                           If $mode is PEAR_ERROR_CALLBACK, this
+     *                           parameter specifies the callback function or
+     *                           method.  In other error modes this parameter
+     *                           is ignored.
+     * @param string $userInfo   If you need to pass along for example debug
+     *                           information, this parameter is meant for that.
      * @param string $errorClass The returned error object will be
      *                           instantiated from this class, if specified.
-     *
-     * @param bool $skipMessage If true, raiseError will only pass error codes,
-     *                          the error message parameter will be dropped.
-     *
-     * @return object   a Pineapple\Error object
-     * @since PHP 4.0.5
+     * @param bool $skipMessage  If true, raiseError will only pass error codes,
+     *                           the error message parameter will be dropped.
+     * @return object            a Pineapple\Error object
      */
     protected static function staticRaiseError(
         $object,
@@ -219,38 +207,30 @@ class Util
             $ec = Error::class;
         }
 
-        if ($skipMessage) {
-            $a = new $ec($code, self::PEAR_ERROR_RETURN, $options, $userInfo);
-        } else {
-            $a = new $ec($message, $code, self::PEAR_ERROR_RETURN, $options, $userInfo);
-        }
-
-        return $a;
+        return $skipMessage ?
+            new $ec($code, self::PEAR_ERROR_RETURN, $options, $userInfo) :
+            new $ec($message, $code, self::PEAR_ERROR_RETURN, $options, $userInfo);
     }
 
     /**
      * Simpler form of raiseError with fewer options.  In most cases
      * message, code and userInfo are enough.
      *
-     * @param mixed $message a text error message or a Pineapple\Error object
-     *
-     * @param int $code      a numeric error code (it is up to your class
-     *                       to define these if you want to use codes)
-     *
+     * @param mixed $message   a text error message or a Pineapple\Error object
+     * @param int $code        a numeric error code (it is up to your class
+     *                         to define these if you want to use codes)
      * @param string $userInfo If you need to pass along for example debug
      *                         information, this parameter is meant for that.
+     * @return object          a Pineapple\Error object
      *
-     * @return object   a Pineapple\Error object
      * @see Pineapple\Util::raiseError
      */
     protected static function staticThrowError($object, $message = null, $code = null, $userInfo = null)
     {
         if ($object !== null) {
-            $a = $object->raiseError($message, $code, null, null, $userInfo);
-            return $a;
+            return $object->raiseError($message, $code, null, null, $userInfo);
         }
 
-        $a = self::raiseError($message, $code, null, null, $userInfo);
-        return $a;
+        return self::raiseError($message, $code, null, null, $userInfo);
     }
 }

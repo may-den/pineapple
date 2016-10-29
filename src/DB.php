@@ -33,7 +33,8 @@ use Pineapple\DB\Driver\DriverInterface;
  * common to all parts of DB.
  *
  * The object model of DB is as follows (indentation means inheritance):
- * <pre>
+ *
+ * ```
  * DB The main DB class.  This is simply a utility class
  *    with some "static" methods for creating DB objects as
  *    well as common utility functions for other DB classes.
@@ -47,7 +48,7 @@ use Pineapple\DB\Driver\DriverInterface;
  *                           When calling DB::factory or DB::connect for MySQL
  *                           connections, the object returned is an instance of this
  *                           class.
- * </pre>
+ * ```
  *
  * @category   Database
  * @package    DB
@@ -198,16 +199,16 @@ class DB
     const DB_FETCHMODE_ASSOC = 2;
 
     // @const Column data as object properties
-    const DB_FETCHMODE_OBJECT = 3;
+    const DB_FETCHMODE_OBJECT = 4;
 
     // @const "flipped" format, where results are an array of columns, not an array of rows
-    const DB_FETCHMODE_FLIPPED = 4;
+    const DB_FETCHMODE_FLIPPED = 8;
 
     /**
      * The type of information to return from the tableInfo() method.
      *
-     * Bitwised constants, so they can be combined using <kbd>|</kbd>
-     * and removed using <kbd>^</kbd>.
+     * Bitwised constants, so they can be combined using `|`
+     * and removed using `^`.
      *
      * @see DB\Driver\Common::tableInfo()
      *
@@ -228,8 +229,8 @@ class DB
     /**
      * Portability Modes.
      *
-     * Bitwised constants, so they can be combined using <kbd>|</kbd>
-     * and removed using <kbd>^</kbd>.
+     * Bitwised constants, so they can be combined using `|`
+     * and removed using `^`.
      *
      * @see DB\Driver\Common::setOption()
      *
@@ -253,21 +254,11 @@ class DB
     // @const Enable hack that makes numRows() work in Oracle
     const DB_PORTABILITY_NUMROWS = 8;
 
-    /**
-     * Makes certain error messages in certain drivers compatible
-     * with those from other DBMS's
-     *
-     * + mysql, mysqli:  change unique/primary key constraints
-     *   DB_ERROR_ALREADY_EXISTS -> DB_ERROR_CONSTRAINT
-     */
-    // @const Convert error messages to a consistent type across DB layers
-    const DB_PORTABILITY_ERRORS = 16;
-
     // @const Convert null values to empty strings in data output by get*() and fetch*()
     const DB_PORTABILITY_NULL_TO_EMPTY = 32;
 
     // @const Turn on all portability features
-    const DB_PORTABILITY_ALL = 63;
+    const DB_PORTABILITY_ALL = 47;
 
     // @const Driver class namespace prefix
     const INTERNAL_DRIVER_PREFIX = '\\Pineapple\\DB\\Driver\\';
@@ -312,22 +303,15 @@ class DB
      * connect to the database
      *
      * @param string $type     the database driver name (eg "PdoDriver")
-     * @param mixed  $options  an associative array of option names and values,
-     *                         or a true/false value for the 'persistent'
-     *                         option
-     *
-     * @return object          a new DB object. A DB\Error object on failure.
+     * @param array  $options  an associative array of option names and values
+     * @return DriverInterface a new DB object. A DB\Error object on failure.
      *
      * @see DB\Driver\Common::setOption()
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
-    public static function factory($type, $options = false)
+    public static function factory($type, array $options = [])
     {
-        if (!is_array($options)) {
-            $options = ['persistent' => $options];
-        }
-
         $classname = self::qualifyClassname($type);
 
         if (!class_exists($classname)) {
@@ -375,7 +359,6 @@ class DB
      * Determines if a variable is a DB\Error object
      *
      * @param mixed $value  the variable to check
-     *
      * @return bool  whether $value is DB\Error object
      */
     public static function isError($value)
@@ -387,8 +370,7 @@ class DB
      * Determines if a value is a DB_<driver> object
      *
      * @param mixed $value  the value to test
-     *
-     * @return bool  whether $value is a DB_<driver> object
+     * @return boolean      whether $value is a DB_<driver> object
      */
     public static function isConnection($value)
     {
@@ -398,10 +380,9 @@ class DB
     /**
      * Return a textual error message for a DB error code
      *
-     * @param integer|DB\Error $value  the DB error code
-     *
-     * @return string  the error message or false if the error code was
-     *                  not recognized
+     * @param integer|DB\Error $value the DB error code
+     * @return string                 the error message or false if the error code was
+     *                                not recognized
      */
     public static function errorMessage($value)
     {

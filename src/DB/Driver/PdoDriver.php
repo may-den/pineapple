@@ -14,6 +14,11 @@ use PDOException;
 
 /**
  * A PEAR DB driver that uses PDO as an underlying database layer.
+ *
+ * @author     Rob Andrews <rob@aphlor.org>
+ * @copyright  BSD-2-Clause
+ * @package    Database
+ * @version    Introduced in Pineapple 0.3.0
  */
 class PdoDriver extends Common implements DriverInterface
 {
@@ -49,7 +54,6 @@ class PdoDriver extends Common implements DriverInterface
     /**
      * Should data manipulation queries be committed automatically?
      * @var bool
-     * @access protected
      */
     protected $autocommit = true;
 
@@ -57,7 +61,6 @@ class PdoDriver extends Common implements DriverInterface
      * The quantity of transactions begun
      *
      * @var integer
-     * @access private
      */
     private $transactionOpcount = 0;
 
