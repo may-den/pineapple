@@ -1052,6 +1052,38 @@ class CommonTest extends TestCase
         ], $result);
     }
 
+    public function testGetAllAssocTransposed()
+    {
+        $dbh = DB::factory(TestDriver::class);
+
+        $result = $dbh->getAll('SELECT foo FROM bar', [], DB::DB_FETCHMODE_ASSOC | DB::DB_FETCHMODE_FLIPPED);
+        $this->assertEquals([
+            'id' => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+            'data' => [
+                'test1',
+                'test2',
+                'test3',
+                'test4',
+                'test5',
+                'test6',
+                'test7',
+                'test8',
+                'test9',
+                'test10',
+                'test11',
+                'test12',
+                'test13',
+                'test14',
+                'test15',
+                'test16',
+                'test17',
+                'test18',
+                'test19',
+                'test20',
+            ],
+        ], $result);
+    }
+
     public function testAutoCommit()
     {
         // this is a stub method intended to fail
