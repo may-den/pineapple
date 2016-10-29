@@ -20,6 +20,11 @@ use PDOException;
 /**
  * A PEAR DB driver that uses Doctrine's DBAL as an underlying database
  * layer.
+ *
+ * @author     Rob Andrews <rob@aphlor.org>
+ * @copyright  BSD-2-Clause
+ * @package    Database
+ * @version    Introduced in Pineapple 0.1.0
  */
 class DoctrineDbal extends Common implements DriverInterface
 {

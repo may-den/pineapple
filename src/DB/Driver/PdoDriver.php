@@ -14,6 +14,11 @@ use PDOException;
 
 /**
  * A PEAR DB driver that uses PDO as an underlying database layer.
+ *
+ * @author     Rob Andrews <rob@aphlor.org>
+ * @copyright  BSD-2-Clause
+ * @package    Database
+ * @version    Introduced in Pineapple 0.3.0
  */
 class PdoDriver extends Common implements DriverInterface
 {
