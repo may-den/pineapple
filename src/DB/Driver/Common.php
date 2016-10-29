@@ -128,7 +128,6 @@ abstract class Common extends Util
 
     /**
      * Flag indicating that the last query was a manipulation query.
-     * @access protected
      * @var boolean
      */
     protected $lastQueryManip = false;
@@ -136,7 +135,6 @@ abstract class Common extends Util
     /**
      * Flag indicating that the next query <em>must</em> be a manipulation
      * query.
-     * @access protected
      * @var boolean
      */
     protected $nextQueryManip = false;
@@ -155,8 +153,6 @@ abstract class Common extends Util
 
     /**
      * This constructor calls <kbd>parent::__construct('Pineapple\DB\Error')</kbd>
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -1228,7 +1224,7 @@ abstract class Common extends Util
      *                        passed must match quantity of placeholders in
      *                        query:  meaning 1 placeholder for non-array
      *                        parameters or 1 placeholder per array element.
-     * @return array          the results as an array.  A Pineapple\DB\Error object on failure.
+     * @return array          the results as an array. A Pineapple\DB\Error object on failure.
      *
      * @see Common::query()
      *
@@ -1236,7 +1232,7 @@ abstract class Common extends Util
      */
     public function getCol($query, $col = 0, $params = [])
     {
-        $params = (array)$params;
+        $params = (array) $params;
         if (count($params) > 0) {
             $sth = $this->prepare($query);
 
@@ -1292,50 +1288,50 @@ abstract class Common extends Util
      *
      * For example, if the table "mytable" contains:
      *
-     * <pre>
-     *  ID      TEXT       DATE
-     * --------------------------------
-     *  1       'one'      944679408
-     *  2       'two'      944679408
-     *  3       'three'    944679408
-     * </pre>
+     * | ID | TEXT    | DATE      |
+     * |----|---------|-----------|
+     * | 1  | 'one'   | 944679408 |
+     * | 2  | 'two'   | 944679408 |
+     * | 3  | 'three' | 944679408 |
      *
-     * Then the call getAssoc('SELECT id,text FROM mytable') returns:
-     * <pre>
+     * Then the call `getAssoc('SELECT id,text FROM mytable')` returns:
+     * ```php
      *   [
      *     '1' => 'one',
      *     '2' => 'two',
      *     '3' => 'three',
      *   ]
-     * </pre>
+     * ```
      *
-     * ...while the call getAssoc('SELECT id,text,date FROM mytable') returns:
-     * <pre>
+     * ...while the call `getAssoc('SELECT id,text,date FROM mytable')` returns:
+     * ```php
      *   [
      *     '1' => ['one', '944679408'],
      *     '2' => ['two', '944679408'],
      *     '3' => ['three', '944679408']
      *   ]
-     * </pre>
+     * ```
      *
      * If the more than one row occurs with the same value in the
      * first column, the last row overwrites all previous ones by
      * default.  Use the $group parameter if you don't want to
      * overwrite like this.  Example:
      *
-     * <pre>
-     * getAssoc('SELECT category,id,name FROM mytable', false, null,
-     *          DB_FETCHMODE_ASSOC, true) returns:
+     * `getAssoc('SELECT category,id,name FROM mytable', false, null,
+     *          DB_FETCHMODE_ASSOC, true)` returns:
      *
+     * ```php
      *   [
-     *     '1' => [['id' => '4', 'name' => 'number four'],
-     *             ['id' => '6', 'name' => 'number six']
-     *            ],
-     *     '9' => [['id' => '4', 'name' => 'number four'],
-     *             ['id' => '6', 'name' => 'number six']
-     *            ]
+     *     '1' => [
+     *       ['id' => '4', 'name' => 'number four'],
+     *       ['id' => '6', 'name' => 'number six']
+     *     ],
+     *     '9' => [
+     *       ['id' => '4', 'name' => 'number four'],
+     *       ['id' => '6', 'name' => 'number six']
+     *     ]
      *   ]
-     * </pre>
+     * ```
      *
      * Keep in mind that database functions in PHP usually return string
      * values for results regardless of the database's internal type.
@@ -1405,6 +1401,16 @@ abstract class Common extends Util
         if ($cols > 2 || $forceArray) {
             // return array values
             // @todo this part can be optimized
+
+            /**
+             * @todo I'm acutely aware that this is probably a 50-line bug, because:
+             * - there's no bitwise ops (meaning combined bits will fall to else block)
+             * - it's likely combined flip won't work either
+             * - result doesn't handle bitwise either
+             * - the (possibly combined) fetchmode isn't passed into fetchRow()
+             * "fixing" this would possibly introduce bugs in code that depend on the
+             * broken behaviour, so fixing this does _not_ seem like a priority.
+             */
             if ($fetchmode == DB::DB_FETCHMODE_ASSOC) {
                 while (is_array($row = $res->fetchRow(DB::DB_FETCHMODE_ASSOC))) {
                     reset($row);
@@ -1463,20 +1469,19 @@ abstract class Common extends Util
     /**
      * Fetches all of the rows from a query result
      *
-     * @param string $query      the SQL query
-     * @param mixed  $params     array, string or numeric data to be used in
-     *                            execution of the statement.  Quantity of
-     *                            items passed must match quantity of
-     *                            placeholders in query:  meaning 1
-     *                            placeholder for non-array parameters or
-     *                            1 placeholder per array element.
-     * @param int    $fetchmode  the fetch mode to use:
-     *                            + DB_FETCHMODE_ORDERED
-     *                            + DB_FETCHMODE_ASSOC
-     *                            + DB_FETCHMODE_ORDERED | DB_FETCHMODE_FLIPPED
-     *                            + DB_FETCHMODE_ASSOC | DB_FETCHMODE_FLIPPED
-     *
-     * @return array  the nested array.  A Pineapple\DB\Error object on failure.
+     * @param string $query     the SQL query
+     * @param mixed  $params    array, string or numeric data to be used in
+     *                          execution of the statement.  Quantity of
+     *                          items passed must match quantity of
+     *                          placeholders in query:  meaning 1
+     *                          placeholder for non-array parameters or
+     *                          1 placeholder per array element.
+     * @param int    $fetchmode the fetch mode to use:
+     *                          - DB_FETCHMODE_ORDERED
+     *                          - DB_FETCHMODE_ASSOC
+     *                          - DB_FETCHMODE_ORDERED | DB_FETCHMODE_FLIPPED
+     *                          - DB_FETCHMODE_ASSOC | DB_FETCHMODE_FLIPPED
+     * @return array            the nested array. A Pineapple\DB\Error object on failure.
      *
      * @SuppressWarnings(PHPMD.StaticAccess)
      */
@@ -1524,10 +1529,9 @@ abstract class Common extends Util
     /**
      * Enables or disables automatic commits
      *
-     * @param bool $onoff  true turns it on, false turns it off
-     *
-     * @return int|Error   DB_OK on success. A Pineapple\DB\Error object if
-     *                     the driver doesn't support auto-committing transactions.
+     * @param bool $onoff true turns it on, false turns it off
+     * @return int|Error  DB_OK on success. A Pineapple\DB\Error object if
+     *                    the driver doesn't support auto-committing transactions.
      *
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
@@ -1540,7 +1544,7 @@ abstract class Common extends Util
     /**
      * Commits the current transaction
      *
-     * @return int|Error  DB_OK on success. A Pineapple\DB\Error object on failure.
+     * @return int|Error DB_OK on success. A Pineapple\DB\Error object on failure.
      */
     public function commit()
     {
@@ -1550,7 +1554,7 @@ abstract class Common extends Util
     /**
      * Reverts the current transaction
      *
-     * @return int|Error  DB_OK on success.  A Pineapple\DB\Error object on failure.
+     * @return int|Error DB_OK on success. A Pineapple\DB\Error object on failure.
      */
     public function rollback()
     {
@@ -1560,9 +1564,8 @@ abstract class Common extends Util
     /**
      * Determines the number of rows in a query result
      *
-     * @param resource $result  the query result idenifier produced by PHP
-     *
-     * @return int|Error  the number of rows.  A Pineapple\DB\Error object on failure.
+     * @param StatementContainer $result the query result idenifier produced by PHP
+     * @return int|Error                 the number of rows.  A Pineapple\DB\Error object on failure.
      *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
@@ -1588,26 +1591,25 @@ abstract class Common extends Util
      *
      * Basically a wrapper for Pineapple\Util::raiseError without the message string.
      *
-     * @param mixed   integer error code, or a Pineapple\Error object (all
-     *                other parameters are ignored if this parameter is
-     *                an object
-     * @param int     error mode, see Pineapple\Error docs
-     * @param mixed   if error mode is PEAR_ERROR_TRIGGER, this is the
-     *                error level (E_USER_NOTICE etc).  If error mode is
-     *                PEAR_ERROR_CALLBACK, this is the callback function,
-     *                either as a function name, or as an array of an
-     *                object and method name.  For other error modes this
-     *                parameter is ignored.
-     * @param string  extra debug information.  Defaults to the last
-     *                query and native error code.
-     * @param mixed   native error code, integer or string depending the
-     *                backend
-     * @param mixed   dummy parameter for E_STRICT compatibility with
-     *                Pineapple\Util::raiseError
-     * @param mixed   dummy parameter for E_STRICT compatibility with
-     *                Pineapple\Util::raiseError
-     *
-     * @return Error  the Pineapple\Error object
+     * @param mixed  integer error code, or a Pineapple\Error object (all
+     *               other parameters are ignored if this parameter is
+     *               an object
+     * @param int    error mode, see Pineapple\Error docs
+     * @param mixed  if error mode is PEAR_ERROR_TRIGGER, this is the
+     *               error level (E_USER_NOTICE etc).  If error mode is
+     *               PEAR_ERROR_CALLBACK, this is the callback function,
+     *               either as a function name, or as an array of an
+     *               object and method name. For other error modes this
+     *               parameter is ignored.
+     * @param string extra debug information. Defaults to the last
+     *               query and native error code.
+     * @param mixed  native error code, integer or string depending the
+     *               backend
+     * @param mixed  dummy parameter for E_STRICT compatibility with
+     *               Pineapple\Util::raiseError
+     * @param mixed  dummy parameter for E_STRICT compatibility with
+     *               Pineapple\Util::raiseError
+     * @return Error the Pineapple\Error object
      *
      * @see Pineapple\Error
      *
@@ -1656,11 +1658,10 @@ abstract class Common extends Util
     /**
      * Maps native error codes to DB's portable ones
      *
-     * @param string|int $nativecode  the error code returned by the DBMS
-     *
-     * @return int  the portable DB error code.  Return DB_ERROR if the
-     *              current driver doesn't have a mapping for the
-     *              $nativecode submitted.
+     * @param string|int $nativecode the error code returned by the DBMS
+     * @return int                   the portable DB error code.  Return DB_ERROR if the
+     *                               current driver doesn't have a mapping for the
+     *                               $nativecode submitted.
      */
     public function errorCode($nativecode)
     {
@@ -1671,10 +1672,9 @@ abstract class Common extends Util
     /**
      * Maps a DB error code to a textual message
      *
-     * @param integer $dbcode  the DB error code
-     *
-     * @return string  the error message corresponding to the error code
-     *                  submitted.  FALSE if the error code is unknown.
+     * @param int $dbcode the DB error code
+     * @return string     the error message corresponding to the error code
+     *                    submitted.  FALSE if the error code is unknown.
      *
      * @see DB::errorMessage()
      *
@@ -1690,17 +1690,14 @@ abstract class Common extends Util
      *
      * The format of the resulting array depends on which <var>$mode</var>
      * you select.  The sample output below is based on this query:
-     * <pre>
+     * ```sql
      *    SELECT tblFoo.fldID, tblFoo.fldPhone, tblBar.fldId
      *    FROM tblFoo
      *    JOIN tblBar ON tblFoo.fldId = tblBar.fldId
-     * </pre>
+     * ```
      *
-     * <ul>
-     * <li>
-     *
-     * <kbd>null</kbd> (default)
-     *   <pre>
+     * `null` (default)
+     *   ```php
      *   [0] => Array (
      *       [table] => tblFoo
      *       [name] => fldId
@@ -1722,40 +1719,34 @@ abstract class Common extends Util
      *       [len] => 11
      *       [flags] => primary_key not_null
      *   )
-     *   </pre>
+     *   ```
      *
-     * </li><li>
+     * `DB_TABLEINFO_ORDER`
      *
-     * <kbd>DB_TABLEINFO_ORDER</kbd>
+     * In addition to the information found in the default output, a notation
+     * of the number of columns is provided by the `num_fields` element while
+     * the `order` element provides an array with the column names as the keys
+     * and their location index number (corresponding to the keys in the
+     * default output) as the values.
      *
-     *   <p>In addition to the information found in the default output,
-     *   a notation of the number of columns is provided by the
-     *   <samp>num_fields</samp> element while the <samp>order</samp>
-     *   element provides an array with the column names as the keys and
-     *   their location index number (corresponding to the keys in the
-     *   the default output) as the values.</p>
+     * If a result set has identical field names, the last one is used.
      *
-     *   <p>If a result set has identical field names, the last one is
-     *   used.</p>
-     *
-     *   <pre>
+     *   ```php
      *   [num_fields] => 3
      *   [order] => Array (
      *       [fldId] => 2
      *       [fldTrans] => 1
      *   )
-     *   </pre>
+     *   ```
      *
-     * </li><li>
+     * `DB_TABLEINFO_ORDERTABLE`
      *
-     * <kbd>DB_TABLEINFO_ORDERTABLE</kbd>
+     * Similar to `DB_TABLEINFO_ORDER` but adds more dimensions to the array
+     * in which the table names are keys and the field names are sub-keys.
+     * This is helpful for queries that join tables which have identical
+     * field names.
      *
-     *   <p>Similar to <kbd>DB_TABLEINFO_ORDER</kbd> but adds more
-     *   dimensions to the array in which the table names are keys and
-     *   the field names are sub-keys.  This is helpful for queries that
-     *   join tables which have identical field names.</p>
-     *
-     *   <pre>
+     *   ```php
      *   [num_fields] => 3
      *   [ordertable] => Array (
      *       [tblFoo] => Array (
@@ -1766,42 +1757,37 @@ abstract class Common extends Util
      *           [fldId] => 2
      *       )
      *   )
-     *   </pre>
+     *   ```
      *
-     * </li>
-     * </ul>
+     * The `flags` element contains a space separated list of extra
+     * information about the field.  This data is inconsistent between DBMS's
+     * due to the way each DBMS works.
+     *   + `primary_key`
+     *   + `unique_key`
+     *   + `multiple_key`
+     *   + `not_null`
      *
-     * The <samp>flags</samp> element contains a space separated list
-     * of extra information about the field.  This data is inconsistent
-     * between DBMS's due to the way each DBMS works.
-     *   + <samp>primary_key</samp>
-     *   + <samp>unique_key</samp>
-     *   + <samp>multiple_key</samp>
-     *   + <samp>not_null</samp>
-     *
-     * Most DBMS's only provide the <samp>table</samp> and <samp>flags</samp>
-     * elements if <var>$result</var> is a table name.  The following DBMS's
-     * provide full information from queries:
+     * Most DBMS's only provide the `table` and `flags` elements if `$result`
+     * is a table name. The following DBMS's provide full information from
+     * queries:
      *   + fbsql
      *   + mysql
      *
-     * If the 'portability' option has <samp>DB_PORTABILITY_LOWERCASE</samp>
-     * turned on, the names of tables and fields will be lowercased.
+     * If the 'portability' option has `DB_PORTABILITY_LOWERCASE` turned on,
+     * the names of tables and fields will be lowercased.
      *
      * @param object|string  $result  Result object from a query or a
      *                                string containing the name of a table.
      *                                While this also accepts a query result
      *                                resource identifier, this behavior is
      *                                deprecated.
-     * @param int  $mode   either unused or one of the tableInfo modes:
-     *                     <kbd>DB_TABLEINFO_ORDERTABLE</kbd>,
-     *                     <kbd>DB_TABLEINFO_ORDER</kbd> or
-     *                     <kbd>DB_TABLEINFO_FULL</kbd> (which does both).
-     *                     These are bitwise, so the first two can be
-     *                     combined using <kbd>|</kbd>.
-     *
-     * @return array|Error  an associative array with the information requested.
-     *                      A Pineapple\DB\Error object on failure.
+     * @param int  $mode              either unused or one of the tableInfo modes:
+     *                                `DB_TABLEINFO_ORDERTABLE`,
+     *                                `DB_TABLEINFO_ORDER` or `DB_TABLEINFO_FULL`
+     *                                (which does both). These are bitwise, so the
+     *                                first two can be combined using `|`.
+     * @return array|Error            an associative array with the information requested.
+     *                                A Pineapple\DB\Error object on failure.
      *
      * @see Common::setOption()
      *
@@ -1810,7 +1796,7 @@ abstract class Common extends Util
     public function tableInfo($result, $mode = null)
     {
         /**
-         * If the DB_<driver> class has a tableInfo() method, that one
+         * If the driver class has a tableInfo() method, that one
          * overrides this one.  But, if the driver doesn't have one,
          * this method runs and tells users about that fact.
          */
@@ -1821,12 +1807,8 @@ abstract class Common extends Util
      * Sets (or unsets) a flag indicating that the next query will be a
      * manipulation query, regardless of the usual self::isManip() heuristics.
      *
-     * @param boolean true to set the flag overriding the isManip() behaviour,
-     * false to clear it and fall back onto isManip()
-     *
-     * @return void
-     *
-     * @access public
+     * @param boolean $manip true to set the flag overriding the isManip() behaviour,
+     *                       false to clear it and fall back onto isManip()
      */
     public function nextQueryIsManip($manip)
     {
@@ -1840,9 +1822,8 @@ abstract class Common extends Util
      * Examples of data definition queries are CREATE, DROP, ALTER, GRANT,
      * REVOKE.
      *
-     * @param string $query  the query
-     *
-     * @return boolean  whether $query is a data manipulation query
+     * @param string $query the query
+     * @return boolean      whether $query is a data manipulation query
      */
     public static function isManip($query)
     {
@@ -1873,12 +1854,9 @@ abstract class Common extends Util
      * account the nextQueryManip flag and sets the lastQueryManip flag
      * (and resets nextQueryManip) according to the result.
      *
-     * @param string The query to check.
-     *
+     * @param string   The query to check.
      * @return boolean true if the query is a manipulation query, false
-     * otherwise
-     *
-     * @access protected
+     *                 otherwise
      */
     protected function checkManip($query)
     {
@@ -1891,10 +1869,6 @@ abstract class Common extends Util
      * Right-trims all strings in an array
      *
      * @param array $array  the array to be trimmed (passed by reference)
-     *
-     * @return void
-     *
-     * @access protected
      */
     protected function rtrimArrayValues(&$array)
     {
@@ -1909,10 +1883,6 @@ abstract class Common extends Util
      * Converts all null values in an array to empty strings
      *
      * @param array  $array  the array to be de-nullified (passed by reference)
-     *
-     * @return void
-     *
-     * @access protected
      */
     protected function convertNullArrayValuesToEmpty(&$array)
     {

@@ -67,7 +67,6 @@ class Result
     /**
      * The execute parameters that created this result
      * @var array
-     * @since Property available since Release 1.7.0
      */
     public $parameters;
 
@@ -77,13 +76,13 @@ class Result
      * Copied here incase it changes in $dbh, which is referenced
      *
      * @var string
-     * @since Property available since Release 1.7.0
      */
     public $query;
 
     /**
-     * The query result resource id created by PHP
-     * @var mixed
+     * The query result created by the driver
+     * @var StatementContainer
+     * @todo make private?
      */
     public $result;
 
@@ -101,23 +100,16 @@ class Result
      *
      * Copied here incase it changes in $dbh, which is referenced
      *
-     * {@internal  Mainly here because the InterBase/Firebird API is only
-     * able to retrieve data from result sets if the statemnt handle is
-     * still in scope.}}
-     *
-     * @var resource
-     * @since Property available since Release 1.7.0
+     * @var StatementContainer
      */
     public $statement;
 
     /**
      * This constructor sets the object's properties
      *
-     * @param DriverInterface $dbh      the DB object
-     * @param resource        $result   the result resource id
-     * @param array           $options  an associative array with result options
-     *
-     * @return void
+     * @param DriverInterface    $dbh     the DB object
+     * @param StatementContainer $result  the result resource id
+     * @param array              $options an associative array with result options
      */
     public function __construct(DriverInterface $dbh, StatementContainer $result, array $options = [])
     {
@@ -128,7 +120,8 @@ class Result
         $this->parameters = $dbh->lastParameters;
         $this->query = $dbh->lastQuery;
         $this->result = $result;
-        $this->statement = empty($dbh->last_stmt) ? null : $dbh->last_stmt;
+        // @todo check line below. i suspect this is not needed
+        $this->statement = null; // empty($dbh->lastStatement) ? null : $dbh->lastStatement;
         foreach ($options as $key => $value) {
             $this->setOption($key, $value);
         }
@@ -139,8 +132,6 @@ class Result
      *
      * @param string $key    the option to set
      * @param mixed  $value  the value to set the option to
-     *
-     * @return void
      */
     public function setOption($key, $value = null)
     {
@@ -148,8 +139,10 @@ class Result
             case 'limit_from':
                 $this->limitFrom = $value;
                 break;
+
             case 'limit_count':
                 $this->limitCount = $value;
+                break;
         }
     }
 
@@ -157,38 +150,40 @@ class Result
      * Fetch a row of data and return it by reference into an array
      *
      * The type of array returned can be controlled either by setting this
-     * method's <var>$fetchmode</var> parameter or by changing the default
-     * fetch mode setFetchMode() before calling this method.
+     * method's `$fetchmode` parameter or by changing the default fetch mode
+     * `setFetchMode()` before calling this method.
      *
      * There are two options for standardizing the information returned
      * from databases, ensuring their values are consistent when changing
      * DBMS's.  These portability options can be turned on when creating a
      * new DB object or by using setOption().
      *
-     *   + <var>DB_PORTABILITY_LOWERCASE</var>
+     *   + `DB_PORTABILITY_LOWERCASE`
      *     convert names of fields to lower case
      *
-     *   + <var>DB_PORTABILITY_RTRIM</var>
+     *   + `DB_PORTABILITY_RTRIM`
      *     right trim the data
      *
      * @param int $fetchmode  the constant indicating how to format the data
      * @param int $rownum     the row number to fetch (index starts at 0)
-     *
-     * @return mixed  an array or object containing the row's data,
-     *                 NULL when the end of the result set is reached
-     *                 or a Pineapple\DB\Error object on failure.
+     * @return mixed          an array or object containing the row's data,
+     *                        null when the end of the result set is reached
+     *                        or a Pineapple\DB\Error object on failure.
      *
      * @see DB\Common::setOption(), DB\Common::setFetchMode()
      */
     public function fetchRow($fetchmode = DB::DB_FETCHMODE_DEFAULT, $rownum = null)
     {
+        // @todo not bitwise ops on a supposedly bitwise fetch mode
         if ($fetchmode === DB::DB_FETCHMODE_DEFAULT) {
             $fetchmode = $this->fetchmode;
         }
+
         if ($fetchmode === DB::DB_FETCHMODE_OBJECT) {
             $fetchmode = DB::DB_FETCHMODE_ASSOC;
             $objectClass = $this->fetchModeObjectClass;
         }
+
         if (is_null($rownum) && $this->limitFrom !== null) {
             if ($this->rowCounter === null) {
                 $this->rowCounter = $this->limitFrom;
@@ -203,23 +198,25 @@ class Result
 
             $this->rowCounter++;
         }
+
         $arr = [];
         $res = $this->dbh->fetchInto($this->result, $arr, $fetchmode, $rownum);
+
         if ($res === DB::DB_OK) {
             if (isset($objectClass)) {
                 // The default mode is specified in the
                 // DB\Common::fetchModeObjectClass property
-                if ($objectClass == stdClass::class) {
-                    $arr = (object) $arr;
-                } else {
-                    $arr = new $objectClass($arr);
-                }
+                $arr = ($objectClass == stdClass::class) ?
+                    (object) $arr :
+                    new $objectClass($arr);
             }
             return $arr;
         }
+
         if ($res == null && $this->autofree) {
             $this->free();
         }
+
         return $res;
     }
 
@@ -227,31 +224,31 @@ class Result
      * Fetch a row of data into an array which is passed by reference
      *
      * The type of array returned can be controlled either by setting this
-     * method's <var>$fetchmode</var> parameter or by changing the default
-     * fetch mode setFetchMode() before calling this method.
+     * method's `$fetchmode` parameter or by changing the default fetch mode
+     * `setFetchMode()` before calling this method.
      *
      * There are two options for standardizing the information returned
      * from databases, ensuring their values are consistent when changing
      * DBMS's.  These portability options can be turned on when creating a
      * new DB object or by using setOption().
      *
-     *   + <var>DB_PORTABILITY_LOWERCASE</var>
+     *   + `DB_PORTABILITY_LOWERCASE`
      *     convert names of fields to lower case
      *
-     *   + <var>DB_PORTABILITY_RTRIM</var>
+     *   + `DB_PORTABILITY_RTRIM`
      *     right trim the data
      *
      * @param array &$arr       the variable where the data should be placed
      * @param int   $fetchmode  the constant indicating how to format the data
      * @param int   $rownum     the row number to fetch (index starts at 0)
-     *
-     * @return mixed  DB_OK if a row is processed, NULL when the end of the
-     *                result set is reached or a Pineapple\DB\Error object on failure
+     * @return mixed            DB_OK if a row is processed, NULL when the end of the
+     *                          result set is reached or a Pineapple\DB\Error object on failure
      *
      * @see DB\Common::setOption(), DB\Common::setFetchMode()
      */
     public function fetchInto(&$arr, $fetchmode = DB::DB_FETCHMODE_DEFAULT, $rownum = null)
     {
+        // @todo non-bitwise ops on a supposedly bitwise fetch mode
         if ($fetchmode === DB::DB_FETCHMODE_DEFAULT) {
             $fetchmode = $this->fetchmode;
         }
@@ -277,11 +274,9 @@ class Result
             if (isset($objectClass)) {
                 // default mode specified in the
                 // DB\Common::fetchModeObjectClass property
-                if ($objectClass == stdClass::class) {
-                    $arr = (object) $arr;
-                } else {
-                    $arr = new $objectClass($arr);
-                }
+                $arr = ($objectClass == stdClass::class) ?
+                    (object) $arr :
+                    new $objectClass($arr);
             }
             return DB::DB_OK;
         }
@@ -302,32 +297,29 @@ class Result
     }
 
     /**
-     * Get the number of rows in a result set
+     * Get the number of rows in a result set.
      *
      * @return int  the number of rows.  A Pineapple\DB\Error object on failure.
      */
     public function numRows()
     {
         if ($this->dbh->getOption('portability') & DB::DB_PORTABILITY_NUMROWS) {
-            if ($this->dbh->getFeature('prepare')) {
-                $res = $this->dbh->query($this->query, $this->parameters);
-            } else {
-                $res = $this->dbh->query($this->query);
-            }
+            $res = $this->dbh->getFeature('prepare') ?
+                $this->dbh->query($this->query, $this->parameters) :
+                $this->dbh->query($this->query);
+
             if (DB::isError($res)) {
                 return $res;
             }
             $tmp = null;
-            $i = 0;
+            $rowCounter = 0;
             while ($res->fetchInto($tmp, DB::DB_FETCHMODE_ORDERED)) {
-                $i++;
+                $rowCounter++;
             }
-            $count = $i;
-        } else {
-            $count = $this->dbh->numRows($this->result);
+            return $rowCounter;
         }
 
-        return $count;
+        return $this->dbh->numRows($this->result);
     }
 
     /**

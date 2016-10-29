@@ -38,7 +38,6 @@ interface DriverInterface
      *
      * @param mixed $result a valid sql result resource/object
      * @return false
-     * @access public
      */
     public function nextResult(StatementContainer $result);
 

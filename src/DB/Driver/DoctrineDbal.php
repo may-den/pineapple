@@ -55,7 +55,6 @@ class DoctrineDbal extends Common implements DriverInterface
     /**
      * Should data manipulation queries be committed automatically?
      * @var bool
-     * @access protected
      */
     protected $autocommit = true;
 
@@ -63,7 +62,6 @@ class DoctrineDbal extends Common implements DriverInterface
      * The quantity of transactions begun
      *
      * @var integer
-     * @access private
      */
     private $transactionOpcount = 0;
 

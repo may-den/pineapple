@@ -220,8 +220,6 @@ trait PdoCommonMethods
      *                        parameters or 1 placeholder per array element.
      * @return string         the query string with LIMIT clauses added
      *
-     * @access protected
-     *
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     protected function modifyLimitQuery($query, $from, $count, $params = [])

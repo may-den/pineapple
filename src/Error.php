@@ -32,18 +32,15 @@ class Error
     /**
      * Pineapple\Error constructor
      *
-     * @param string $message message
-     * @param int    $code    (optional) error code
-     * @param int    $mode    (optional) error mode, one of: PEAR_ERROR_RETURN,
-     *                        PEAR_ERROR_PRINT, PEAR_ERROR_DIE, PEAR_ERROR_TRIGGER,
-     *                        PEAR_ERROR_CALLBACK or PEAR_ERROR_EXCEPTION
-     * @param mixed  $options (optional) error level, _OR_ in the case of
-     *                        PEAR_ERROR_CALLBACK, the callback function or object/method
-     *                        tuple.
-     *
+     * @param string $message  message
+     * @param int    $code     (optional) error code
+     * @param int    $mode     (optional) error mode, one of: PEAR_ERROR_RETURN,
+     *                         PEAR_ERROR_PRINT, PEAR_ERROR_DIE, PEAR_ERROR_TRIGGER,
+     *                         PEAR_ERROR_CALLBACK or PEAR_ERROR_EXCEPTION
+     * @param mixed  $options  (optional) error level, _OR_ in the case of
+     *                         PEAR_ERROR_CALLBACK, the callback function or object/method
+     *                         tuple.
      * @param string $userInfo (optional) additional user/debug info
-     *
-     * @access public
      */
     public function __construct($message = null, $code = null, $mode = null, $options = null, $userInfo = null)
     {
@@ -119,7 +116,6 @@ class Error
      * Get the error mode from an error object.
      *
      * @return int error mode
-     * @access public
      */
     public function getMode()
     {
@@ -130,7 +126,6 @@ class Error
      * Get the callback function/method from an error object.
      *
      * @return mixed callback function or object/method array
-     * @access public
      */
     public function getCallback()
     {
@@ -141,7 +136,6 @@ class Error
      * Get the error message from an error object.
      *
      * @return  string  full error message
-     * @access public
      */
     public function getMessage()
     {
@@ -152,7 +146,6 @@ class Error
      * Get error code from an error object
      *
      * @return int error code
-     * @access public
      */
     public function getCode()
     {
@@ -163,7 +156,6 @@ class Error
      * Get the name of this error/exception.
      *
      * @return string error/exception name (type)
-     * @access public
      */
     public function getType()
     {
@@ -174,7 +166,6 @@ class Error
      * Get additional user-supplied information.
      *
      * @return string user-supplied information
-     * @access public
      */
     public function getUserInfo()
     {
@@ -185,7 +176,6 @@ class Error
      * Get additional debug information supplied by the application.
      *
      * @return string debug information
-     * @access public
      */
     public function getDebugInfo()
     {
@@ -197,8 +187,7 @@ class Error
      * Supported with PHP 4.3.0 or newer.
      *
      * @param int $frame (optional) what frame to fetch
-     * @return array Backtrace, or NULL if not available.
-     * @access public
+     * @return array     Backtrace, or NULL if not available.
      */
     public function getBacktrace($frame = null)
     {
@@ -226,7 +215,6 @@ class Error
      * Make a string representation of this object.
      *
      * @return string a string with an object summary
-     * @access public
      */
     public function toString()
     {

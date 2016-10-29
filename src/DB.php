@@ -33,7 +33,8 @@ use Pineapple\DB\Driver\DriverInterface;
  * common to all parts of DB.
  *
  * The object model of DB is as follows (indentation means inheritance):
- * <pre>
+ *
+ * ```
  * DB The main DB class.  This is simply a utility class
  *    with some "static" methods for creating DB objects as
  *    well as common utility functions for other DB classes.
@@ -47,7 +48,7 @@ use Pineapple\DB\Driver\DriverInterface;
  *                           When calling DB::factory or DB::connect for MySQL
  *                           connections, the object returned is an instance of this
  *                           class.
- * </pre>
+ * ```
  *
  * @category   Database
  * @package    DB
@@ -206,8 +207,8 @@ class DB
     /**
      * The type of information to return from the tableInfo() method.
      *
-     * Bitwised constants, so they can be combined using <kbd>|</kbd>
-     * and removed using <kbd>^</kbd>.
+     * Bitwised constants, so they can be combined using `|`
+     * and removed using `^`.
      *
      * @see DB\Driver\Common::tableInfo()
      *
@@ -228,8 +229,8 @@ class DB
     /**
      * Portability Modes.
      *
-     * Bitwised constants, so they can be combined using <kbd>|</kbd>
-     * and removed using <kbd>^</kbd>.
+     * Bitwised constants, so they can be combined using `|`
+     * and removed using `^`.
      *
      * @see DB\Driver\Common::setOption()
      *
@@ -303,7 +304,7 @@ class DB
      *
      * @param string $type     the database driver name (eg "PdoDriver")
      * @param array  $options  an associative array of option names and values
-     * @return object          a new DB object. A DB\Error object on failure.
+     * @return DriverInterface a new DB object. A DB\Error object on failure.
      *
      * @see DB\Driver\Common::setOption()
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
@@ -358,7 +359,6 @@ class DB
      * Determines if a variable is a DB\Error object
      *
      * @param mixed $value  the variable to check
-     *
      * @return bool  whether $value is DB\Error object
      */
     public static function isError($value)
@@ -370,8 +370,7 @@ class DB
      * Determines if a value is a DB_<driver> object
      *
      * @param mixed $value  the value to test
-     *
-     * @return bool  whether $value is a DB_<driver> object
+     * @return boolean      whether $value is a DB_<driver> object
      */
     public static function isConnection($value)
     {
@@ -381,10 +380,9 @@ class DB
     /**
      * Return a textual error message for a DB error code
      *
-     * @param integer|DB\Error $value  the DB error code
-     *
-     * @return string  the error message or false if the error code was
-     *                  not recognized
+     * @param integer|DB\Error $value the DB error code
+     * @return string                 the error message or false if the error code was
+     *                                not recognized
      */
     public static function errorMessage($value)
     {

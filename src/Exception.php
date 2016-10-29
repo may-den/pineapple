@@ -57,7 +57,7 @@ namespace Pineapple;
  *
  * 5) Usage example
  *
- * <code>
+ * ```php
  *  require_once 'PEAR/Exception.php';
  *
  *  class Test {
@@ -78,7 +78,7 @@ namespace Pineapple;
  *  } catch (PEAR_Exception $e) {
  *     print $e;
  *  }
- * </code>
+ * ```
  *
  * @category   pear
  * @package    PEAR
@@ -112,6 +112,7 @@ class Exception extends \Exception
      *  - Pineapple\Exception(string $message, Error $cause, int $code);
      *  - Pineapple\Exception(string $message, array $causes);
      *  - Pineapple\Exception(string $message, array $causes, int $code);
+     *
      * @param string exception message
      * @param int|\Exception|Error|array|null exception cause
      * @param int|null exception code or null
@@ -139,6 +140,7 @@ class Exception extends \Exception
             $code = null;
             $this->cause = null;
         }
+
         parent::__construct($message, $code);
         $this->signal();
     }
@@ -157,7 +159,7 @@ class Exception extends \Exception
     }
 
     /**
-     * @param  string $label The name of the observer to remove.
+     * @param string $label The name of the observer to remove.
      */
     public static function removeObserver($label = 'default')
     {
@@ -197,7 +199,7 @@ class Exception extends \Exception
                 // @codeCoverageIgnoreStart
                 // can't cover this, die is kind of a finality
                 case self::OBSERVER_DIE:
-                    $f = (isset($func[1])) ? $func[1] : '%s';
+                    $f = isset($func[1]) ? $func[1] : '%s';
                     die(printf($f, $this->getMessage()));
                     break;
                 // @codeCoverageIgnoreEnd
@@ -217,9 +219,10 @@ class Exception extends \Exception
      * to define API
      *
      * The returned array must be an associative array of parameter => value like so:
-     * <pre>
+     * ```php
      * array('name' => $name, 'context' => array(...))
-     * </pre>
+     * ```
+     *
      * @return array
      */
     public function getErrorData()
@@ -229,7 +232,7 @@ class Exception extends \Exception
 
     /**
      * Returns the exception that caused this exception to be thrown
-     * @access public
+     *
      * @return Exception|array The context of the exception
      */
     public function getCause()
