@@ -1055,7 +1055,7 @@ abstract class Common extends Util
      */
     public function query($query, $params = [])
     {
-        if (sizeof($params) > 0) {
+        if (count($params) > 0) {
             $sth = $this->prepare($query);
             if (DB::isError($sth)) {
                 return $sth;
@@ -1127,7 +1127,7 @@ abstract class Common extends Util
         $row = null;
         $params = (array)$params;
         // modifyLimitQuery() would be nice here, but it causes BC issues
-        if (sizeof($params) > 0) {
+        if (count($params) > 0) {
             $sth = $this->prepare($query);
             if (DB::isError($sth)) {
                 return $sth;
@@ -1237,7 +1237,7 @@ abstract class Common extends Util
     public function getCol($query, $col = 0, $params = [])
     {
         $params = (array)$params;
-        if (sizeof($params) > 0) {
+        if (count($params) > 0) {
             $sth = $this->prepare($query);
 
             if (DB::isError($sth)) {
@@ -1374,7 +1374,7 @@ abstract class Common extends Util
     ) {
         $row = null;
         $params = (array) $params;
-        if (sizeof($params) > 0) {
+        if (count($params) > 0) {
             $sth = $this->prepare($query);
 
             if (DB::isError($sth)) {
@@ -1488,7 +1488,7 @@ abstract class Common extends Util
             $params = [$params];
         }
 
-        if (sizeof($params) > 0) {
+        if (count($params) > 0) {
             $sth = $this->prepare($query);
 
             if (DB::isError($sth)) {
