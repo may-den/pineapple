@@ -1171,22 +1171,24 @@ abstract class Common extends Util
      */
     public function getRow($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
-        // compat check, the params and fetchmode parameters used to
-        // have the opposite order
+        /**
+         * there used to be a backward compatibility thing here that checked
+         * for the possibility of transposed $params and $fetchmode.
+         *
+         * i'm not in any way sorry to say: it's gone. another "nice" feature
+         * to permit you to send a scalar value instead of a single-element
+         * array made this complicated, and in that situation, the parameter
+         * was lost, and absorbed into fetchmode.
+         *
+         * only, this made things complicated. at first it wasn't obvious,
+         * but fetchmode is checked with bitwise ops, so when php 7.1 strict
+         * bitwise came along, and started comparing strings with bit ops, it
+         * broke.
+         */
         if (!is_array($params)) {
-            if (is_array($fetchmode)) {
-                if ($params === null) {
-                    $tmp = DB::DB_FETCHMODE_DEFAULT;
-                } else {
-                    $tmp = $params;
-                }
-                $params = $fetchmode;
-                $fetchmode = $tmp;
-            } elseif ($params !== null) {
-                $fetchmode = $params;
-                $params = [];
-            }
+            $params = [$params];
         }
+
         // modifyLimitQuery() would be nice here, but it causes BC issues
         if (count($params) > 0) {
             $sth = $this->prepare($query);
@@ -1480,21 +1482,10 @@ abstract class Common extends Util
      */
     public function getAll($query, $params = [], $fetchmode = DB::DB_FETCHMODE_DEFAULT)
     {
-        // compat check, the params and fetchmode parameters used to
-        // have the opposite order
+        // see comment at the top of getRow() - transposed $params and
+        // $fetchmode is no longer supported.
         if (!is_array($params)) {
-            if (is_array($fetchmode)) {
-                if ($params === null) {
-                    $tmp = DB::DB_FETCHMODE_DEFAULT;
-                } else {
-                    $tmp = $params;
-                }
-                $params = $fetchmode;
-                $fetchmode = $tmp;
-            } elseif ($params !== null) {
-                $fetchmode = $params;
-                $params = [];
-            }
+            $params = [$params];
         }
 
         if (sizeof($params) > 0) {

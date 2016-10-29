@@ -659,19 +659,6 @@ class CommonTest extends TestCase
         $this->assertEquals([1, 'test1'], $result);
     }
 
-    public function testGetRowWithWackyParametersAndAFetchMode()
-    {
-        $dbh = DB::factory(TestDriver::class);
-
-        // if my eyes aren't deceiving me, it appears that the first decision tree in getRow allows you
-        // to transpose the params and fetchmode parameters. to what end i'm not sure.
-        $result = $dbh->getRow('SELECT foo FROM bar WHERE foo = ?', DB::DB_FETCHMODE_ASSOC, ['bar']);
-        $this->assertEquals([
-            'id' => 1,
-            'data' => 'test1',
-        ], $result);
-    }
-
     public function testGetRowWithParametersAndSyntaxError()
     {
         $dbh = DB::factory(TestDriver::class);
@@ -1012,14 +999,6 @@ class CommonTest extends TestCase
         $dbh = DB::factory(TestDriver::class);
 
         $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = ?', null, ['bar']);
-        $this->assertEquals(self::$orderedAllData, $result);
-    }
-
-    public function testGetAllWithScalarParamsAndModeTransposed()
-    {
-        $dbh = DB::factory(TestDriver::class);
-
-        $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = ?', DB::DB_FETCHMODE_ORDERED, ['bar']);
         $this->assertEquals(self::$orderedAllData, $result);
     }
 
