@@ -198,10 +198,10 @@ class DB
     const DB_FETCHMODE_ASSOC = 2;
 
     // @const Column data as object properties
-    const DB_FETCHMODE_OBJECT = 3;
+    const DB_FETCHMODE_OBJECT = 4;
 
     // @const "flipped" format, where results are an array of columns, not an array of rows
-    const DB_FETCHMODE_FLIPPED = 4;
+    const DB_FETCHMODE_FLIPPED = 8;
 
     /**
      * The type of information to return from the tableInfo() method.
