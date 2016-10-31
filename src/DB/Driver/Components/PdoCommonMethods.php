@@ -372,4 +372,34 @@ trait PdoCommonMethods
 
         return $res;
     }
+    
+    /**
+     * Retrieve the value used to populate an auto-increment or primary key
+     * field by the DBMS.
+     *
+     * @param string $sequence The name of the sequence (optional, only applies to supported engines)
+     * @return string|Error    The auto-insert ID, an error if unsupported
+     */
+    public function lastInsertId($sequence = null)
+    {
+        try {
+            $sequenceValue = $this->connection->lastInsertId($sequence);
+            // can't "generate" a fault in a platform within which sequences are supported, so...
+            // @codeCoverageIgnoreStart
+        } catch (PDOException $sequenceException) {
+            return $this->raiseError($this->getNativeErrorCode($sequenceException->getCode()));
+            // @codeCoverageIgnoreEnd
+        }
+
+        // non-exception case error handling here
+        if (($this->connection->errorCode() === '00000') || ($this->connection->errorCode() === null)) {
+            // there is no error
+            return $sequenceValue;
+        }
+
+        // can't "generate" a fault in a platform within which sequences are supported, so...
+        // @codeCoverageIgnoreStart
+        return $this->raiseError($this->getNativeErrorCode($this->connection->errorCode()));
+        // @codeCoverageIgnoreEnd
+    }
 }

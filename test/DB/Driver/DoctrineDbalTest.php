@@ -513,4 +513,10 @@ class DoctrineDbalTest extends TestCase
             ],
         ], $tableInfo);
     }
+
+    public function testLastInsertId()
+    {
+        $this->dbh->query('INSERT INTO dbaltest (a) VALUES (\'lama farmer\')');
+        $this->assertEquals(5, $this->dbh->lastInsertId());
+    }
 }
