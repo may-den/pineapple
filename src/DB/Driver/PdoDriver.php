@@ -335,8 +335,11 @@ class PdoDriver extends Common implements DriverInterface
     {
         try {
             $sequenceValue = $this->connection->lastInsertId($sequence);
+            // can't "generate" a fault in a platform within which sequences are supported, so...
+            // @codeCoverageIgnoreStart
         } catch (PDOException $sequenceException) {
             return $this->raiseError($this->getNativeErrorCode($sequenceException->getCode()));
+            // @codeCoverageIgnoreEnd
         }
 
         // non-exception case error handling here
@@ -345,7 +348,10 @@ class PdoDriver extends Common implements DriverInterface
             return $sequenceValue;
         }
 
+        // can't "generate" a fault in a platform within which sequences are supported, so...
+        // @codeCoverageIgnoreStart
         return $this->raiseError($this->getNativeErrorCode($this->connection->errorCode()));
+        // @codeCoverageIgnoreEnd
     }
 
     /**

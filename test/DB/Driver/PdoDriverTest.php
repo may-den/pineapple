@@ -528,4 +528,10 @@ class PdoDriverTest extends TestCase
             ],
         ], $tableInfo);
     }
+
+    public function testLastInsertId()
+    {
+        $this->dbh->query('INSERT INTO pdotest (a) VALUES (\'lama farmer\')');
+        $this->assertEquals(5, $this->dbh->lastInsertId());
+    }
 }
