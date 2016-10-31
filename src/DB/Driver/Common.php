@@ -1850,6 +1850,18 @@ abstract class Common extends Util
     }
 
     /**
+     * Retrieve the value used to populate an auto-increment or primary key
+     * field by the DBMS.
+     *
+     * @param string $sequence The name of the sequence (optional, only applies to supported engines)
+     * @return string|Error    The auto-insert ID, an error if unsupported
+     */
+    public function lastInsertId($sequence = null)
+    {
+        return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
+    }
+
+    /**
      * Checks if the given query is a manipulation query. This also takes into
      * account the nextQueryManip flag and sets the lastQueryManip flag
      * (and resets nextQueryManip) according to the result.

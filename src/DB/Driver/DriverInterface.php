@@ -198,4 +198,13 @@ interface DriverInterface
      * @see Pineapple\DB\Driver\Common::setOption()
      */
     public function tableInfo($result, $mode = null);
+
+    /**
+     * Retrieve the value used to populate an auto-increment or primary key
+     * field by the DBMS.
+     *
+     * @param string $sequence The name of the sequence (optional, only applies to supported engines)
+     * @return string|Error    The auto-insert ID, an error if unsupported
+     */
+    public function lastInsertId($sequence = null);
 }

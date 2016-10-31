@@ -325,6 +325,30 @@ class PdoDriver extends Common implements DriverInterface
     }
 
     /**
+     * Retrieve the value used to populate an auto-increment or primary key
+     * field by the DBMS.
+     *
+     * @param string $sequence The name of the sequence (optional, only applies to supported engines)
+     * @return string|Error    The auto-insert ID, an error if unsupported
+     */
+    public function lastInsertId($sequence = null)
+    {
+        try {
+            $sequenceValue = $this->connection->lastInsertId($sequence);
+        } catch (PDOException $sequenceException) {
+            return $this->raiseError($this->getNativeErrorCode($sequenceException->getCode()));
+        }
+
+        // non-exception case error handling here
+        if (($this->connection->errorCode() === '00000') || ($this->connection->errorCode() === null)) {
+            // there is no error
+            return $sequenceValue;
+        }
+
+        return $this->raiseError($this->getNativeErrorCode($this->connection->errorCode()));
+    }
+
+    /**
      * Obtain a "rationalised" database major name
      * n.b. we won't test this, in future it would make sense to see the purpose removed.
      *
