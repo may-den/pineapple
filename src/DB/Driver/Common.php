@@ -1855,6 +1855,8 @@ abstract class Common extends Util
      *
      * @param string $sequence The name of the sequence (optional, only applies to supported engines)
      * @return string|Error    The auto-insert ID, an error if unsupported
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function lastInsertId($sequence = null)
     {
