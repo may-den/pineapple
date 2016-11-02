@@ -114,7 +114,7 @@ class PdoDriver extends Common implements DriverInterface
                     // sqlite supports transactions so this can't be tested right now
                     // @codeCoverageIgnoreStart
                     return $this->raiseError(
-                        DB::ERROR,
+                        DB::DB_ERROR,
                         null,
                         null,
                         self::formatErrorInfo($this->connection->errorInfo())
