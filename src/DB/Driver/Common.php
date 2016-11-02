@@ -1201,6 +1201,7 @@ abstract class Common extends Util
             return $res;
         }
 
+        $row = [];
         $err = $res->fetchInto($row, $fetchmode);
 
         $res->free();
@@ -1511,6 +1512,7 @@ abstract class Common extends Util
         }
 
         $results = [];
+        $row = [];
         while (DB::DB_OK === $res->fetchInto($row, $fetchmode)) {
             if ($fetchmode & DB::DB_FETCHMODE_FLIPPED) {
                 foreach ($row as $key => $val) {
