@@ -185,13 +185,12 @@ interface DriverInterface
     /**
      * Returns information about a table or a result set
      *
-     * @param PDOStatement|string $result Pineapple\DB\Result object from a query or a
-     *                                    string containing the name of a table.
-     *                                    While this also accepts a query result
-     *                                    resource identifier, this behavior is
-     *                                    deprecated.
-     * @param int                 $mode   a valid tableInfo mode
-     *
+     * @param StatementContainer|string $result Pineapple\DB\Result object from a query or a
+     *                                          string containing the name of a table.
+     *                                          While this also accepts a query result
+     *                                          resource identifier, this behavior is
+     *                                          deprecated.
+     * @param int                       $mode   a valid tableInfo mode
      * @return mixed   an associative array with the information requested.
      *                 A Pineapple\DB\Error object on failure.
      *
