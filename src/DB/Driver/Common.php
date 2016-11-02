@@ -1032,7 +1032,7 @@ abstract class Common extends Util
      * Sends a query to the database server
      *
      * The query string can be either a normal statement to be sent directly
-     * to the server OR if <var>$params</var> are passed the query can have
+     * to the server OR if `$params` are passed the query can have
      * placeholders and it will be passed through prepare() and execute().
      *
      * @param string $query   the SQL query or the statement to prepare

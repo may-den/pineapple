@@ -206,4 +206,102 @@ interface DriverInterface
      * @return string|Error    The auto-insert ID, an error if unsupported
      */
     public function lastInsertId($sequence = null);
+
+    /**
+     * Returns the value of an option
+     *
+     * @param string $option  the option name you're curious about
+     * @return mixed  the option's value
+     */
+    public function getOption($option);
+
+    /**
+     * Gets the fetch mode that is used by default for query result
+     *
+     * @return integer A value representing DB::DB_FETCHMODE_* constant
+     * @see DB::DB_FETCHMODE_ASSOC
+     * @see DB::DB_FETCHMODE_ORDERED
+     * @see DB::DB_FETCHMODE_OBJECT
+     * @see DB::DB_FETCHMODE_DEFAULT
+     * @see DB::DB_FETCHMODE_FLIPPED
+     */
+    public function getFetchMode();
+
+    /**
+     * Gets the class used to map rows into objects for DB::DB_FETCHMODE_OBJECT
+     *
+     * @return string The class used to map rows
+     * @see Pineapple\DB\Row
+     */
+    public function getFetchModeObjectClass();
+
+    /**
+     * Gets an advertised feature of the driver
+     *
+     * @param string $feature Name of the feature to return
+     */
+    public function getFeature($feature);
+
+    /**
+     * Sends a query to the database server
+     *
+     * The query string can be either a normal statement to be sent directly
+     * to the server OR if `$params` are passed the query can have
+     * placeholders and it will be passed through prepare() and execute().
+     *
+     * @param string $query   the SQL query or the statement to prepare
+     * @param mixed  $params  array, string or numeric data to be used in
+     *                        execution of the statement.  Quantity of items
+     *                        passed must match quantity of placeholders in
+     *                        query:  meaning 1 placeholder for non-array
+     *                        parameters or 1 placeholder per array element.
+     * @return mixed          a new Result object for successful SELECT queries
+     *                        or DB_OK for successul data manipulation queries.
+     *                        A Pineapple\DB\Error object on failure.
+     *
+     * @see Result, Common::prepare(), Common::execute()
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     */
+    public function query($query, $params = []);
+
+    /**
+     * Communicates an error and invoke error callbacks, etc
+     *
+     * Basically a wrapper for Pineapple\Util::raiseError without the message string.
+     *
+     * @param mixed  integer error code, or a Pineapple\Error object (all
+     *               other parameters are ignored if this parameter is
+     *               an object
+     * @param int    error mode, see Pineapple\Error docs
+     * @param mixed  if error mode is PEAR_ERROR_TRIGGER, this is the
+     *               error level (E_USER_NOTICE etc).  If error mode is
+     *               PEAR_ERROR_CALLBACK, this is the callback function,
+     *               either as a function name, or as an array of an
+     *               object and method name. For other error modes this
+     *               parameter is ignored.
+     * @param string extra debug information. Defaults to the last
+     *               query and native error code.
+     * @param mixed  native error code, integer or string depending the
+     *               backend
+     * @param mixed  dummy parameter for E_STRICT compatibility with
+     *               Pineapple\Util::raiseError
+     * @param mixed  dummy parameter for E_STRICT compatibility with
+     *               Pineapple\Util::raiseError
+     * @return Error the Pineapple\Error object
+     *
+     * @see Pineapple\Error
+     *
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function raiseError(
+        $code = DB::DB_ERROR,
+        $mode = null,
+        $options = null,
+        $userInfo = null,
+        $nativecode = null,
+        $dummy1 = null,
+        $dummy2 = null
+    );
 }
