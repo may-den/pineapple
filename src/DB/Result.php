@@ -343,8 +343,8 @@ class Result
         if (DB::isError($err)) {
             return $err;
         }
-        $this->result = false;
-        $this->statement = false;
+        unset($this->result);
+        unset($this->statement);
         return true;
     }
 
