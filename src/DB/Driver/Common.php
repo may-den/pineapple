@@ -853,7 +853,7 @@ abstract class Common extends Util
      * $res = $db->execute($sth, $data);
      * ```
      *
-     * @param resource $stmt  a DB statement resource returned from prepare()
+     * @param int      $stmt  a DB statement number returned from prepare()
      * @param mixed    $data  array, string or numeric data to be used in
      *                        execution of the statement.  Quantity of items
      *                        passed must match quantity of placeholders in
