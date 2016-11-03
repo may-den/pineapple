@@ -44,10 +44,7 @@ use stdClass;
  */
 abstract class Common extends Util
 {
-    /**
-     * The current default fetch mode
-     * @var integer
-     */
+    /** @var integer The current default fetch mode */
     protected $fetchmode = DB::DB_FETCHMODE_ORDERED;
 
     /**
@@ -73,16 +70,10 @@ abstract class Common extends Util
      */
     public $lastQuery = '';
 
-    /**
-     * A flag to indicate that the author is prepared to make some poor life choices
-     *
-     * @var boolean
-     */
+    /** @var boolean A flag to indicate that the author is prepared to make some poor life choices */
     protected $acceptConsequencesOfPoorCodingChoices = false;
 
-    /**
-     * @var mixed Database connection handle
-     */
+    /** @var mixed Database connection handle */
     protected $connection = null;
 
     /**
@@ -108,35 +99,19 @@ abstract class Common extends Util
      */
     public $lastParameters = [];
 
-    /**
-     * The elements from each prepared statement
-     * @var array
-     */
+    /** @var array The elements from each prepared statement */
     protected $prepareTokens = [];
 
-    /**
-     * The data types of the various elements in each prepared statement
-     * @var array
-     */
+    /** @var array The data types of the various elements in each prepared statement */
     protected $prepareTypes = [];
 
-    /**
-     * The prepared queries
-     * @var array
-     */
+    /** @var array The prepared queries */
     protected $preparedQueries = [];
 
-    /**
-     * Flag indicating that the last query was a manipulation query.
-     * @var boolean
-     */
+    /** @var boolean Flag indicating that the last query was a manipulation query */
     protected $lastQueryManip = false;
 
-    /**
-     * Flag indicating that the next query <em>must</em> be a manipulation
-     * query.
-     * @var boolean
-     */
+    /** @var boolean Flag indicating that the next query _must_ be a manipulation query */
     protected $nextQueryManip = false;
 
     /**
