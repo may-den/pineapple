@@ -1,6 +1,6 @@
 {
     "name": "wethersherbs/pineapple",
-    "description": "An API-compatible replacement, forked from and for PEAR DB with Doctrine DBAL support",
+    "description": "An API-compatible replacement, forked from and for PEAR DB",
     "keywords": ["database"],
     "license": [
         "BSD-2-Clause",
