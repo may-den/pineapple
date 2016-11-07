@@ -6,47 +6,21 @@
 |----------|-------------|
 | [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=master)](https://travis-ci.org/wethersherbs/pineapple) | [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=dev-0.3.x)](https://travis-ci.org/wethersherbs/pineapple) |
 
+## What?
+
+A compatibility layer around [PDO](http://php.net/pdo) or [Doctrine DBAL](https://github.com/doctrine/dbal) to provide backward compatibility to [PEAR DB](https://github.com/pear/DB)-based applications.
+
 ## Why?
 
 PEAR DB is very old (the copyright range ends 9 years prior to Pineapple's inception), and was obsoleted by MDB2, which has in turn become obsolete. People have code based on these modules, but need an upgrade path that means new code can be developed using modern DB access methods, whilst retaining access for legacy code without opening a second database connection.
 
-This package is a fork of PEAR and DB, heavily refactored. The purpose of it is to provide a method-compatible drop-in replacement, reproducing `PEAR::raiseError` and `PEAR::isError`, and all methods under the `DB` class. Connection-specific drivers are dropped and only two connection drivers are included: `DoctrineDbal`, a driver which takes a constructed [doctrine/dbal](https://github.com/doctrine/dbal) object, and `PdoDriver`, a driver which takes a constructed [PDO](http://php.net/PDO) object. It is intended _only_ as a path to Doctrine DBAL/PDO migration, to keep legacy systems working whilst retaining a single database connection per application.
+## How?
 
-The intention is to strip unused methods, clean (remove all warnings and notices), make PSR-2 clean and provide full test coverage of the DB compatibility layer. Global constants will be replaced with class constants, though the compatibility module ([wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat)) will provide global constants that map to class constants for backward compatibility.
+This package is a fork of PEAR and DB, heavily refactored. The purpose of it is to provide a method-compatible drop-in replacement, reproducing `PEAR::raiseError` and `PEAR::isError`, and all methods under the `DB` class. Connection-specific drivers are dropped and only two connection drivers are included: `DoctrineDbal`, a driver which takes a constructed [doctrine/dbal](https://github.com/doctrine/dbal) object, and `PdoDriver`, a driver which takes a constructed [PDO](http://php.net/PDO) object. It is intended _only_ as a path to PDO or Doctrine DBAL migration, to keep legacy systems working whilst retaining a single database connection per application.
+
+The intention is to strip unused methods, clean (remove all warnings and notices), make PSR-2 clean and provide full test coverage of the DB compatibility layer. Global constants will be replaced with class constants to maintain a clean constant namespace, though the compatibility module ([wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat)) will provide global constants that map to class constants for backward compatibility.
 
 It is up to your application to cache the constructed database connection object. Please do not use Pineapple to retrieve your connection object after it has been dependency injected.
-
-## How does it work?
-
-In order to facilitate a deep rework without breaking compatibility with applications that use the `DB` and `DB_*` classnames, the code has been refactored to reside within the `Pineapple` namespace. Here is a handy table of the mapping:
-
-| Old class        | New class                    |
-|------------------|------------------------------|
-| `DB`             | `Pineapple\DB`               |
-| `DB_Error`       | `Pineapple\DB\Error`         |
-| `DB_result`      | `Pineapple\DB\Result`        |
-| `DB_row`         | `Pineapple\DB\Row`           |
-| `DB_common`      | `Pineapple\DB\Driver\Common` |
-| `PEAR`           | `Pineapple\Util`             |
-| `PEAR_Error`     | `Pineapple\Error`            |
-| `PEAR_Exception` | `Pineapple\Exception`        |
-
-If possible, it would be beneficial for you to refactor your code to use the new class names and class constants (instead of global constants). However, if refactoring isn't an option, you can use the counterpart module, which provides root namespace class names in the left column of the above table. See [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat) and load that into your composer configuration to add compatible classes.
-
-## What's changed? What's missing?
-
-- All classes are namespaced. See the table in the previous section for the class name mappings.
-- All global variables have now been dropped. This also applies to [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat). They will not be retained or readded.
-- Global constants have been moved to class constants. [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat) adds global mappings back to class constants if you're using it as a drop-in replacement.
-- **All connectivity drivers have been removed**. The only drivers provided are `DoctrineDbal` and `PdoDriver` to connect with Doctrine's DBAL and PDO respectively.
-- All methods in PEAR have been dropped, except for `isError`, `raiseError` and `throwError`. This includes PEAR's pseudo-destructors.
-- Compatibility names for legacy constructors and '`_Name`' destructors has been removed and placed in [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat).
-- PEAR & DB Error suppression has been removed.
-- Large swathes of code put in place to aid multi-driver compatibility have been removed.
-- Methods marked deprecated have been moved to [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat). Try not to use them. Some methods have been removed entirely.
-- Spit, polish & PSR-2. Refactoring to support some more modern aspects of PHP (e.g. method statics replaced with class statics).
-
-It would not take a large amount of effort to refactor your code to avoid using the compatibility layer, but it is provided for your convenience.
 
 ## Usage
 
@@ -77,6 +51,40 @@ $db = DB::factory(PdoDriver::class);
 $db->setConnectionHandle(new PDO('sqlite::memory:'));
 $result = $db->query('SELECT CURRENT_TIMESTAMP');
 ```
+
+## What's changed? What's missing?
+
+In order to facilitate a deep rework without breaking compatibility with applications that use the `DB` and `DB_*` classnames, the code has been refactored to reside within the `Pineapple` namespace. Here is a handy table of the mapping:
+
+| Old class        | New class                    |
+|------------------|------------------------------|
+| `DB`             | `Pineapple\DB`               |
+| `DB_Error`       | `Pineapple\DB\Error`         |
+| `DB_result`      | `Pineapple\DB\Result`        |
+| `DB_row`         | `Pineapple\DB\Row`           |
+| `DB_common`      | `Pineapple\DB\Driver\Common` |
+| `PEAR`           | `Pineapple\Util`             |
+| `PEAR_Error`     | `Pineapple\Error`            |
+| `PEAR_Exception` | `Pineapple\Exception`        |
+
+If possible, it would be beneficial for you to refactor your code to use the new class names and class constants (instead of global constants). However, if refactoring isn't an option, you can use the counterpart module, which provides root namespace class names in the left column of the above table. See [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat) and load that into your composer configuration to add compatible classes.
+
+### Change summary
+
+- All classes are namespaced. See the table in the previous section for the class name mappings.
+- All global variables have now been dropped. This also applies to [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat). They will not be retained or readded.
+- Global constants have been moved to class constants. [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat) adds global mappings back to class constants if you're using it as a drop-in replacement.
+- **All connectivity drivers have been removed**. The only drivers provided are `DoctrineDbal` and `PdoDriver` to connect with Doctrine's DBAL and PDO respectively, and it is _intended_ that all connectivity be performed through one of these two layers.
+- All methods in PEAR have been dropped, except for `isError`, `raiseError` and `throwError`. This includes PEAR's pseudo-destructors.
+- Compatibility names for legacy constructors and '`_Name`' destructors has been removed and placed in [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat).
+- PEAR & DB Error suppression has been removed.
+- Large swathes of code put in place to aid multi-driver compatibility have been removed.
+- Methods marked deprecated have been moved to [wethersherbs/pineapple-compat](https://github.com/wethersherbs/pineapple-compat). Try not to use them. Some methods have been removed entirely.
+- Spit, polish & PSR-2. Refactoring to support some more modern aspects of PHP (e.g. method statics replaced with class statics).
+- Three new exceptions for unhandled events (which would normally cause a `die`): `DriverException`, `FeatureException`, `StatementException`.
+- Don't use `connect()`, use `factory()` and set the connection using `setConnectionHandle()`.
+
+It would not take a large amount of effort to refactor your code to avoid using the compatibility layer, but it is provided for your convenience.
 
 ## Test suite
 
