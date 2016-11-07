@@ -44,10 +44,7 @@ use stdClass;
  */
 abstract class Common extends Util
 {
-    /**
-     * The current default fetch mode
-     * @var integer
-     */
+    /** @var integer The current default fetch mode */
     protected $fetchmode = DB::DB_FETCHMODE_ORDERED;
 
     /**
@@ -73,16 +70,10 @@ abstract class Common extends Util
      */
     public $lastQuery = '';
 
-    /**
-     * A flag to indicate that the author is prepared to make some poor life choices
-     *
-     * @var boolean
-     */
+    /** @var boolean A flag to indicate that the author is prepared to make some poor life choices */
     protected $acceptConsequencesOfPoorCodingChoices = false;
 
-    /**
-     * @var mixed Database connection handle
-     */
+    /** @var mixed Database connection handle */
     protected $connection = null;
 
     /**
@@ -108,35 +99,19 @@ abstract class Common extends Util
      */
     public $lastParameters = [];
 
-    /**
-     * The elements from each prepared statement
-     * @var array
-     */
+    /** @var array The elements from each prepared statement */
     protected $prepareTokens = [];
 
-    /**
-     * The data types of the various elements in each prepared statement
-     * @var array
-     */
+    /** @var array The data types of the various elements in each prepared statement */
     protected $prepareTypes = [];
 
-    /**
-     * The prepared queries
-     * @var array
-     */
+    /** @var array The prepared queries */
     protected $preparedQueries = [];
 
-    /**
-     * Flag indicating that the last query was a manipulation query.
-     * @var boolean
-     */
+    /** @var boolean Flag indicating that the last query was a manipulation query */
     protected $lastQueryManip = false;
 
-    /**
-     * Flag indicating that the next query <em>must</em> be a manipulation
-     * query.
-     * @var boolean
-     */
+    /** @var boolean Flag indicating that the next query _must_ be a manipulation query */
     protected $nextQueryManip = false;
 
     /**
@@ -853,7 +828,7 @@ abstract class Common extends Util
      * $res = $db->execute($sth, $data);
      * ```
      *
-     * @param resource $stmt  a DB statement resource returned from prepare()
+     * @param int      $stmt  a DB statement number returned from prepare()
      * @param mixed    $data  array, string or numeric data to be used in
      *                        execution of the statement.  Quantity of items
      *                        passed must match quantity of placeholders in
@@ -1032,7 +1007,7 @@ abstract class Common extends Util
      * Sends a query to the database server
      *
      * The query string can be either a normal statement to be sent directly
-     * to the server OR if <var>$params</var> are passed the query can have
+     * to the server OR if `$params` are passed the query can have
      * placeholders and it will be passed through prepare() and execute().
      *
      * @param string $query   the SQL query or the statement to prepare
@@ -1201,6 +1176,7 @@ abstract class Common extends Util
             return $res;
         }
 
+        $row = [];
         $err = $res->fetchInto($row, $fetchmode);
 
         $res->free();
@@ -1511,6 +1487,7 @@ abstract class Common extends Util
         }
 
         $results = [];
+        $row = [];
         while (DB::DB_OK === $res->fetchInto($row, $fetchmode)) {
             if ($fetchmode & DB::DB_FETCHMODE_FLIPPED) {
                 foreach ($row as $key => $val) {
@@ -1847,6 +1824,20 @@ abstract class Common extends Util
             return true;
         }
         return false;
+    }
+
+    /**
+     * Retrieve the value used to populate an auto-increment or primary key
+     * field by the DBMS.
+     *
+     * @param string $sequence The name of the sequence (optional, only applies to supported engines)
+     * @return string|Error    The auto-insert ID, an error if unsupported
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    public function lastInsertId($sequence = null)
+    {
+        return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
     }
 
     /**

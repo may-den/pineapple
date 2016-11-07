@@ -310,6 +310,11 @@ class TestDriver extends Common implements DriverInterface
         return parent::modifyLimitQuery($query, $from, $count, $params);
     }
 
+    public function stubLastInsertId($sequence = null)
+    {
+        return parent::lastInsertId($sequence);
+    }
+
     public function modifyLimitQuery($query, $from, $count, $params = [])
     {
         if (preg_match('/FAILURE/', $query)) {

@@ -42,33 +42,23 @@ class PdoDriver extends Common implements DriverInterface
         'transactions' => true,
     ];
 
-    // @var PDO Our PDO connection
+    /** @var PDO Our PDO connection */
     protected $connection = null;
 
-    /**
-     * A copy of the last pdostatement object
-     * @var StatementContainer
-     */
+    /** @var StatementContainer A copy of the last pdostatement object */
     private $lastStatement = null;
 
-    /**
-     * Should data manipulation queries be committed automatically?
-     * @var bool
-     */
+    /** @var boolean Should data manipulation queries be committed automatically? */
     protected $autocommit = true;
 
-    /**
-     * The quantity of transactions begun
-     *
-     * @var integer
-     */
+    /** @var integer The quantity of transactions begun */
     private $transactionOpcount = 0;
 
     /**
      * Set the PDO connection handle in the object
      *
-     * @param PDO        $connection A constructed PDO connection handle
-     * @return PdoDriver             The constructed Pineapple\DB\Driver\PdoDriver object
+     * @param PDO $connection A constructed PDO connection handle
+     * @return PdoDriver      The constructed Pineapple\DB\Driver\PdoDriver object
      */
     public function setConnectionHandle(PDO $connection)
     {
@@ -81,7 +71,6 @@ class PdoDriver extends Common implements DriverInterface
      * Sends a query to the database server
      *
      * @param string $query the SQL query string
-     *
      * @return mixed        a StatementContainer object for successful SELECT
      *                      queries the DB_OK constant for other successful
      *                      queries a Pineapple\DB\Error object on failure.
@@ -114,7 +103,7 @@ class PdoDriver extends Common implements DriverInterface
                     // sqlite supports transactions so this can't be tested right now
                     // @codeCoverageIgnoreStart
                     return $this->raiseError(
-                        DB::ERROR,
+                        DB::DB_ERROR,
                         null,
                         null,
                         self::formatErrorInfo($this->connection->errorInfo())

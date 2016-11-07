@@ -1325,4 +1325,12 @@ class CommonTest extends TestCase
                AND artist = "depeche mode"
         '));
     }
+
+    public function testLastInsertId()
+    {
+        $dbh = DB::factory(TestDriver::class);
+        $insertId = $dbh->lastInsertId();
+        $this->assertInstanceOf(Error::class, $insertId);
+        $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $insertId->getCode());
+    }
 }
