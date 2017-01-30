@@ -363,7 +363,9 @@ class PdoDriverTest extends TestCase
 
     public function testAffectedRows()
     {
-        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'the nurse who loved me\'),(\'solaris\')');
+        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'the nurse who loved me\')');
+        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'solaris\')');
+        $this->dbh->query('UPDATE transactiontest SET a = \'the goonies\'');
         $this->assertEquals(2, $this->dbh->affectedRows());
     }
 

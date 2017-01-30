@@ -372,7 +372,7 @@ trait PdoCommonMethods
 
         return $res;
     }
-    
+
     /**
      * Retrieve the value used to populate an auto-increment or primary key
      * field by the DBMS.
