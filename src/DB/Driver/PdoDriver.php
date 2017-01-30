@@ -124,7 +124,7 @@ class PdoDriver extends Common implements DriverInterface
 
         // prepare the query for execution (we can only inject the unbuffered query parameter on prepared statements)
         try {
-            $statement = $this->connection->prepare($query);
+            $statement = $this->connection->prepare($query, $queryDriverOptions);
         } catch (PDOException $prepareException) {
             return $this->raiseError(DB::DB_ERROR, null, null, $prepareException->getMessage());
         }
