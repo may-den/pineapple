@@ -14,7 +14,7 @@ before_script:
   - composer require doctrine/dbal ^2.5
 
 script:
-  - ./vendor/bin/phpunit --verbose
+  - ./vendor/bin/phpunit --verbose --colors=auto --coverage-text='php://stdout'
 
 matrix:
   fast_finish: true
