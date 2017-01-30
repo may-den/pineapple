@@ -1096,7 +1096,7 @@ abstract class Common extends Util
     public function getOne($query, $params = [])
     {
         $row = null;
-        $params = (array)$params;
+        $params = (array) $params;
         // modifyLimitQuery() would be nice here, but it causes BC issues
         if (count($params) > 0) {
             $sth = $this->prepare($query);
