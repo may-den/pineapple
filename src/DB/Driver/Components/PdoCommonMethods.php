@@ -363,7 +363,7 @@ trait PdoCommonMethods
                 'name' => $caseFunc($tmp['name']),
                 'type' => isset($tmp['native_type']) ? $tmp['native_type'] : 'unknown',
                 'len' => $tmp['len'],
-                'flags' => $tmp['flags'],
+                'flags' => is_array($tmp['flags']) ? implode(' ', $tmp['flags']) : '',
             ];
 
             if ($mode & DB::DB_TABLEINFO_ORDER) {
