@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="vendor/autoload.php" printerClass="DiabloMedia\PHPUnit\Printer\PrettyPrinter">
+	<logging>
+		<log type="coverage-text" target="php://stdout" />
+		<log type="coverage-html" target="html/" />
+	</logging>
 	<testsuites>
 		<testsuite name="Pineapple test suite">
 			<directory>./test/</directory>

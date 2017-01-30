@@ -14,7 +14,7 @@
         "doctrine/dbal": "DoctrineDbal driver requires Doctrine DBAL >=2.5 to be installed"
     },
     "scripts": {
-        "test": "phpunit --coverage-html='coverage/' --coverage-text='php://stdout' --colors=auto"
+        "test": "phpunit --colors=auto"
     },
     "autoload": {
         "psr-4": {
