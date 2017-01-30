@@ -355,7 +355,7 @@ trait PdoCommonMethods
             $tmp = $tableHandle->getColumnMeta($i);
 
             if ($tmp === false) {
-                return $this->myRaiseError(DB::DB_ERROR_UNSUPPORTED);
+                return $this->raiseError(DB::DB_ERROR, null, null, 'Result set empty or unsupported by driver');
             }
 
             $res[$i] = [
