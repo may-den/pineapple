@@ -42,6 +42,9 @@ class PdoDriverTest extends TestCase
 
         // testing transacations (empty table)
         'CREATE TABLE transactiontest (a TEXT)',
+
+        // empty table
+        'CREATE TABLE emptytable (a TEXT)',
     ];
 
     /**
@@ -533,5 +536,21 @@ class PdoDriverTest extends TestCase
     {
         $this->dbh->query('INSERT INTO pdotest (a) VALUES (\'lama farmer\')');
         $this->assertEquals(5, $this->dbh->lastInsertId());
+    }
+
+    public function testGetOne()
+    {
+        $data = $this->dbh->getOne('SELECT * FROM pdotest');
+        $this->assertEquals('test1', $data);
+    }
+
+    public function testGetOneWithNoData()
+    {
+        // PLEASE NOTE
+        // AT SOME POINT IN THE FUTURE THIS BEHAVIOUR MAY CHANGE AND THIS TEST MAY FAIL AND REQUIRE REWORKING
+        // YOU HAVE BEEN WARNED
+        // RIGHT NOW THIS TESTS THE EXISTING FUNCTIONALITY
+        $data = $this->dbh->getOne('SELECT * FROM emptytable');
+        $this->assertNull($data);
     }
 }
