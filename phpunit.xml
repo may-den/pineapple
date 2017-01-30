@@ -2,7 +2,7 @@
 <phpunit bootstrap="vendor/autoload.php" printerClass="DiabloMedia\PHPUnit\Printer\PrettyPrinter">
 	<logging>
 		<log type="coverage-text" target="php://stdout" />
-		<log type="coverage-html" target="html/" />
+		<log type="coverage-html" target="coverage/" />
 	</logging>
 	<testsuites>
 		<testsuite name="Pineapple test suite">
