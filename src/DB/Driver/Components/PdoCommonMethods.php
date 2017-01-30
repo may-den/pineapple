@@ -354,6 +354,10 @@ trait PdoCommonMethods
         for ($i = 0; $i < $count; $i++) {
             $tmp = $tableHandle->getColumnMeta($i);
 
+            if ($tmp === false) {
+                return $this->myRaiseError(DB::DB_ERROR_UNSUPPORTED);
+            }
+
             $res[$i] = [
                 'table' => $caseFunc($tmp['table']),
                 'name' => $caseFunc($tmp['name']),
