@@ -304,4 +304,16 @@ interface DriverInterface
         $dummy1 = null,
         $dummy2 = null
     );
+
+    /**
+     * Change the current database we are working on
+     *
+     * @param string The name of the database to connect to
+     * @return mixed true if the operation worked, Pineapple\DB\Error if it
+     *               failed, Pineapple\DB\Error with DB_ERROR_UNSUPPORTED if
+     *               the feature is not supported by the driver
+     *
+     * @see Pineapple\DB\Error
+     */
+    public function changeDatabase($name);
 }
