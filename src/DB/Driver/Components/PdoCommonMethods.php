@@ -15,6 +15,42 @@ use Pineapple\DB\StatementContainer;
 trait PdoCommonMethods
 {
     /**
+     * PDO driver types mapping to types as formerly output by PEAR DB
+     */
+    private static $typeMap = [
+        // mysql types
+        'STRING' => 'string',
+        'VAR_STRING' => 'string',
+        'BIT' => 'int',
+        'TINY' => 'int',
+        'SHORT' => 'int',
+        'LONG' => 'int',
+        'LONGLONG' => 'int',
+        'INT24' => 'int',
+        'FLOAT' => 'real',
+        'DOUBLE' => 'real',
+        'DECIMAL' => 'real',
+        'NEWDECIMAL' => 'real',
+        'TIMESTAMP' => 'timestamp',
+        'YEAR' => 'year',
+        'DATE' => 'date',
+        'NEWDATE' => 'date',
+        'TIME' => 'time',
+        'SET' => 'set',
+        'ENUM' => 'enum',
+        'GEOMETRY' => 'geometry',
+        'DATETIME' => 'datetime',
+        'TINY_BLOB' => 'blob',
+        'MEDIUM_BLOB' => 'blob',
+        'LONG_BLOB' => 'blob',
+        'BLOB' => 'blob',
+        'NULL' => 'null',
+
+        // sqlite types
+        'string' => 'string',
+    ];
+
+    /**
      * Disconnects from the database server
      *
      * @return bool     true on success, false on failure
@@ -355,13 +391,30 @@ trait PdoCommonMethods
             $tmp = $tableHandle->getColumnMeta($i);
 
             if ($tmp === false) {
+                // @codeCoverageIgnoreStart
+                // skipping coverage on this because we can't reproduce in test
                 next;
+                // @codeCoverageIgnoreEnd
             }
+
+            if (!isset($tmp['native_type'])) {
+                // @codeCoverageIgnoreStart
+                // skipping coverage on this because we can't reproduce in test
+                $tmp['native_type'] = 'unknown';
+                // @codeCoverageIgnoreEnd
+            }
+
+            // @codeCoverageIgnoreStart
+            // skipping coverage on this because we can't reproduce in test
+            $tmp['native_type'] = isset(self::$typeMap[$tmp['native_type']])
+                ? self::$typeMap[$tmp['native_type']]
+                : 'unknown';
+            // @codeCoverageIgnoreEnd
 
             $res[$i] = [
                 'table' => $caseFunc($tmp['table']),
                 'name' => $caseFunc($tmp['name']),
-                'type' => isset($tmp['native_type']) ? $tmp['native_type'] : 'unknown',
+                'type' => $tmp['native_type'],
                 'len' => $tmp['len'],
                 'flags' => is_array($tmp['flags']) ? implode(' ', $tmp['flags']) : '',
             ];

@@ -449,7 +449,7 @@ class PdoDriverTest extends TestCase
                 'table' => 'pdotest',
                 'name' => 'a',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ]
         ], $tableInfo);
     }
@@ -485,7 +485,7 @@ class PdoDriverTest extends TestCase
                 'table' => 'keycasetest',
                 'name' => 'mixedcasecolumn',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ]
         ], $tableInfo);
     }
@@ -503,7 +503,7 @@ class PdoDriverTest extends TestCase
                 'table' => 'pdotest',
                 'name' => 'a',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ],
             'num_fields' => 1,
             'order' => ['a' => 0],
@@ -523,7 +523,7 @@ class PdoDriverTest extends TestCase
                 'table' => 'pdotest',
                 'name' => 'a',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ],
             'num_fields' => 1,
             'ordertable' => [

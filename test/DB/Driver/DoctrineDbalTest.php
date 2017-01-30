@@ -431,7 +431,7 @@ class DoctrineDbalTest extends TestCase
                 'table' => 'dbaltest',
                 'name' => 'a',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ]
         ], $tableInfo);
     }
@@ -467,7 +467,7 @@ class DoctrineDbalTest extends TestCase
                 'table' => 'keycasetest',
                 'name' => 'mixedcasecolumn',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ]
         ], $tableInfo);
     }
@@ -485,7 +485,7 @@ class DoctrineDbalTest extends TestCase
                 'table' => 'dbaltest',
                 'name' => 'a',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ],
             'num_fields' => 1,
             'order' => ['a' => 0],
@@ -505,7 +505,7 @@ class DoctrineDbalTest extends TestCase
                 'table' => 'dbaltest',
                 'name' => 'a',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ],
             'num_fields' => 1,
             'ordertable' => [
