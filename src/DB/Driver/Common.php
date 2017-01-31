@@ -63,10 +63,7 @@ abstract class Common extends Util
      */
     protected $wasConnected = null;
 
-    /**
-     * The most recently executed query
-     * @var string
-     */
+    /** @var string The most recently executed query */
     protected $lastQuery = '';
 
     /** @var boolean A flag to indicate that the author is prepared to make some poor life choices */
@@ -90,13 +87,8 @@ abstract class Common extends Util
         'strict_transactions' => true,
     ];
 
-    /**
-     * The parameters from the most recently executed query
-     * @var array
-     * @since Property available since Release 1.7.0
-     * @todo Replace with in accessor
-     */
-    public $lastParameters = [];
+    /** @var array The parameters from the most recently executed query */
+    protected $lastParameters = [];
 
     /** @var array The elements from each prepared statement */
     protected $prepareTokens = [];
@@ -126,7 +118,7 @@ abstract class Common extends Util
     protected $features = [];
 
     /**
-     * This constructor calls <kbd>parent::__construct('Pineapple\DB\Error')</kbd>
+     * This constructor calls `parent::__construct('Pineapple\DB\Error')`
      */
     public function __construct()
     {
@@ -141,6 +133,16 @@ abstract class Common extends Util
     public function getLastQuery()
     {
         return $this->lastQuery;
+    }
+
+    /**
+     * Retrieve the last set of parameters used in a query
+     *
+     * @return array
+     */
+    public function getLastParameters()
+    {
+        return $this->lastParameters;
     }
 
     /**
