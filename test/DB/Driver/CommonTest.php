@@ -379,7 +379,7 @@ class CommonTest extends TestCase
 
         $this->assertEquals(
             'INSERT INTO my_awesome_table (good,bad,ugly) VALUES (\'yes\',\'no\',\'of course\')',
-            $dbh->lastQuery
+            $dbh->getLastQuery()
         );
     }
 

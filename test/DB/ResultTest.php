@@ -369,7 +369,7 @@ class ResultTest extends TestCase
 
         // testdriver doesn't implement bound parameters, so the tokeniser expands the query.
         // also, there's no getter to pull the last query out of dbh, so fetch directly.
-        $this->assertEquals('SELECT things FROM a_table WHERE foo = \'bar\'', $dbh->lastQuery);
+        $this->assertEquals('SELECT things FROM a_table WHERE foo = \'bar\'', $dbh->getLastQuery());
     }
 
     public function testNumRowsWithPortabilityQueryFailure()

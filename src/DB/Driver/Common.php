@@ -66,9 +66,8 @@ abstract class Common extends Util
     /**
      * The most recently executed query
      * @var string
-     * @todo replace with an accessor
      */
-    public $lastQuery = '';
+    protected $lastQuery = '';
 
     /** @var boolean A flag to indicate that the author is prepared to make some poor life choices */
     protected $acceptConsequencesOfPoorCodingChoices = false;
@@ -132,6 +131,16 @@ abstract class Common extends Util
     public function __construct()
     {
         parent::__construct(Error::class);
+    }
+
+    /**
+     * Retrieve the last query string
+     *
+     * @return string
+     */
+    public function getLastQuery()
+    {
+        return $this->lastQuery;
     }
 
     /**

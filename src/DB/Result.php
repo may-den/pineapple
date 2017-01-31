@@ -118,7 +118,7 @@ class Result
         $this->fetchmode = $dbh->getFetchmode();
         $this->fetchModeObjectClass = $dbh->getFetchModeObjectClass();
         $this->parameters = $dbh->lastParameters;
-        $this->query = $dbh->lastQuery;
+        $this->query = $dbh->getLastQuery();
         $this->result = $result;
         // @todo check line below. i suspect this is not needed
         $this->statement = null; // empty($dbh->lastStatement) ? null : $dbh->lastStatement;
