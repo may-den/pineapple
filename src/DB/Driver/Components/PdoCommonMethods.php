@@ -128,7 +128,7 @@ trait PdoCommonMethods
      *                                   object on failure.
      *
      * @see Pineapple\DB\Result::numRows()
-     * @todo This is not easily testable, since not all drivers support this for SELECTs
+     * This is not easily testable, since not all drivers support this for SELECTs, so:
      * @codeCoverageIgnore
      */
     public function numRows(StatementContainer $result)

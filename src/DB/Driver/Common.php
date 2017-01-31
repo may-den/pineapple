@@ -905,7 +905,7 @@ abstract class Common extends Util
                 $fp = @fopen($value, 'rb');
                 if (!$fp) {
                     // @codeCoverageIgnoreStart
-                    // @todo this is a pain to test without vfsStream, so skip for now
+                    // this is a pain to test without vfsStream, so skip for now
                     return $this->raiseError(DB::DB_ERROR_ACCESS_VIOLATION);
                     // @codeCoverageIgnoreEnd
                 }
@@ -1387,11 +1387,10 @@ abstract class Common extends Util
         $results = [];
 
         if ($cols > 2 || $forceArray) {
-            // return array values
-            // @todo this part can be optimized
+            // return array values. this part can be optimized.
 
             /**
-             * @todo I'm acutely aware that this is probably a 50-line bug, because:
+             * @note I'm acutely aware that this is probably a 50-line bug, because:
              * - there's no bitwise ops (meaning combined bits will fall to else block)
              * - it's likely combined flip won't work either
              * - result doesn't handle bitwise either
@@ -1654,7 +1653,7 @@ abstract class Common extends Util
      */
     public function errorCode($nativecode)
     {
-        // @todo put this into -compat and refactor out this method
+        // @todo put this into -compat and refactor out this method?
         return $this->getNativeErrorCode($nativecode);
     }
 
