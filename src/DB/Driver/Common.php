@@ -420,7 +420,8 @@ abstract class Common extends Util
      *
      * @param string $feature  the feature you're curious about
      *
-     * @return bool  whether this driver supports $feature
+     * @return mixed Usually boolean, whether this driver supports $feature,
+     *               in the case of limit a string
      */
     public function provides($feature)
     {
