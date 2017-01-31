@@ -1333,4 +1333,12 @@ class CommonTest extends TestCase
         $this->assertInstanceOf(Error::class, $insertId);
         $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $insertId->getCode());
     }
+
+    public function testChangeDatabase()
+    {
+        $dbh = DB::factory(TestDriver::class);
+        $ret = $dbh->changeDatabase('foo');
+        $this->assertInstanceOf(Error::class, $ret);
+        $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $ret->getCode());
+    }
 }

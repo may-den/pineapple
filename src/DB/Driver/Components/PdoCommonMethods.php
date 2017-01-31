@@ -464,27 +464,24 @@ trait PdoCommonMethods
      * Change the current database we are working on
      *
      * @param string The name of the database to connect to
-     * @return mixed true if the operation worked, Pineapple\DB\Error if it
-     *               failed, Pineapple\DB\Error with DB_ERROR_UNSUPPORTED if
-     *               the feature is not supported by the driver
+     * @return mixed DB::DB_OK if the operation worked, Pineapple\DB\Error if
+     *               it failed, Pineapple\DB\Error with DB_ERROR_UNSUPPORTED
+     *               if the feature is not supported by the driver
      *
      * @see Pineapple\DB\Error
+     * @codeCoverageIgnore Skipping coverage because we don't have MySQL
+     *                     integration tests
      */
     public function changeDatabase($name)
     {
         switch ($this->getPlatform()) {
             case 'mysql':
-                $this->connection->query('USE ' . $this->quoteIdentifier($name));
-                return $quotedString;
+                return $this->simpleQuery('USE ' . $this->quoteIdentifier($name));
                 break;
-                // @codeCoverageIgnoreEnd
 
-            // not going to try covering this
-            // @codeCoverageIgnoreStart
             default:
                 return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
                 break;
-            // @codeCoverageIgnoreEnd
         }
     }
 }
