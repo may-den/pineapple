@@ -3,6 +3,7 @@ namespace Pineapple\DB\Driver\Components;
 
 use Pineapple\DB;
 use Pineapple\DB\StatementContainer;
+use Pineapple\DB\Result;
 
 /**
  * Common methods shared amongst PDO and PDO-alike drivers.
@@ -357,12 +358,12 @@ trait PdoCommonMethods
             // @codeCoverageIgnoreStart
             $tableHandle = new StatementContainer($this->simpleQuery("SELECT * FROM $result LIMIT 0"));
             // @codeCoverageIgnoreEnd
-        } elseif (is_object($result) && isset($result->result)) {
+        } elseif (is_object($result) && ($result instanceof Result)) {
             /**
              * Probably received a result object.
              * Extract the result resource identifier.
              */
-            $tableHandle = $result->result;
+            $tableHandle = $result->getResult();
         } else {
             return $this->myRaiseError();
         }

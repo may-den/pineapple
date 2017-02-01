@@ -79,12 +79,8 @@ class Result
      */
     public $query;
 
-    /**
-     * The query result created by the driver
-     * @var StatementContainer
-     * @todo make private?
-     */
-    public $result;
+    /** @var StatementContainer The query result created by the driver */
+    private $result;
 
     /**
      * The present row being dealt with
@@ -370,6 +366,16 @@ class Result
     public function getQuery()
     {
         return $this->query;
+    }
+
+    /**
+     * Get the 'result' StatementContainer from the private property
+     *
+     * @return StatementContainer
+     */
+    public function getResult()
+    {
+        return $this->result;
     }
 
     /**
