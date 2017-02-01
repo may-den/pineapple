@@ -117,8 +117,8 @@ class DoctrineDbal extends Common implements DriverInterface
             $this->transactionOpcount++;
         }
 
-        // @todo this needs setting on the prepare() driver options, which doctrine doesn't support
         // @codeCoverageIgnoreStart
+        // this needs setting on the prepare() driver options, which doctrine doesn't support
         if (($this->getPlatform() === 'mysql') && !$this->options['result_buffering']) {
             return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
         }
@@ -171,7 +171,7 @@ class DoctrineDbal extends Common implements DriverInterface
             }
         } else {
             try {
-                $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM);
+                $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM, null, $rownum);
                 // this exception handle was added as the php docs implied a potential exception, which i have thus
                 // far been unable to reproduce.
                 // @codeCoverageIgnoreStart
@@ -210,8 +210,8 @@ class DoctrineDbal extends Common implements DriverInterface
 
             try {
                 $this->connection->commit();
-                // @todo honestly, i don't know how to generate a failed transaction commit
                 // @codeCoverageIgnoreStart
+                // honestly, i don't know how to generate a failed transaction commit
             } catch (DBALConnectionException $e) {
                 return $this->myRaiseError();
                 // @codeCoverageIgnoreEnd
@@ -237,8 +237,8 @@ class DoctrineDbal extends Common implements DriverInterface
 
             try {
                 $this->connection->rollBack();
-                // @todo honestly, i don't know how to generate a failed tranascation rollback
                 // @codeCoverageIgnoreStart
+                // honestly, i don't know how to generate a failed tranascation rollback
             } catch (DBALConnectionException $e) {
                 return $this->myRaiseError();
                 // @codeCoverageIgnoreEnd

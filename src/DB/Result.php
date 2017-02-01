@@ -79,12 +79,8 @@ class Result
      */
     public $query;
 
-    /**
-     * The query result created by the driver
-     * @var StatementContainer
-     * @todo make private?
-     */
-    public $result;
+    /** @var StatementContainer The query result created by the driver */
+    private $result;
 
     /**
      * The present row being dealt with
@@ -117,11 +113,9 @@ class Result
         $this->dbh = $dbh;
         $this->fetchmode = $dbh->getFetchmode();
         $this->fetchModeObjectClass = $dbh->getFetchModeObjectClass();
-        $this->parameters = $dbh->lastParameters;
-        $this->query = $dbh->lastQuery;
+        $this->parameters = $dbh->getLastParameters();
+        $this->query = $dbh->getLastQuery();
         $this->result = $result;
-        // @todo check line below. i suspect this is not needed
-        $this->statement = null; // empty($dbh->lastStatement) ? null : $dbh->lastStatement;
         foreach ($options as $key => $value) {
             $this->setOption($key, $value);
         }
@@ -174,7 +168,7 @@ class Result
      */
     public function fetchRow($fetchmode = DB::DB_FETCHMODE_DEFAULT, $rownum = null)
     {
-        // @todo not bitwise ops on a supposedly bitwise fetch mode
+        // @note the author says the FETCHMODE constants are bitwise, but they clearly aren't here
         if ($fetchmode === DB::DB_FETCHMODE_DEFAULT) {
             $fetchmode = $this->fetchmode;
         }
@@ -248,7 +242,7 @@ class Result
      */
     public function fetchInto(&$arr, $fetchmode = DB::DB_FETCHMODE_DEFAULT, $rownum = null)
     {
-        // @todo non-bitwise ops on a supposedly bitwise fetch mode
+        // @note the author says the FETCHMODE constants are bitwise but they clearly aren't here
         if ($fetchmode === DB::DB_FETCHMODE_DEFAULT) {
             $fetchmode = $this->fetchmode;
         }
@@ -370,6 +364,16 @@ class Result
     public function getQuery()
     {
         return $this->query;
+    }
+
+    /**
+     * Get the 'result' StatementContainer from the private property
+     *
+     * @return StatementContainer
+     */
+    public function getResult()
+    {
+        return $this->result;
     }
 
     /**

@@ -63,12 +63,8 @@ abstract class Common extends Util
      */
     protected $wasConnected = null;
 
-    /**
-     * The most recently executed query
-     * @var string
-     * @todo replace with an accessor
-     */
-    public $lastQuery = '';
+    /** @var string The most recently executed query */
+    protected $lastQuery = '';
 
     /** @var boolean A flag to indicate that the author is prepared to make some poor life choices */
     protected $acceptConsequencesOfPoorCodingChoices = false;
@@ -91,13 +87,8 @@ abstract class Common extends Util
         'strict_transactions' => true,
     ];
 
-    /**
-     * The parameters from the most recently executed query
-     * @var array
-     * @since Property available since Release 1.7.0
-     * @todo Replace with in accessor
-     */
-    public $lastParameters = [];
+    /** @var array The parameters from the most recently executed query */
+    protected $lastParameters = [];
 
     /** @var array The elements from each prepared statement */
     protected $prepareTokens = [];
@@ -127,11 +118,31 @@ abstract class Common extends Util
     protected $features = [];
 
     /**
-     * This constructor calls <kbd>parent::__construct('Pineapple\DB\Error')</kbd>
+     * This constructor calls `parent::__construct('Pineapple\DB\Error')`
      */
     public function __construct()
     {
         parent::__construct(Error::class);
+    }
+
+    /**
+     * Retrieve the last query string
+     *
+     * @return string
+     */
+    public function getLastQuery()
+    {
+        return $this->lastQuery;
+    }
+
+    /**
+     * Retrieve the last set of parameters used in a query
+     *
+     * @return array
+     */
+    public function getLastParameters()
+    {
+        return $this->lastParameters;
     }
 
     /**
@@ -220,9 +231,9 @@ abstract class Common extends Util
      *
      * Portability is broken by using the following characters inside
      * delimited identifiers:
-     *   + backtick (<kbd>`</kbd>) -- due to MySQL
-     *   + double quote (<kbd>"</kbd>) -- due to Oracle
-     *   + brackets (<kbd>[</kbd> or <kbd>]</kbd>) -- due to Access
+     *   + backtick (```) -- due to MySQL
+     *   + double quote (`"`) -- due to Oracle
+     *   + brackets (`[` or `]`) -- due to Access
      *
      * Delimited identifiers are known to generally work correctly under
      * the following drivers:
@@ -259,95 +270,45 @@ abstract class Common extends Util
      *
      * @param mixed $property the data to be formatted
      *
-     * @return mixed          the formatted data.  The format depends on the
-     *                        input's PHP type:
-     * <ul>
-     *  <li>
-     *    <kbd>input</kbd> -> <samp>returns</samp>
-     *  </li>
-     *  <li>
-     *    <kbd>null</kbd> -> the string <samp>NULL</samp>
-     *  </li>
-     *  <li>
-     *    <kbd>integer</kbd> or <kbd>double</kbd> -> the unquoted number
-     *  </li>
-     *  <li>
-     *    <kbd>bool</kbd> -> output depends on the driver in use
-     *    Most drivers return integers: <samp>1</samp> if
-     *    <kbd>true</kbd> or <samp>0</samp> if
-     *    <kbd>false</kbd>.
-     *    Some return strings: <samp>TRUE</samp> if
-     *    <kbd>true</kbd> or <samp>FALSE</samp> if
-     *    <kbd>false</kbd>.
-     *    Finally one returns strings: <samp>T</samp> if
-     *    <kbd>true</kbd> or <samp>F</samp> if
-     *    <kbd>false</kbd>. Here is a list of each DBMS,
-     *    the values returned and the suggested column type:
-     *    <ul>
-     *      <li>
-     *        <kbd>dbase</kbd> -> <samp>T/F</samp>
-     *        (<kbd>Logical</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>fbase</kbd> -> <samp>TRUE/FALSE</samp>
-     *        (<kbd>BOOLEAN</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>ibase</kbd> -> <samp>1/0</samp>
-     *        (<kbd>SMALLINT</kbd>) [1]
-     *      </li>
-     *      <li>
-     *        <kbd>ifx</kbd> -> <samp>1/0</samp>
-     *        (<kbd>SMALLINT</kbd>) [1]
-     *      </li>
-     *      <li>
-     *        <kbd>msql</kbd> -> <samp>1/0</samp>
-     *        (<kbd>INTEGER</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>mssql</kbd> -> <samp>1/0</samp>
-     *        (<kbd>BIT</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>mysql</kbd> -> <samp>1/0</samp>
-     *        (<kbd>TINYINT(1)</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>mysqli</kbd> -> <samp>1/0</samp>
-     *        (<kbd>TINYINT(1)</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>oci8</kbd> -> <samp>1/0</samp>
-     *        (<kbd>NUMBER(1)</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>odbc</kbd> -> <samp>1/0</samp>
-     *        (<kbd>SMALLINT</kbd>) [1]
-     *      </li>
-     *      <li>
-     *        <kbd>pgsql</kbd> -> <samp>TRUE/FALSE</samp>
-     *        (<kbd>BOOLEAN</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>sqlite</kbd> -> <samp>1/0</samp>
-     *        (<kbd>INTEGER</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>sybase</kbd> -> <samp>1/0</samp>
-     *        (<kbd>TINYINT(1)</kbd>)
-     *      </li>
-     *    </ul>
+     * @return mixed          the formatted data.
+     *
+     * The format depends on the input's PHP type:
+     *   -   `input` -> `returns`
+     *   -   `null` -> the string `NULL`
+     *   -   `integer` or `double` -> the unquoted number
+     *   -   `bool` -> output depends on the driver in use
+     *                 Most drivers return integers: `1` if
+     *                 `true` or `0` if
+     *                 `false`.
+     *                 Some return strings: `TRUE` if
+     *                 `true` or `FALSE` if
+     *                 `false`.
+     *                 Finally one returns strings: `T` if
+     *                 `true` or `F` if
+     *                 `false`. Here is a list of each DBMS,
+     *                 the values returned and the suggested column type:
+     *      -   `dbase` -> `T/F`        (`Logical`)
+     *      -   `fbase` -> `TRUE/FALSE` (`BOOLEAN`)
+     *      -   `ibase` -> `1/0`        (`SMALLINT`) [1]
+     *      -   `ifx` -> `1/0`          (`SMALLINT`) [1]
+     *      -   `msql` -> `1/0`         (`INTEGER`)
+     *      -   `mssql` -> `1/0`        (`BIT`)
+     *      -   `mysql` -> `1/0`        (`TINYINT(1)`)
+     *      -   `mysqli` -> `1/0`       (`TINYINT(1)`)
+     *      -   `oci8` -> `1/0`         (`NUMBER(1)`)
+     *      -   `odbc` -> `1/0`         (`SMALLINT`) [1]
+     *      -   `pgsql` -> `TRUE/FALSE` (`BOOLEAN`)
+     *      -   `sqlite` -> `1/0`       (`INTEGER`)
+     *      -   `sybase` -> `1/0`       (`TINYINT(1)`)
+     *
      *    [1] Accommodate the lowest common denominator because not all
-     *    versions of have <kbd>BOOLEAN</kbd>.
-     *  </li>
-     *  <li>
+     *    versions of have `BOOLEAN`.
+     *
      *    other (including strings and numeric strings) ->
      *    the data with single quotes escaped by preceeding
      *    single quotes, backslashes are escaped by preceeding
      *    backslashes, then the whole string is encapsulated
      *    between single quotes
-     *  </li>
-     * </ul>
      *
      * @see Common::escapeSimple()
      * @since Method available since Release 1.6.0
@@ -420,7 +381,8 @@ abstract class Common extends Util
      *
      * @param string $feature  the feature you're curious about
      *
-     * @return bool  whether this driver supports $feature
+     * @return mixed Usually boolean, whether this driver supports $feature,
+     *               in the case of limit a string
      */
     public function provides($feature)
     {
@@ -893,7 +855,7 @@ abstract class Common extends Util
                 $fp = @fopen($value, 'rb');
                 if (!$fp) {
                     // @codeCoverageIgnoreStart
-                    // @todo this is a pain to test without vfsStream, so skip for now
+                    // this is a pain to test without vfsStream, so skip for now
                     return $this->raiseError(DB::DB_ERROR_ACCESS_VIOLATION);
                     // @codeCoverageIgnoreEnd
                 }
@@ -1096,7 +1058,7 @@ abstract class Common extends Util
     public function getOne($query, $params = [])
     {
         $row = null;
-        $params = (array)$params;
+        $params = (array) $params;
         // modifyLimitQuery() would be nice here, but it causes BC issues
         if (count($params) > 0) {
             $sth = $this->prepare($query);
@@ -1375,11 +1337,10 @@ abstract class Common extends Util
         $results = [];
 
         if ($cols > 2 || $forceArray) {
-            // return array values
-            // @todo this part can be optimized
+            // return array values. this part can be optimized.
 
             /**
-             * @todo I'm acutely aware that this is probably a 50-line bug, because:
+             * @note I'm acutely aware that this is probably a 50-line bug, because:
              * - there's no bitwise ops (meaning combined bits will fall to else block)
              * - it's likely combined flip won't work either
              * - result doesn't handle bitwise either
@@ -1642,7 +1603,6 @@ abstract class Common extends Util
      */
     public function errorCode($nativecode)
     {
-        // @todo put this into -compat and refactor out this method
         return $this->getNativeErrorCode($nativecode);
     }
 
@@ -1882,5 +1842,20 @@ abstract class Common extends Util
                 $array[$key] = '';
             }
         }
+    }
+
+    /**
+     * Change the current database we are working on
+     *
+     * @param string The name of the database to connect to
+     * @return mixed true if the operation worked, Pineapple\DB\Error if it
+     *               failed, Pineapple\DB\Error with DB_ERROR_UNSUPPORTED if
+     *               the feature is not supported by the driver
+     *
+     * @see Pineapple\DB\Error
+     */
+    public function changeDatabase($name)
+    {
+        return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
     }
 }

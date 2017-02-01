@@ -379,7 +379,7 @@ class CommonTest extends TestCase
 
         $this->assertEquals(
             'INSERT INTO my_awesome_table (good,bad,ugly) VALUES (\'yes\',\'no\',\'of course\')',
-            $dbh->lastQuery
+            $dbh->getLastQuery()
         );
     }
 
@@ -1332,5 +1332,13 @@ class CommonTest extends TestCase
         $insertId = $dbh->lastInsertId();
         $this->assertInstanceOf(Error::class, $insertId);
         $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $insertId->getCode());
+    }
+
+    public function testChangeDatabase()
+    {
+        $dbh = DB::factory(TestDriver::class);
+        $ret = $dbh->changeDatabase('foo');
+        $this->assertInstanceOf(Error::class, $ret);
+        $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $ret->getCode());
     }
 }

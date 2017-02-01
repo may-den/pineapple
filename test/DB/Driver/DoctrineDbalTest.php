@@ -340,7 +340,9 @@ class DoctrineDbalTest extends TestCase
 
     public function testAffectedRows()
     {
-        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'the nurse who loved me\'),(\'solaris\')');
+        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'the nurse who loved me\')');
+        $this->dbh->query('INSERT INTO transactiontest (a) VALUES (\'solaris\')');
+        $this->dbh->query('UPDATE transactiontest SET a = \'the goonies\'');
         $this->assertEquals(2, $this->dbh->affectedRows());
     }
 
@@ -429,7 +431,7 @@ class DoctrineDbalTest extends TestCase
                 'table' => 'dbaltest',
                 'name' => 'a',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ]
         ], $tableInfo);
     }
@@ -465,7 +467,7 @@ class DoctrineDbalTest extends TestCase
                 'table' => 'keycasetest',
                 'name' => 'mixedcasecolumn',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ]
         ], $tableInfo);
     }
@@ -483,7 +485,7 @@ class DoctrineDbalTest extends TestCase
                 'table' => 'dbaltest',
                 'name' => 'a',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ],
             'num_fields' => 1,
             'order' => ['a' => 0],
@@ -503,7 +505,7 @@ class DoctrineDbalTest extends TestCase
                 'table' => 'dbaltest',
                 'name' => 'a',
                 'type' => 'string',
-                'flags' => [],
+                'flags' => '',
             ],
             'num_fields' => 1,
             'ordertable' => [

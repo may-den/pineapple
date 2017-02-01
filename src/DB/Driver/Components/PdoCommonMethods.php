@@ -3,6 +3,7 @@ namespace Pineapple\DB\Driver\Components;
 
 use Pineapple\DB;
 use Pineapple\DB\StatementContainer;
+use Pineapple\DB\Result;
 
 /**
  * Common methods shared amongst PDO and PDO-alike drivers.
@@ -14,6 +15,42 @@ use Pineapple\DB\StatementContainer;
  */
 trait PdoCommonMethods
 {
+    /**
+     * PDO driver types mapping to types as formerly output by PEAR DB
+     */
+    private static $typeMap = [
+        // mysql types
+        'STRING' => 'string',
+        'VAR_STRING' => 'string',
+        'BIT' => 'int',
+        'TINY' => 'int',
+        'SHORT' => 'int',
+        'LONG' => 'int',
+        'LONGLONG' => 'int',
+        'INT24' => 'int',
+        'FLOAT' => 'real',
+        'DOUBLE' => 'real',
+        'DECIMAL' => 'real',
+        'NEWDECIMAL' => 'real',
+        'TIMESTAMP' => 'timestamp',
+        'YEAR' => 'year',
+        'DATE' => 'date',
+        'NEWDATE' => 'date',
+        'TIME' => 'time',
+        'SET' => 'set',
+        'ENUM' => 'enum',
+        'GEOMETRY' => 'geometry',
+        'DATETIME' => 'datetime',
+        'TINY_BLOB' => 'blob',
+        'MEDIUM_BLOB' => 'blob',
+        'LONG_BLOB' => 'blob',
+        'BLOB' => 'blob',
+        'NULL' => 'null',
+
+        // sqlite types
+        'string' => 'string',
+    ];
+
     /**
      * Disconnects from the database server
      *
@@ -92,7 +129,7 @@ trait PdoCommonMethods
      *                                   object on failure.
      *
      * @see Pineapple\DB\Result::numRows()
-     * @todo This is not easily testable, since not all drivers support this for SELECTs
+     * This is not easily testable, since not all drivers support this for SELECTs, so:
      * @codeCoverageIgnore
      */
     public function numRows(StatementContainer $result)
@@ -321,12 +358,12 @@ trait PdoCommonMethods
             // @codeCoverageIgnoreStart
             $tableHandle = new StatementContainer($this->simpleQuery("SELECT * FROM $result LIMIT 0"));
             // @codeCoverageIgnoreEnd
-        } elseif (is_object($result) && isset($result->result)) {
+        } elseif (is_object($result) && ($result instanceof Result)) {
             /**
              * Probably received a result object.
              * Extract the result resource identifier.
              */
-            $tableHandle = $result->result;
+            $tableHandle = $result->getResult();
         } else {
             return $this->myRaiseError();
         }
@@ -354,12 +391,33 @@ trait PdoCommonMethods
         for ($i = 0; $i < $count; $i++) {
             $tmp = $tableHandle->getColumnMeta($i);
 
+            if ($tmp === false) {
+                // @codeCoverageIgnoreStart
+                // skipping coverage on this because we can't reproduce in test
+                next;
+                // @codeCoverageIgnoreEnd
+            }
+
+            if (!isset($tmp['native_type'])) {
+                // @codeCoverageIgnoreStart
+                // skipping coverage on this because we can't reproduce in test
+                $tmp['native_type'] = 'unknown';
+                // @codeCoverageIgnoreEnd
+            }
+
+            // @codeCoverageIgnoreStart
+            // skipping coverage on this because we can't reproduce in test
+            $tmp['native_type'] = isset(self::$typeMap[$tmp['native_type']])
+                ? self::$typeMap[$tmp['native_type']]
+                : 'unknown';
+            // @codeCoverageIgnoreEnd
+
             $res[$i] = [
                 'table' => $caseFunc($tmp['table']),
                 'name' => $caseFunc($tmp['name']),
-                'type' => isset($tmp['native_type']) ? $tmp['native_type'] : 'unknown',
+                'type' => $tmp['native_type'],
                 'len' => $tmp['len'],
-                'flags' => $tmp['flags'],
+                'flags' => is_array($tmp['flags']) ? implode(' ', $tmp['flags']) : '',
             ];
 
             if ($mode & DB::DB_TABLEINFO_ORDER) {
@@ -372,7 +430,7 @@ trait PdoCommonMethods
 
         return $res;
     }
-    
+
     /**
      * Retrieve the value used to populate an auto-increment or primary key
      * field by the DBMS.
@@ -401,5 +459,30 @@ trait PdoCommonMethods
         // @codeCoverageIgnoreStart
         return $this->raiseError($this->getNativeErrorCode($this->connection->errorCode()));
         // @codeCoverageIgnoreEnd
+    }
+
+    /**
+     * Change the current database we are working on
+     *
+     * @param string The name of the database to connect to
+     * @return mixed DB::DB_OK if the operation worked, Pineapple\DB\Error if
+     *               it failed, Pineapple\DB\Error with DB_ERROR_UNSUPPORTED
+     *               if the feature is not supported by the driver
+     *
+     * @see Pineapple\DB\Error
+     * @codeCoverageIgnore Skipping coverage because we don't have MySQL
+     *                     integration tests
+     */
+    public function changeDatabase($name)
+    {
+        switch ($this->getPlatform()) {
+            case 'mysql':
+                return $this->simpleQuery('USE ' . $this->quoteIdentifier($name));
+                break;
+
+            default:
+                return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
+                break;
+        }
     }
 }
