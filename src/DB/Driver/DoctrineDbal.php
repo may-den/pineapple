@@ -171,7 +171,7 @@ class DoctrineDbal extends Common implements DriverInterface
             }
         } else {
             try {
-                $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM);
+                $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM, null, $rownum);
                 // this exception handle was added as the php docs implied a potential exception, which i have thus
                 // far been unable to reproduce.
                 // @codeCoverageIgnoreStart
