@@ -231,9 +231,9 @@ abstract class Common extends Util
      *
      * Portability is broken by using the following characters inside
      * delimited identifiers:
-     *   + backtick (<kbd>`</kbd>) -- due to MySQL
-     *   + double quote (<kbd>"</kbd>) -- due to Oracle
-     *   + brackets (<kbd>[</kbd> or <kbd>]</kbd>) -- due to Access
+     *   + backtick (```) -- due to MySQL
+     *   + double quote (`"`) -- due to Oracle
+     *   + brackets (`[` or `]`) -- due to Access
      *
      * Delimited identifiers are known to generally work correctly under
      * the following drivers:
@@ -270,95 +270,45 @@ abstract class Common extends Util
      *
      * @param mixed $property the data to be formatted
      *
-     * @return mixed          the formatted data.  The format depends on the
-     *                        input's PHP type:
-     * <ul>
-     *  <li>
-     *    <kbd>input</kbd> -> <samp>returns</samp>
-     *  </li>
-     *  <li>
-     *    <kbd>null</kbd> -> the string <samp>NULL</samp>
-     *  </li>
-     *  <li>
-     *    <kbd>integer</kbd> or <kbd>double</kbd> -> the unquoted number
-     *  </li>
-     *  <li>
-     *    <kbd>bool</kbd> -> output depends on the driver in use
-     *    Most drivers return integers: <samp>1</samp> if
-     *    <kbd>true</kbd> or <samp>0</samp> if
-     *    <kbd>false</kbd>.
-     *    Some return strings: <samp>TRUE</samp> if
-     *    <kbd>true</kbd> or <samp>FALSE</samp> if
-     *    <kbd>false</kbd>.
-     *    Finally one returns strings: <samp>T</samp> if
-     *    <kbd>true</kbd> or <samp>F</samp> if
-     *    <kbd>false</kbd>. Here is a list of each DBMS,
-     *    the values returned and the suggested column type:
-     *    <ul>
-     *      <li>
-     *        <kbd>dbase</kbd> -> <samp>T/F</samp>
-     *        (<kbd>Logical</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>fbase</kbd> -> <samp>TRUE/FALSE</samp>
-     *        (<kbd>BOOLEAN</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>ibase</kbd> -> <samp>1/0</samp>
-     *        (<kbd>SMALLINT</kbd>) [1]
-     *      </li>
-     *      <li>
-     *        <kbd>ifx</kbd> -> <samp>1/0</samp>
-     *        (<kbd>SMALLINT</kbd>) [1]
-     *      </li>
-     *      <li>
-     *        <kbd>msql</kbd> -> <samp>1/0</samp>
-     *        (<kbd>INTEGER</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>mssql</kbd> -> <samp>1/0</samp>
-     *        (<kbd>BIT</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>mysql</kbd> -> <samp>1/0</samp>
-     *        (<kbd>TINYINT(1)</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>mysqli</kbd> -> <samp>1/0</samp>
-     *        (<kbd>TINYINT(1)</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>oci8</kbd> -> <samp>1/0</samp>
-     *        (<kbd>NUMBER(1)</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>odbc</kbd> -> <samp>1/0</samp>
-     *        (<kbd>SMALLINT</kbd>) [1]
-     *      </li>
-     *      <li>
-     *        <kbd>pgsql</kbd> -> <samp>TRUE/FALSE</samp>
-     *        (<kbd>BOOLEAN</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>sqlite</kbd> -> <samp>1/0</samp>
-     *        (<kbd>INTEGER</kbd>)
-     *      </li>
-     *      <li>
-     *        <kbd>sybase</kbd> -> <samp>1/0</samp>
-     *        (<kbd>TINYINT(1)</kbd>)
-     *      </li>
-     *    </ul>
+     * @return mixed          the formatted data.
+     *
+     * The format depends on the input's PHP type:
+     *   -   `input` -> `returns`
+     *   -   `null` -> the string `NULL`
+     *   -   `integer` or `double` -> the unquoted number
+     *   -   `bool` -> output depends on the driver in use
+     *                 Most drivers return integers: `1` if
+     *                 `true` or `0` if
+     *                 `false`.
+     *                 Some return strings: `TRUE` if
+     *                 `true` or `FALSE` if
+     *                 `false`.
+     *                 Finally one returns strings: `T` if
+     *                 `true` or `F` if
+     *                 `false`. Here is a list of each DBMS,
+     *                 the values returned and the suggested column type:
+     *      -   `dbase` -> `T/F`        (`Logical`)
+     *      -   `fbase` -> `TRUE/FALSE` (`BOOLEAN`)
+     *      -   `ibase` -> `1/0`        (`SMALLINT`) [1]
+     *      -   `ifx` -> `1/0`          (`SMALLINT`) [1]
+     *      -   `msql` -> `1/0`         (`INTEGER`)
+     *      -   `mssql` -> `1/0`        (`BIT`)
+     *      -   `mysql` -> `1/0`        (`TINYINT(1)`)
+     *      -   `mysqli` -> `1/0`       (`TINYINT(1)`)
+     *      -   `oci8` -> `1/0`         (`NUMBER(1)`)
+     *      -   `odbc` -> `1/0`         (`SMALLINT`) [1]
+     *      -   `pgsql` -> `TRUE/FALSE` (`BOOLEAN`)
+     *      -   `sqlite` -> `1/0`       (`INTEGER`)
+     *      -   `sybase` -> `1/0`       (`TINYINT(1)`)
+     *
      *    [1] Accommodate the lowest common denominator because not all
-     *    versions of have <kbd>BOOLEAN</kbd>.
-     *  </li>
-     *  <li>
+     *    versions of have `BOOLEAN`.
+     *
      *    other (including strings and numeric strings) ->
      *    the data with single quotes escaped by preceeding
      *    single quotes, backslashes are escaped by preceeding
      *    backslashes, then the whole string is encapsulated
      *    between single quotes
-     *  </li>
-     * </ul>
      *
      * @see Common::escapeSimple()
      * @since Method available since Release 1.6.0
