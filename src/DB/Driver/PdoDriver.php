@@ -116,7 +116,6 @@ class PdoDriver extends Common implements DriverInterface
 
         // enable/disable result_buffering in mysql
         // @codeCoverageIgnoreStart
-        // @todo test this *thoroughly*
         if (($this->getPlatform() === 'mysql') && !$this->options['result_buffering']) {
             $queryDriverOptions[PDO::MYSQL_ATTR_USE_BUFFERED_QUERY] = false;
         }
@@ -250,16 +249,16 @@ class PdoDriver extends Common implements DriverInterface
 
             try {
                 $commitResult = $this->connection->commit();
-                // @todo cannot easily generate a failed transaction commit, don't cover this
                 // @codeCoverageIgnoreStart
+                // cannot easily generate a failed transaction commit, don't cover this
             } catch (PDOException $commitException) {
                 return $this->raiseError(DB::DB_ERROR, null, null, $commitException->getMessage());
                 // @codeCoverageIgnoreEnd
             }
 
             if ($commitResult === false) {
-                // @todo cannot easily generate a failed transaction commit, don't cover this
                 // @codeCoverageIgnoreStart
+                // cannot easily generate a failed transaction commit, don't cover this
                 return $this->raiseError(
                     DB::DB_ERROR,
                     null,
@@ -289,16 +288,16 @@ class PdoDriver extends Common implements DriverInterface
 
             try {
                 $rollbackResult = $this->connection->rollBack();
-                // @todo cannot easily generate a failed transaction rollback, don't cover this
                 // @codeCoverageIgnoreStart
+                // cannot easily generate a failed transaction rollback, don't cover this
             } catch (PDOException $rollbackException) {
                 return $this->raiseError(DB::DB_ERROR, null, null, $rollbackException->getMessage());
                 // @codeCoverageIgnoreEnd
             }
 
             if ($rollbackResult === false) {
-                // @todo cannot easily generate a failed transaction rollback, don't cover this
                 // @codeCoverageIgnoreStart
+                // cannot easily generate a failed transaction rollback, don't cover this
                 return $this->raiseError(
                     DB::DB_ERROR,
                     null,

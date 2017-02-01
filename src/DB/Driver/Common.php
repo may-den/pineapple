@@ -1653,7 +1653,6 @@ abstract class Common extends Util
      */
     public function errorCode($nativecode)
     {
-        // @todo put this into -compat and refactor out this method?
         return $this->getNativeErrorCode($nativecode);
     }
 

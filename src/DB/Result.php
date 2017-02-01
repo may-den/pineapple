@@ -116,8 +116,6 @@ class Result
         $this->parameters = $dbh->getLastParameters();
         $this->query = $dbh->getLastQuery();
         $this->result = $result;
-        // @todo check line below. i suspect this is not needed
-        $this->statement = null; // empty($dbh->lastStatement) ? null : $dbh->lastStatement;
         foreach ($options as $key => $value) {
             $this->setOption($key, $value);
         }
@@ -170,7 +168,7 @@ class Result
      */
     public function fetchRow($fetchmode = DB::DB_FETCHMODE_DEFAULT, $rownum = null)
     {
-        // @todo not bitwise ops on a supposedly bitwise fetch mode
+        // @note the author says the FETCHMODE constants are bitwise, but they clearly aren't here
         if ($fetchmode === DB::DB_FETCHMODE_DEFAULT) {
             $fetchmode = $this->fetchmode;
         }
@@ -244,7 +242,7 @@ class Result
      */
     public function fetchInto(&$arr, $fetchmode = DB::DB_FETCHMODE_DEFAULT, $rownum = null)
     {
-        // @todo non-bitwise ops on a supposedly bitwise fetch mode
+        // @note the author says the FETCHMODE constants are bitwise but they clearly aren't here
         if ($fetchmode === DB::DB_FETCHMODE_DEFAULT) {
             $fetchmode = $this->fetchmode;
         }
