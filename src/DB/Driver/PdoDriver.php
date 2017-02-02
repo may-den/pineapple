@@ -203,6 +203,18 @@ class PdoDriver extends Common implements DriverInterface
      */
     public function fetchInto(StatementContainer $result, &$arr, $fetchmode, $rownum = null)
     {
+        // @codeCoverageIgnoreStart
+        // This is not coverable by integration tests
+        if (isset($rownum) && ($rownum !== null) && ($this->getPlatform() === 'mysql')) {
+            return $this->raiseError(
+                DB::DB_ERROR_UNSUPPORTED,
+                null,
+                null,
+                'pdo_mysql does not support cursor seeking'
+            );
+        }
+        // @codeCoverageIgnoreEnd
+
         if ($fetchmode & DB::DB_FETCHMODE_ASSOC) {
             $arr = self::getStatement($result)->fetch(PDO::FETCH_ASSOC, null, $rownum);
             if (($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) && $arr) {
