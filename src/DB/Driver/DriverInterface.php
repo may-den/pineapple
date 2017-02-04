@@ -1,6 +1,7 @@
 <?php
 namespace Pineapple\DB\Driver;
 
+use Pineapple\DB;
 use Pineapple\DB\StatementContainer;
 
 interface DriverInterface
