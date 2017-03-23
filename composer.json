@@ -31,5 +31,10 @@
         "diablomedia/phpunit-pretty-printer": "^1.0",
         "ext-pdo_sqlite": "*",
         "doctrine/dbal": ">=2.5"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "dev-0.4.x"
+        }
     }
 }
