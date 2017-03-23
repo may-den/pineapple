@@ -2,9 +2,9 @@
 
 #### An API-compatible replacement, forked from and for PEAR DB.
 
-| `master` | `dev-0.3.x` |
+| `master` | `dev-0.4.x` |
 |----------|-------------|
-| [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=master)](https://travis-ci.org/wethersherbs/pineapple) | [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=dev-0.3.x)](https://travis-ci.org/wethersherbs/pineapple) |
+| [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=master)](https://travis-ci.org/wethersherbs/pineapple) | [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=dev-0.4.x)](https://travis-ci.org/wethersherbs/pineapple) |
 
 ## What?
 
