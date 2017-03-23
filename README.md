@@ -189,7 +189,7 @@ And these from PEAR:
 
 * Rob Andrews [rob.andrews@mayden.co.uk](mailto:rob.andrews@mayden.co.uk)
 
-Please see the file "CONTRIBUTORS" for other attribution.
+Please see the file "CONTRIBUTORS.md" for other attribution.
 
 ## License
 
