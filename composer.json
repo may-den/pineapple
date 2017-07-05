@@ -28,9 +28,9 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^5.4",
-        "diablomedia/phpunit-pretty-printer": "^1.0",
         "ext-pdo_sqlite": "*",
-        "doctrine/dbal": ">=2.5"
+        "doctrine/dbal": ">=2.5",
+        "phpspec/prophecy": "^1.7"
     },
     "extra": {
         "branch-alias": {
