@@ -81,28 +81,12 @@ class StatementContainer
             throw new StatementException('No statement set', StatementException::NO_STATEMENT);
         }
 
-        switch (gettype($this->statement)) {
-            case 'object':
-            case 'array':
-            case 'resource':
-                if (($this->freeFunction !== null) && is_callable($this->freeFunction)) {
-                    call_user_func($this->freeFunction, $this->statement);
-                    unset($this->statement);
-                    return;
-                }
-                unset($this->statement);
-                break;
-
-            default:
-                // because we're rigid about what we accept, this is a "future expansion" fault
-                // @codeCoverageIgnoreStart
-                throw new StatementException(
-                    'Stored statement is not a type we are experienced with dealing with',
-                    StatementException::UNHANDLED_TYPE
-                );
-                break;
-                // @codeCoverageIgnoreEnd
+        if (($this->freeFunction !== null) && is_callable($this->freeFunction)) {
+            call_user_func($this->freeFunction, $this->statement);
+            unset($this->statement);
+            return;
         }
+        unset($this->statement);
     }
 
     /**
