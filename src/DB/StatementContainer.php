@@ -119,34 +119,12 @@ class StatementContainer
                     'type' => 'object',
                     'class' => get_class($this->statement),
                 ];
-                // we've returned above, so this isn't run
-                // @codeCoverageIgnoreStart
-                break;
-                // @codeCoverageIgnoreEnd
 
             case 'resource':
                 return ['type' => 'resource'];
-                // we've returned above, so this isn't run
-                // @codeCoverageIgnoreStart
-                break;
-                // @codeCoverageIgnoreEnd
 
             case 'array':
                 return ['type' => 'array'];
-                // we've returned above, so this isn't run
-                // @codeCoverageIgnoreStart
-                break;
-                // @codeCoverageIgnoreEnd
-
-            default:
-                // because we're rigid about what we accept, this is a "future expansion" fault
-                // @codeCoverageIgnoreStart
-                throw new StatementException(
-                    'Stored statement is not a type we are experienced with dealing with',
-                    StatementException::UNHANDLED_TYPE
-                );
-                break;
-                // @codeCoverageIgnoreEnd
         }
     }
 }
