@@ -55,22 +55,11 @@ class StatementContainer
      */
     public function setStatement($statement, $freeFunction = null)
     {
-        switch (gettype($statement)) {
-            case 'object':
-            case 'resource':
-            case 'array':
-                // this is fine.
-                break;
-
-            default:
-                throw new StatementException(
-                    'We do not know how to deal with this type of statement handle',
-                    StatementException::UNHANDLED_TYPE
-                );
-                // unreachable.
-                // @codeCoverageIgnoreStart
-                break;
-                // @codeCoverageIgnoreEnd
+        if (!in_array(gettype($statement), ['object', 'resource', 'array'])) {
+            throw new StatementException(
+                'We do not know how to deal with this type of statement handle',
+                StatementException::UNHANDLED_TYPE
+            );
         }
 
         $this->statement = $statement;
