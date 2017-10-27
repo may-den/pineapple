@@ -4,6 +4,8 @@ namespace Pineapple\Test;
 use PHPUnit\Framework\TestCase;
 use Pineapple\Exception;
 use Pineapple\Error;
+use Pineapple\Test\MonkeyPatching;
+use Pineapple\Test\Exception\MonkeyTriggerErrorException;
 
 class ExceptionTest extends TestCase
 {
@@ -388,7 +390,7 @@ class ExceptionTest extends TestCase
     public function testConstructWithTriggerObserver()
     {
         Exception::addObserver(Exception::OBSERVER_TRIGGER);
-        $this->expectException(\PHPUnit_Framework_Error_Notice::class);
+        $this->expectException(MonkeyTriggerErrorException::class);
         $this->expectExceptionMessage('parts break after overuse');
         $e = new Exception('parts break after overuse');
         Exception::removeObserver();
@@ -397,7 +399,7 @@ class ExceptionTest extends TestCase
     public function testConstructWithBadObserver()
     {
         Exception::addObserver('spoon');
-        $this->expectException(\PHPUnit_Framework_Error_Warning::class);
+        $this->expectException(MonkeyTriggerErrorException::class);
         $this->expectExceptionMessage('invalid observer type');
         $e = new Exception('meow! meow! meow! cat chow!!');
     }
