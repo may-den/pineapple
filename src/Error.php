@@ -104,10 +104,6 @@ class Error
         }
 
         if ($this->mode & Util::PEAR_ERROR_EXCEPTION) {
-            trigger_error(
-                'PEAR_ERROR_EXCEPTION is obsolete, use class Pineapple\Exception for exceptions',
-                E_USER_WARNING
-            );
             throw new Exception($this->message, $this->code);
         }
     }
