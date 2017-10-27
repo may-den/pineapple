@@ -184,12 +184,12 @@ class Exception extends \Exception
             settype($func, 'array');
             switch ($func[0]) {
                 case self::OBSERVER_PRINT:
-                    $f = (isset($func[1])) ? $func[1] : '%s';
+                    $f = isset($func[1]) ? $func[1] : '%s';
                     printf($f, $this->getMessage());
                     break;
 
                 case self::OBSERVER_TRIGGER:
-                    $f = (isset($func[1])) ? $func[1] : E_USER_NOTICE;
+                    $f = isset($func[1]) ? $func[1] : E_USER_NOTICE;
                     trigger_error($this->getMessage(), $f);
                     // @codeCoverageIgnoreStart
                     // this cannot be reached during unit test
