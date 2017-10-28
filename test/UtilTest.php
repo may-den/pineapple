@@ -4,6 +4,7 @@ namespace Pineapple\Test;
 use PHPUnit\Framework\TestCase;
 use Pineapple\Util;
 use Pineapple\Error;
+use Pineapple\Test\MonkeyPatching;
 use Pineapple\Test\Exception\MonkeyTriggerErrorException;
 
 class UtilTest extends TestCase
