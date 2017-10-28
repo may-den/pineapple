@@ -200,7 +200,7 @@ class Exception extends \Exception
                 // can't cover this, die is kind of a finality
                 case self::OBSERVER_DIE:
                     $f = isset($func[1]) ? $func[1] : '%s';
-                    die(printf($f, $this->getMessage()));
+                    die(sprintf($f, $this->getMessage()));
                     break;
                 // @codeCoverageIgnoreEnd
 
