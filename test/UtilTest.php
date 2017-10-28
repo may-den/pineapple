@@ -4,6 +4,8 @@ namespace Pineapple\Test;
 use PHPUnit\Framework\TestCase;
 use Pineapple\Util;
 use Pineapple\Error;
+use Pineapple\Test\MonkeyPatching;
+use Pineapple\Test\Exception\MonkeyTriggerErrorException;
 
 class UtilTest extends TestCase
 {
@@ -31,6 +33,24 @@ class UtilTest extends TestCase
         $reflectionProp->setAccessible(true);
 
         $this->assertEquals(PseudoError::class, $reflectionProp->getValue($util));
+    }
+
+    /** @test */
+    public function itTriggersAnErrorDuringInvalidStaticCall()
+    {
+        new MonkeyPatching(); // patch trigger_error and suchlike
+        $this->expectException(MonkeyTriggerErrorException::class);
+        $this->expectExceptionMessage('Static method not found');
+        Util::invalidMethod();
+    }
+
+    /** @test */
+    public function itTriggersAnErrorDuringInvalidMethodCall()
+    {
+        new MonkeyPatching(); // patch trigger_error and suchlike
+        $util = new Util;
+        $this->expectException(MonkeyTriggerErrorException::class);
+        $util->invalidMethod();
     }
 
     public function testRaiseError()
