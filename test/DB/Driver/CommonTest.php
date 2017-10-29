@@ -9,6 +9,7 @@ use Pineapple\DB\Driver\Common;
 use Pineapple\Test\DB\Driver\TestDriver;
 use Pineapple\DB\Exception\FeatureException;
 
+use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
 // 'Common' is an abstract class so we're going to use our mock TestDriver to stub
@@ -991,6 +992,17 @@ class CommonTest extends TestCase
         $dbh = DB::factory(TestDriver::class);
 
         $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = ?', 'bar');
+        $this->assertEquals(self::$orderedAllData, $result);
+    }
+
+    public function testGetAllWithOpaqueParam()
+    {
+        $dbh = DB::factory(TestDriver::class);
+
+        $root = vfsStream::setup();
+        file_put_contents($root->url() . '/opaquedata.txt', 'bum');
+
+        $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = &', $root->url() . '/opaquedata.txt');
         $this->assertEquals(self::$orderedAllData, $result);
     }
 
