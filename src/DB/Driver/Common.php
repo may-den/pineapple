@@ -852,15 +852,11 @@ abstract class Common extends Util
             if ($this->prepareTypes[$stmt][$bindPosition] == DB::DB_PARAM_SCALAR) {
                 $realquery .= $this->quoteSmart($value);
             } elseif ($this->prepareTypes[$stmt][$bindPosition] == DB::DB_PARAM_OPAQUE) {
-                $fp = @fopen($value, 'rb');
-                if (!$fp) {
-                    // @codeCoverageIgnoreStart
-                    // this is a pain to test without vfsStream, so skip for now
+                $opaqueData = file_get_contents($value);
+                if ($opaqueData === false) {
                     return $this->raiseError(DB::DB_ERROR_ACCESS_VIOLATION);
-                    // @codeCoverageIgnoreEnd
                 }
-                $realquery .= $this->quoteSmart(fread($fp, filesize($value)));
-                fclose($fp);
+                $realquery .= $this->quoteSmart($opaqueData);
             } else {
                 $realquery .= $value;
             }
