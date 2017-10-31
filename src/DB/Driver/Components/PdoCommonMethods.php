@@ -442,11 +442,8 @@ trait PdoCommonMethods
     {
         try {
             $sequenceValue = $this->connection->lastInsertId($sequence);
-            // can't "generate" a fault in a platform within which sequences are supported, so...
-            // @codeCoverageIgnoreStart
         } catch (PDOException $sequenceException) {
             return $this->raiseError($this->getNativeErrorCode($sequenceException->getCode()));
-            // @codeCoverageIgnoreEnd
         }
 
         // non-exception case error handling here
@@ -455,10 +452,7 @@ trait PdoCommonMethods
             return $sequenceValue;
         }
 
-        // can't "generate" a fault in a platform within which sequences are supported, so...
-        // @codeCoverageIgnoreStart
         return $this->raiseError($this->getNativeErrorCode($this->connection->errorCode()));
-        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -470,8 +464,6 @@ trait PdoCommonMethods
      *               if the feature is not supported by the driver
      *
      * @see Pineapple\DB\Error
-     * @codeCoverageIgnore Skipping coverage because we don't have MySQL
-     *                     integration tests
      */
     public function changeDatabase($name)
     {
