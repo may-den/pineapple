@@ -32,10 +32,5 @@
         "doctrine/dbal": ">=2.5",
         "phpspec/prophecy": "^1.7",
         "mikey179/vfsStream": "^1.6"
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-next": "0.4.x-dev"
-        }
     }
 }
