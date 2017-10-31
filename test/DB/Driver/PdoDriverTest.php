@@ -570,6 +570,8 @@ class PdoDriverTest extends TestCase
 
         // stub the pdo connection
         $pStubPdo = $prophet->prophesize(PDO::class);
+        $pStubPdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true)
+            ->shouldBeCalled();
         $pStubPdo->getAttribute(PDO::ATTR_DRIVER_NAME)
             ->willReturn('mysql')
             ->shouldBeCalled();
