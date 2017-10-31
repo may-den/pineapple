@@ -116,8 +116,8 @@ class PdoDriver extends Common implements DriverInterface
 
         // enable/disable result_buffering in mysql
         // @codeCoverageIgnoreStart
-        if (($this->getPlatform() === 'mysql') && !$this->options['result_buffering']) {
-            $queryDriverOptions[PDO::MYSQL_ATTR_USE_BUFFERED_QUERY] = false;
+        if ($this->getPlatform() === 'mysql') {
+            $this->connection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, $this->options['result_buffering'] ? true : false);
         }
         // @codeCoverageIgnoreEnd
 
