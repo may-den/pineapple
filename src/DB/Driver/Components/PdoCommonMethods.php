@@ -5,6 +5,8 @@ use Pineapple\DB;
 use Pineapple\DB\StatementContainer;
 use Pineapple\DB\Result;
 
+use PDOException;
+
 /**
  * Common methods shared amongst PDO and PDO-alike drivers.
  *
