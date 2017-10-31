@@ -55,22 +55,11 @@ class StatementContainer
      */
     public function setStatement($statement, $freeFunction = null)
     {
-        switch (gettype($statement)) {
-            case 'object':
-            case 'resource':
-            case 'array':
-                // this is fine.
-                break;
-
-            default:
-                throw new StatementException(
-                    'We do not know how to deal with this type of statement handle',
-                    StatementException::UNHANDLED_TYPE
-                );
-                // unreachable.
-                // @codeCoverageIgnoreStart
-                break;
-                // @codeCoverageIgnoreEnd
+        if (!in_array(gettype($statement), ['object', 'resource', 'array'])) {
+            throw new StatementException(
+                'We do not know how to deal with this type of statement handle',
+                StatementException::UNHANDLED_TYPE
+            );
         }
 
         $this->statement = $statement;
@@ -92,28 +81,12 @@ class StatementContainer
             throw new StatementException('No statement set', StatementException::NO_STATEMENT);
         }
 
-        switch (gettype($this->statement)) {
-            case 'object':
-            case 'array':
-            case 'resource':
-                if (($this->freeFunction !== null) && is_callable($this->freeFunction)) {
-                    call_user_func($this->freeFunction, $this->statement);
-                    unset($this->statement);
-                    return;
-                }
-                unset($this->statement);
-                break;
-
-            default:
-                // because we're rigid about what we accept, this is a "future expansion" fault
-                // @codeCoverageIgnoreStart
-                throw new StatementException(
-                    'Stored statement is not a type we are experienced with dealing with',
-                    StatementException::UNHANDLED_TYPE
-                );
-                break;
-                // @codeCoverageIgnoreEnd
+        if (($this->freeFunction !== null) && is_callable($this->freeFunction)) {
+            call_user_func($this->freeFunction, $this->statement);
+            unset($this->statement);
+            return;
         }
+        unset($this->statement);
     }
 
     /**
@@ -146,34 +119,12 @@ class StatementContainer
                     'type' => 'object',
                     'class' => get_class($this->statement),
                 ];
-                // we've returned above, so this isn't run
-                // @codeCoverageIgnoreStart
-                break;
-                // @codeCoverageIgnoreEnd
 
             case 'resource':
                 return ['type' => 'resource'];
-                // we've returned above, so this isn't run
-                // @codeCoverageIgnoreStart
-                break;
-                // @codeCoverageIgnoreEnd
 
             case 'array':
                 return ['type' => 'array'];
-                // we've returned above, so this isn't run
-                // @codeCoverageIgnoreStart
-                break;
-                // @codeCoverageIgnoreEnd
-
-            default:
-                // because we're rigid about what we accept, this is a "future expansion" fault
-                // @codeCoverageIgnoreStart
-                throw new StatementException(
-                    'Stored statement is not a type we are experienced with dealing with',
-                    StatementException::UNHANDLED_TYPE
-                );
-                break;
-                // @codeCoverageIgnoreEnd
         }
     }
 }

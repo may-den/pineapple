@@ -10,8 +10,10 @@ use Pineapple\Test\DB\Driver\TestDriver;
 use Pineapple\DB\Exception\StatementException;
 use Pineapple\DB\Exception\DriverException;
 
+use Prophecy\Prophet;
 use PDO;
 use PDOStatement;
+use PDOException;
 
 use PHPUnit\Framework\TestCase;
 
@@ -554,5 +556,113 @@ class PdoDriverTest extends TestCase
         // RIGHT NOW THIS TESTS THE EXISTING FUNCTIONALITY
         $data = $this->dbh->getOne('SELECT * FROM emptytable');
         $this->assertNull($data);
+    }
+
+    /** @test */
+    public function itCanChangeDatabase()
+    {
+        $prophet = new Prophet;
+
+        // stub the statement class
+        $pStubStatement = $prophet->prophesize(PDOStatement::class);
+        $pStubStatement->execute()
+            ->shouldBeCalled();
+
+        // stub the pdo connection
+        $pStubPdo = $prophet->prophesize(PDO::class);
+        $pStubPdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true)
+            ->shouldBeCalled();
+        $pStubPdo->getAttribute(PDO::ATTR_DRIVER_NAME)
+            ->willReturn('mysql')
+            ->shouldBeCalled();
+        $pStubPdo->prepare('USE `myTestValue`', [])
+            ->willReturn($pStubStatement->reveal())
+            ->shouldBeCalled();
+
+        // build the db object and change database
+        $db = DB::factory(PdoDriver::class);
+        $db->setConnectionHandle($pStubPdo->reveal());
+
+        // this is what we came here to test
+        $db->changeDatabase('myTestValue');
+
+        // check that everything that should have been called has been so
+        $prophet->checkPredictions();
+    }
+
+    /** @test */
+    public function itFailsWhenChangingDatabaseOnAnUnsupportedPlatform()
+    {
+        $prophet = new Prophet;
+
+        // stub the pdo connection
+        $pStubPdo = $prophet->prophesize(PDO::class);
+        $pStubPdo->getAttribute(PDO::ATTR_DRIVER_NAME)
+            ->willReturn('unsupported')
+            ->shouldBeCalled();
+
+        // build the db object and change database
+        $db = DB::factory(PdoDriver::class);
+        $db->setConnectionHandle($pStubPdo->reveal());
+
+        // this is what we came here to test
+        $result = $db->changeDatabase('myTestValue');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $result->getCode());
+
+        // check that everything that should have been called has been so
+        $prophet->checkPredictions();
+    }
+
+    /** @test */
+    public function itFailsWhenLastInsertIdThrowsAnException()
+    {
+        $prophet = new Prophet;
+
+        // stub the pdo connection
+        $pStubPdo = $prophet->prophesize(PDO::class);
+        $pStubPdo->lastInsertId(null)
+            ->willThrow(new PDOException('Not supported by platform'))
+            ->shouldBeCalled();
+
+        // build the db object and change database
+        $db = DB::factory(PdoDriver::class);
+        $db->setConnectionHandle($pStubPdo->reveal());
+
+        // this is what we came here to test
+        $result = $db->lastInsertId();
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR, $result->getCode());
+
+        // check that everything that should have been called has been so
+        $prophet->checkPredictions();
+    }
+
+    /** @test */
+    public function itFailsWhenLastInsertIdFails()
+    {
+        $prophet = new Prophet;
+
+        // stub the pdo connection
+        $pStubPdo = $prophet->prophesize(PDO::class);
+        $pStubPdo->lastInsertId(null)
+            ->willReturn(false)
+            ->shouldBeCalled();
+
+        $pStubPdo->errorCode()
+            ->willReturn('01P01')
+            ->shouldBeCalled();
+
+        // build the db object and change database
+        $db = DB::factory(PdoDriver::class);
+        $db->setConnectionHandle($pStubPdo->reveal());
+
+        // this is what we came here to test
+        $result = $db->lastInsertId();
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_UNSUPPORTED, $result->getCode());
+
+        // check that everything that should have been called has been so
+        $prophet->checkPredictions();
     }
 }

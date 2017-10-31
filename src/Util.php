@@ -92,10 +92,7 @@ class Util
     public static function __callStatic($method, $arguments = [])
     {
         if (!in_array($method, ['isError', 'raiseError', 'throwError'])) {
-            // @codeCoverageIgnoreStart
-            // can't expect a forced error
             trigger_error('Static method not found', E_USER_ERROR);
-            // @codeCoverageIgnoreEnd
         }
 
         // isError doesn't need $this, but raise and throw need it faked
@@ -115,10 +112,7 @@ class Util
     public function __call($method, $arguments = [])
     {
         if (!in_array($method, ['isError', 'raiseError', 'throwError'])) {
-            // @codeCoverageIgnoreStart
-            // can't expect a forced error
             trigger_error('Method not found', E_USER_ERROR);
-            // @codeCoverageIgnoreEnd
         }
 
         // isError doesn't need $this, but raise and throw need it faked

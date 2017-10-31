@@ -176,37 +176,41 @@ class Exception extends \Exception
 
     private function signal()
     {
-        foreach (self::$observers as $func) {
-            if (is_callable($func)) {
-                call_user_func($func, $this);
-                continue;
+        array_walk(self::$observers, function ($observer) {
+            if (!is_callable($observer)) {
+                return $this->emitSignal($observer);
             }
-            settype($func, 'array');
-            switch ($func[0]) {
-                case self::OBSERVER_PRINT:
-                    $f = (isset($func[1])) ? $func[1] : '%s';
-                    printf($f, $this->getMessage());
-                    break;
+            return call_user_func($observer, $this);
+        });
+    }
 
-                case self::OBSERVER_TRIGGER:
-                    $f = (isset($func[1])) ? $func[1] : E_USER_NOTICE;
-                    trigger_error($this->getMessage(), $f);
-                    // @codeCoverageIgnoreStart
-                    // this cannot be reached during unit test
-                    break;
-                    // @codeCoverageIgnoreEnd
+    private function emitSignal($observer)
+    {
+        $observer = (array) $observer;
+        switch ($observer[0]) {
+            case self::OBSERVER_PRINT:
+                $format = isset($observer[1]) ? $observer[1] : '%s';
+                printf($format, $this->getMessage());
+                break;
 
+            case self::OBSERVER_TRIGGER:
+                $message = isset($observer[1]) ? $observer[1] : E_USER_NOTICE;
+                trigger_error($this->getMessage(), $message);
                 // @codeCoverageIgnoreStart
-                // can't cover this, die is kind of a finality
-                case self::OBSERVER_DIE:
-                    $f = isset($func[1]) ? $func[1] : '%s';
-                    die(printf($f, $this->getMessage()));
-                    break;
+                // this cannot be reached during unit test
+                break;
                 // @codeCoverageIgnoreEnd
 
-                default:
-                    trigger_error('invalid observer type', E_USER_WARNING);
-            }
+            // @codeCoverageIgnoreStart
+            // can't cover this, die is kind of a finality
+            case self::OBSERVER_DIE:
+                $format = isset($observer[1]) ? $observer[1] : '%s';
+                die(sprintf($format, $this->getMessage()));
+                break;
+            // @codeCoverageIgnoreEnd
+
+            default:
+                trigger_error('invalid observer type', E_USER_WARNING);
         }
     }
 

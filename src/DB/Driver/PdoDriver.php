@@ -361,7 +361,10 @@ class PdoDriver extends Common implements DriverInterface
      */
     protected static function getStatement(StatementContainer $result)
     {
-        if ($result->getStatementType() === ['type' => 'object', 'class' => PDOStatement::class]) {
+        $statementType = $result->getStatementType();
+        if (($statementType['type'] === 'object') &&
+            ($result->getStatement() instanceof PDOStatement)
+        ) {
             return $result->getStatement();
         }
         throw new DriverException(

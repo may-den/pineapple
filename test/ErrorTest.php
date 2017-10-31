@@ -4,7 +4,9 @@ namespace Pineapple\Test;
 use PHPUnit\Framework\TestCase;
 use Pineapple\Util;
 use Pineapple\Error;
-use Pineapple\Exception;
+use Pineapple\Exception as PineappleException;
+use Pineapple\Test\MonkeyPatching;
+use Pineapple\Test\Exception\MonkeyTriggerErrorException;
 
 class ErrorTest extends TestCase
 {
@@ -42,26 +44,8 @@ class ErrorTest extends TestCase
 
     public function testConstructWithException()
     {
-        $this->setErrorHandler();
-        /**
-         * n.b. this is deliberate. phpunit translates warnings/notices into exceptions, which
-         * causes an issue because we cannot expect two exceptions, and after one has been caught
-         * execution in that function stops. so we're temporarily changing the error handler, then
-         * capturing the trigger_error() that is made in Error class, and checking we only have one
-         * warning/notice
-         */
-        try {
-            $error = new Error(null, null, Util::PEAR_ERROR_EXCEPTION);
-            // if we got this far then an exception wasn't thrown
-            $this->fail('an expected excpetion was not thrown');
-        } catch (\Exception $e) {
-            $this->assertInstanceOf(Exception::class, $e);
-        }
-        $this->restoreErrorHandler();
-
-        $this->assertEquals(1, count($this->errors), 'Expected one error, but got: ' . json_encode($this->errors));
-
-        $this->assertContains('PEAR_ERROR_EXCEPTION is obsolete, use class Pineapple\Exception for exceptions', $this->errors[0]);
+        $this->expectException(PineappleException::class);
+        $error = new Error(null, null, Util::PEAR_ERROR_EXCEPTION);
     }
 
     public function errorCallback(Error $error)
@@ -93,13 +77,10 @@ class ErrorTest extends TestCase
 
     public function testConstructWithTrigger()
     {
-        $this->setErrorHandler();
+        new MonkeyPatching(); // patch trigger_error and suchlike
+        $this->expectException(MonkeyTriggerErrorException::class);
+        $this->expectExceptionMessage('test trigger error');
         $error = new Error('test trigger error', null, Util::PEAR_ERROR_TRIGGER);
-        $this->restoreErrorHandler();
-
-        $this->assertEquals(1, count($this->errors), 'Expected one error, but got: ' . json_encode($this->errors));
-
-        $this->assertContains('test trigger error', $this->errors[0]);
     }
 
     public function testGetMode()
@@ -211,13 +192,10 @@ class ErrorTest extends TestCase
 
     public function testToStringWithTrigger()
     {
-        $this->setErrorHandler();
+        new MonkeyPatching(); // patch trigger_error and suchlike
+        $this->expectException(MonkeyTriggerErrorException::class);
+        $this->expectExceptionMessage('test trigger error');
         $error = new Error('test trigger error', null, Util::PEAR_ERROR_TRIGGER);
-        $this->restoreErrorHandler();
-
-        $this->assertEquals(1, count($this->errors), 'Expected one error, but got: ' . json_encode($this->errors));
-
         $this->assertEquals('[' . strtolower(Error::class) . ': message="test trigger error" code=0 mode=trigger level=notice prefix="" info=""]', $error->toString());
-
     }
 }
