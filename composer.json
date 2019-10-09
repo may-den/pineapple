@@ -31,6 +31,6 @@
         "ext-pdo_sqlite": "*",
         "doctrine/dbal": ">=2.5",
         "phpspec/prophecy": "^1.7",
-        "mikey179/vfsStream": "^1.6"
+        "mikey179/vfsstream": "^1.6"
     }
 }
