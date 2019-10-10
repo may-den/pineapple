@@ -313,12 +313,12 @@ class ExceptionTest extends TestCase
         $this->assertRegExp('/^' . preg_quote(Exception::class) . ': you fried cyclops. in/', $exceptionString);
     }
 
-    public function backtraceFodder(array $fodder, $food)
+    public function backtraceFodder($food, $fodder)
     {
         if (is_callable($food)) {
             call_user_func($food);
         }
-        if (!empty($fodder)) {
+        if (!empty($fodder) && is_array($fodder)) {
             $nextFood = array_shift($fodder);
             $this->backtraceFodder($fodder, $nextFood);
         }
