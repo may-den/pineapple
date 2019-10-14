@@ -276,8 +276,7 @@ class Exception extends \Exception
             foreach ($this->cause as $cause) {
                 if ($cause instanceof self) {
                     $cause->getCauseMessage($causes);
-                } elseif (true && ($cause instanceof \Exception)) {
-                    // apologies for true above, it's a temporary hack as phpunit omits it from code coverage.
+                } elseif ($cause instanceof \Exception) {
                     $causes[] = [
                         'class' => get_class($cause),
                         'message' => $cause->getMessage(),
