@@ -862,7 +862,7 @@ abstract class Common extends Util
             if ($this->prepareTypes[$stmt][$bindPosition] == DB::DB_PARAM_SCALAR) {
                 $realquery .= $this->quoteSmart($value);
             } elseif ($this->prepareTypes[$stmt][$bindPosition] == DB::DB_PARAM_OPAQUE) {
-                $opaqueData = file_get_contents($value);
+                $opaqueData = @file_get_contents($value);
                 if ($opaqueData === false) {
                     return $this->raiseError(DB::DB_ERROR_ACCESS_VIOLATION);
                 }
