@@ -4,6 +4,7 @@ namespace Pineapple\DB\Driver\Components;
 use Pineapple\DB;
 use Pineapple\DB\StatementContainer;
 use Pineapple\DB\Result;
+use Pineapple\DB\Driver\Common;
 
 use PDOException;
 
@@ -213,9 +214,9 @@ trait PdoCommonMethods
          * we could also just strip single quotes.
          */
         switch ($this->getPlatform()) {
-            case 'mysql':
-            case 'pgsql':
-            case 'sqlite':
+            case Common::PLATFORM_MYSQL:
+            case Common::PLATFORM_PGSQL:
+            case Common::PLATFORM_SQLITE:
                 $quotedString = $this->connection->quote($str);
 
                 if ($quotedString === false) {
@@ -470,13 +471,11 @@ trait PdoCommonMethods
     public function changeDatabase($name)
     {
         switch ($this->getPlatform()) {
-            case 'mysql':
+            case Common::PLATFORM_MYSQL:
                 return $this->simpleQuery('USE ' . $this->quoteIdentifier($name));
-                break;
 
             default:
                 return $this->raiseError(DB::DB_ERROR_UNSUPPORTED);
-                break;
         }
     }
 }

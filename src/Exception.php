@@ -276,8 +276,7 @@ class Exception extends \Exception
             foreach ($this->cause as $cause) {
                 if ($cause instanceof self) {
                     $cause->getCauseMessage($causes);
-                } elseif (true && ($cause instanceof \Exception)) {
-                    // apologies for true above, it's a temporary hack as phpunit omits it from code coverage.
+                } elseif ($cause instanceof \Exception) {
                     $causes[] = [
                         'class' => get_class($cause),
                         'message' => $cause->getMessage(),
@@ -390,24 +389,24 @@ class Exception extends \Exception
             if (!empty($v['args'])) {
                 foreach ($v['args'] as $arg) {
                     switch (gettype($arg)) {
-                        case 'NULL':
+                        case gettype(null):
                             $args[] = 'null';
                             break;
 
-                        case 'array':
+                        case gettype([]):
                             $args[] = 'Array';
                             break;
 
-                        case 'object':
+                        case gettype($this):
                             $args[] = 'Object(' . get_class($arg) . ')';
                             break;
 
-                        case 'boolean':
+                        case gettype(true):
                             $args[] = $arg ? 'true' : 'false';
                             break;
 
-                        case 'integer':
-                        case 'double':
+                        case gettype((int) 1):
+                        case gettype((double) 1):
                             $args[] = $arg;
                             break;
 

@@ -44,6 +44,16 @@ use stdClass;
  */
 abstract class Common extends Util
 {
+    // placeholder markers
+    const PLACEHOLDER_AUTOQUOTED = '?';
+    const PLACEHOLDER_FILENAME = '&';
+    const PLACEHOLDER_VERBATIM = '!';
+
+    // driver platforms
+    const PLATFORM_MYSQL = 'mysql';
+    const PLATFORM_PGSQL = 'pgsql';
+    const PLATFORM_SQLITE = 'sqlite';
+
     /** @var integer The current default fetch mode */
     protected $fetchmode = DB::DB_FETCHMODE_ORDERED;
 
@@ -618,13 +628,13 @@ abstract class Common extends Util
 
         foreach ($tokens as $val) {
             switch ($val) {
-                case '?':
+                case self::PLACEHOLDER_AUTOQUOTED:
                     $types[$token++] = DB::DB_PARAM_SCALAR;
                     break;
-                case '&':
+                case self::PLACEHOLDER_FILENAME:
                     $types[$token++] = DB::DB_PARAM_OPAQUE;
                     break;
-                case '!':
+                case self::PLACEHOLDER_VERBATIM:
                     $types[$token++] = DB::DB_PARAM_MISC;
                     break;
                 default:
@@ -852,7 +862,7 @@ abstract class Common extends Util
             if ($this->prepareTypes[$stmt][$bindPosition] == DB::DB_PARAM_SCALAR) {
                 $realquery .= $this->quoteSmart($value);
             } elseif ($this->prepareTypes[$stmt][$bindPosition] == DB::DB_PARAM_OPAQUE) {
-                $opaqueData = file_get_contents($value);
+                $opaqueData = @file_get_contents($value);
                 if ($opaqueData === false) {
                     return $this->raiseError(DB::DB_ERROR_ACCESS_VIOLATION);
                 }
