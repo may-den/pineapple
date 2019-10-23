@@ -11,6 +11,7 @@ use Pineapple\DB\Exception\FeatureException;
 
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
+use PHPUnit_Framework_Error_Warning;
 
 // 'Common' is an abstract class so we're going to use our mock TestDriver to stub
 // how we access the class and its methods
@@ -1004,6 +1005,20 @@ class CommonTest extends TestCase
 
         $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = &', $root->url() . '/opaquedata.txt');
         $this->assertEquals(self::$orderedAllData, $result);
+    }
+
+    /** @test */
+    public function itHandlesUnreadableOpaqueFiles()
+    {
+        $dbh = DB::factory(TestDriver::class);
+
+        $root = vfsStream::setup();
+        file_put_contents($root->url() . '/opaquedata.txt', 'bum');
+        chmod($root->url() . '/opaquedata.txt', 0);
+
+        $result = $dbh->getAll('SELECT foo FROM bar WHERE foo = &', $root->url() . '/opaquedata.txt');
+        $this->assertInstanceOf(Error::class, $result);
+        $this->assertEquals(DB::DB_ERROR_ACCESS_VIOLATION, $result->getCode());
     }
 
     public function testGetAllWithScalarParamsAndNullModeTransposed()

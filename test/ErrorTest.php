@@ -13,6 +13,13 @@ class ErrorTest extends TestCase
     private $errors = [];
     private $callbackMessageTrap = null;
 
+    /** @after */
+    public function resetMonkey()
+    {
+        MonkeyPatching::$dontThrow = false;
+        MonkeyPatching::$unthrownException = null;
+    }
+
     public function testConstruct()
     {
         $error = new Error();
@@ -192,10 +199,10 @@ class ErrorTest extends TestCase
 
     public function testToStringWithTrigger()
     {
-        new MonkeyPatching(); // patch trigger_error and suchlike
-        $this->expectException(MonkeyTriggerErrorException::class);
-        $this->expectExceptionMessage('test trigger error');
+        new MonkeyPatching(true); // patch trigger_error and suchlike but don't throw an exception
         $error = new Error('test trigger error', null, Util::PEAR_ERROR_TRIGGER);
+        $this->assertInstanceOf(MonkeyTriggerErrorException::class, MonkeyPatching::$unthrownException);
+        $this->assertEquals('test trigger error', MonkeyPatching::$unthrownException->getMessage());
         $this->assertEquals('[' . strtolower(Error::class) . ': message="test trigger error" code=0 mode=trigger level=notice prefix="" info=""]', $error->toString());
     }
 }

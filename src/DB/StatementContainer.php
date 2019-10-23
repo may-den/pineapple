@@ -114,16 +114,17 @@ class StatementContainer
         }
 
         switch (gettype($this->statement)) {
-            case 'object':
+            case gettype($this):
                 return [
                     'type' => 'object',
                     'class' => get_class($this->statement),
                 ];
 
+            // not easy to get a 'resource' label programmatically
             case 'resource':
                 return ['type' => 'resource'];
 
-            case 'array':
+            case gettype([]):
                 return ['type' => 'array'];
         }
     }

@@ -23,6 +23,9 @@ use stdClass;
  */
 class Result
 {
+    const KEY_LIMIT_FROM = 'limit_from';
+    const KEY_LIMIT_COUNT = 'limit_count';
+
     /**
      * Should results be freed automatically when there are no more rows?
      * @var boolean
@@ -130,11 +133,11 @@ class Result
     public function setOption($key, $value = null)
     {
         switch ($key) {
-            case 'limit_from':
+            case self::KEY_LIMIT_FROM:
                 $this->limitFrom = $value;
                 break;
 
-            case 'limit_count':
+            case self::KEY_LIMIT_COUNT:
                 $this->limitCount = $value;
                 break;
         }

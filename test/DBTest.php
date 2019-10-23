@@ -28,6 +28,13 @@ class DBTest extends TestCase
         $this->assertInstanceOf(Error::class, $dbh);
     }
 
+    /** @test */
+    public function itPassesErrorsBackWhenAnOptionIsInvalid()
+    {
+        $dbh = DB::factory(TestDriver::class, ['favourite_fruit' => 'beans']);
+        $this->assertInstanceOf(Error::class, $dbh);
+    }
+
     public function testIsConnection()
     {
         $dbh = DB::factory(TestDriver::class);

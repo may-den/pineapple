@@ -11,7 +11,7 @@ use Pineapple\DB\Driver\Components\PdoCommonMethods;
 
 use Doctrine\DBAL\Connection as DBALConnection;
 use Doctrine\DBAL\Driver\Statement as DBALStatement;
-use Doctrine\DBAL\Exception\DriverException as DBALDriverException;
+use Doctrine\DBAL\DBALException as DBALException;
 use Doctrine\DBAL\ConnectionException as DBALConnectionException;
 
 use PDO;
@@ -126,7 +126,7 @@ class DoctrineDbal extends Common implements DriverInterface
 
         try {
             $statement = $this->connection->query($query);
-        } catch (DBALDriverException $exception) {
+        } catch (DBALException $exception) {
             return $this->raiseError(DB::DB_ERROR, null, null, $exception->getMessage());
         }
 
