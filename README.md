@@ -2,9 +2,9 @@
 
 #### An API-compatible replacement, forked from and for PEAR DB.
 
-| `master` |
-|----------|
-| [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=master)](https://travis-ci.org/wethersherbs/pineapple) |
+| `master` | `v0.3-dev` |
+|----------|------------|
+| [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=master)](https://travis-ci.org/wethersherbs/pineapple) | [![Build Status](https://travis-ci.org/wethersherbs/pineapple.svg?branch=v0.3-dev)](https://travis-ci.org/wethersherbs/pineapple) |
 
 ## What?
 
@@ -95,7 +95,7 @@ Thirdly, significant chunks of both `PEAR` and `DB` have been unapologetically s
 - `raiseError`
 - `throwError`
 
-..is now gone. Calling the above methods both as class methods and static methods is retained (it has been determined that both methods are in vigorous use in examined code).
+...is now gone. Calling the above methods both as class methods and static methods is retained (it has been determined that both methods are in vigorous use in examined code).
 
 All of the DSN handling code is removed from the `DB` (now `Pineapple\DB`) class. It exists purely as a construction factory for driver classes and an override for error handling. The following methods are retained (everything else, e.g. `connect()`) is now removed:
 
@@ -166,9 +166,15 @@ Unfortunately, composer squashes the colourised output which helps indicate fail
 $ vendor/bin/phpunit --coverage-html='coverage/' --coverage-text='php://stdout' --colors=auto
 ```
 
-**We recommend that all changes are tested with PHP versions 5.6.x and 7.x.**
+**We recommend that all changes are tested across the support PHP matrix (5.6-8.1).**
 
 ## Credits
+
+Pineapple is the work of:
+
+* Rob Andrews [rob@aphlor.org](mailto:rob@aphlor.org) [GitHub user borb](https://github.com/borb)
+
+A multitude of thanks should be given to [Mayden](https://www.mayden.co.uk/) for supporting the author to complete the initial release of Pineapple.
 
 The DB authors should take the most credit; the source was forked in its entirety for the refactor.
 
@@ -184,10 +190,6 @@ And these from PEAR:
 * Stig Bakken [ssb@php.net](mailto:ssb@php.net)
 * Tomas V.V.Cox [cox@idecnet.com](mailto:cox@idecnet.com)
 * Greg Beaver [cellog@php.net](mailto:cellog@php.net)
-
-## Who is responsible for this?
-
-* Rob Andrews [rob.andrews@mayden.co.uk](mailto:rob.andrews@mayden.co.uk)
 
 Please see the file "CONTRIBUTORS.md" for other attribution.
 
