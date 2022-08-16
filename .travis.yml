@@ -16,9 +16,10 @@ before_script:
   - composer self-update
   - composer install --dev
   - composer require doctrine/dbal ^2.5
+  - [ "x$(which phpdbg)" = "x" ] || _PHPDBG="phpdbg -qrr"
 
 script:
-  - phpdbg -qrr ./vendor/bin/phpunit --verbose --colors=auto --coverage-text='php://stdout'
+  - eval "$_PHPDBG ./vendor/bin/phpunit --verbose --colors=auto --coverage-text='php://stdout'"
 
 matrix:
   fast_finish: true
