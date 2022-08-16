@@ -172,7 +172,7 @@ $ vendor/bin/phpunit --coverage-html='coverage/' --coverage-text='php://stdout' 
 
 Pineapple is the work of:
 
-* Rob Andrews [rob@aphlor.org](mailto:rob@aphlor.org) [GitHub user borb](https://github.com/borb)
+* just nine [nine@aphlor.org](mailto:nine@aphlor.org) ([GitHub user `borb`](https://github.com/borb))
 
 A multitude of thanks should be given to [Mayden](https://www.mayden.co.uk/) for supporting the author to complete the initial release of Pineapple.
 
