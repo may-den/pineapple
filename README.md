@@ -1,6 +1,12 @@
 # Pineapple
 
-#### An API-compatible replacement, forked from and for PEAR DB.
+An API-compatible replacement, forked from and for PEAR DB.
+
+## This repository has moved (is moving?)
+
+From August 2022, this repository will move from https://github.com/wethersherbs/pineapple to https://github.com/may-den/pineapple. Older references should still work, an archived fork will remain on the older URL for compatibility purposes. Please update any references, bookmarks, and composer/packagist references accordingly.
+
+## Build status
 
 | `master` | `v0.3-dev` |
 |----------|------------|
