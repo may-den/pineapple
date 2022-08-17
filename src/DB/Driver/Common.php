@@ -1759,7 +1759,8 @@ abstract class Common extends Util
     }
 
     /**
-     * Tell whether a query is a data manipulation or data definition query
+     * Tell whether a query is a data manipulation or data definition query.
+     * The name is a misnomer, because actually its function is "is the query the sort to return data".
      *
      * Examples of data manipulation queries are INSERT, UPDATE and DELETE.
      * Examples of data definition queries are CREATE, DROP, ALTER, GRANT,
@@ -1784,7 +1785,8 @@ abstract class Common extends Util
             'GRANT',
             'REVOKE',
             'LOCK',
-            'UNLOCK'
+            'UNLOCK',
+            'USE',
         ]);
         if (preg_match('/^\s*"?(' . $manips . ')\s+/si', $query)) {
             return true;
