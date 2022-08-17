@@ -32,5 +32,8 @@
         "doctrine/dbal": ">=2.5",
         "phpspec/prophecy": "^1.7",
         "mikey179/vfsstream": "^1.6"
+    },
+    "conflict": {
+        "doctrine/dbal": ">=3"
     }
 }
