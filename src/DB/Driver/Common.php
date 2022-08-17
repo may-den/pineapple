@@ -760,7 +760,7 @@ abstract class Common extends Util
                 }
                 return "INSERT INTO $table ($names) VALUES ($values)";
             case DB::DB_AUTOQUERY_UPDATE:
-                if ((empty(trim($where)) || $where === null) &&
+                if (($where === null || empty(trim($where))) &&
                     $this->acceptConsequencesOfPoorCodingChoices === false) {
                     return $this->raiseError(DB::DB_ERROR_POSSIBLE_UNINTENDED_CONSEQUENCES);
                 }
