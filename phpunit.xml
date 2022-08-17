@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="vendor/autoload.php">
-	<logging>
+  <logging>
+    <!-- n.b. the follow two lines will be ignored by phpunit 9 and above -->
 		<log type="coverage-text" target="php://stdout" />
 		<log type="coverage-html" target="coverage/" />
 	</logging>
@@ -16,5 +17,12 @@
 		<blacklist>
 			<directory suffix=".php">./test/</directory>
 		</blacklist>
-	</filter>
+  </filter>
+  <!-- n.b. the following tag and its contents are for phpunit 9 and above, ignored by earlier versions -->
+  <coverage pathCoverage="converage/">
+    <directory>
+      <include>./src/</include>
+      <exclude>./test/</exclude>
+    </directory>
+  </coverage>
 </phpunit>
