@@ -177,13 +177,19 @@ class DoctrineDbal extends Common implements DriverInterface
         // @codeCoverageIgnoreEnd
 
         if ($fetchmode & DB::DB_FETCHMODE_ASSOC) {
-            $arr = self::getStatement($result)->fetch(PDO::FETCH_ASSOC, null, $rownum);
+            $arr = call_user_func_array(
+                [self::getStatement($result), 'fetch'],
+                array_merge([PDO::FETCH_ASSOC], $rownum !== null ? [null, $rownum] : [])
+            );
             if (($this->options['portability'] & DB::DB_PORTABILITY_LOWERCASE) && $arr) {
                 $arr = array_change_key_case($arr, CASE_LOWER);
             }
         } else {
             try {
-                $arr = self::getStatement($result)->fetch(PDO::FETCH_NUM, null, $rownum);
+                $arr = call_user_func_array(
+                    [self::getStatement($result), 'fetch'],
+                    array_merge([PDO::FETCH_NUM], $rownum !== null ? [null, $rownum] : [])
+                );
                 // this exception handle was added as the php docs implied a potential exception, which i have thus
                 // far been unable to reproduce.
                 // @codeCoverageIgnoreStart
