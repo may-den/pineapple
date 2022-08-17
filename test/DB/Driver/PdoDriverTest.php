@@ -566,6 +566,7 @@ class PdoDriverTest extends TestCase
         // stub the statement class
         $pStubStatement = $prophet->prophesize(PDOStatement::class);
         $pStubStatement->execute()
+            ->willReturn(true)
             ->shouldBeCalled();
 
         // stub the pdo connection
@@ -584,10 +585,12 @@ class PdoDriverTest extends TestCase
         $db->setConnectionHandle($pStubPdo->reveal());
 
         // this is what we came here to test
-        $db->changeDatabase('myTestValue');
+        $result = $db->changeDatabase('myTestValue');
 
         // check that everything that should have been called has been so
         $prophet->checkPredictions();
+
+        $this->assertEquals(DB::DB_OK, $result);
     }
 
     /** @test */
