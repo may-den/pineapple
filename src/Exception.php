@@ -6,16 +6,16 @@ namespace Pineapple;
  *
  * PHP versions 4 and 5
  *
- * @category   pear
- * @package    PEAR
- * @author     Tomas V. V. Cox <cox@idecnet.com>
- * @author     Hans Lellelid <hans@velum.net>
- * @author     Bertrand Mansion <bmansion@mamasam.com>
- * @author     Greg Beaver <cellog@php.net>
- * @copyright  1997-2009 The Authors
- * @license    http://opensource.org/licenses/bsd-license.php New BSD License
- * @link       http://pear.php.net/package/PEAR
- * @since      File available since Release 1.3.3
+ * @category  pear
+ * @package   PEAR
+ * @author    Tomas V. V. Cox <cox@idecnet.com>
+ * @author    Hans Lellelid <hans@velum.net>
+ * @author    Bertrand Mansion <bmansion@mamasam.com>
+ * @author    Greg Beaver <cellog@php.net>
+ * @copyright 1997-2009 The Authors
+ * @license   http://opensource.org/licenses/bsd-license.php New BSD License
+ * @link      http://pear.php.net/package/PEAR
+ * @since     File available since Release 1.3.3
  */
 
 /**
@@ -80,17 +80,17 @@ namespace Pineapple;
  *  }
  * ```
  *
- * @category   pear
- * @package    PEAR
- * @author     Tomas V.V.Cox <cox@idecnet.com>
- * @author     Hans Lellelid <hans@velum.net>
- * @author     Bertrand Mansion <bmansion@mamasam.com>
- * @author     Greg Beaver <cellog@php.net>
- * @copyright  1997-2009 The Authors
- * @license    http://opensource.org/licenses/bsd-license.php New BSD License
- * @version    Release: 1.10.1
- * @link       http://pear.php.net/package/PEAR
- * @since      Class available since Release 1.3.3
+ * @category  pear
+ * @package   PEAR
+ * @author    Tomas V.V.Cox <cox@idecnet.com>
+ * @author    Hans Lellelid <hans@velum.net>
+ * @author    Bertrand Mansion <bmansion@mamasam.com>
+ * @author    Greg Beaver <cellog@php.net>
+ * @copyright 1997-2009 The Authors
+ * @license   http://opensource.org/licenses/bsd-license.php New BSD License
+ * @version   Release: 1.10.1
+ * @link      http://pear.php.net/package/PEAR
+ * @since     Class available since Release 1.3.3
  */
 class Exception extends \Exception
 {
@@ -113,9 +113,9 @@ class Exception extends \Exception
      *  - Pineapple\Exception(string $message, array $causes);
      *  - Pineapple\Exception(string $message, array $causes, int $code);
      *
-     * @param string exception message
-     * @param int|\Exception|Error|array|null exception cause
-     * @param int|null exception code or null
+     * @param string                          $message exception message
+     * @param int|\Exception|Error|array|null $p2      exception cause
+     * @param int|null                        $p3      exception code or null
      */
     public function __construct($message, $p2 = null, $p3 = null)
     {
@@ -126,8 +126,9 @@ class Exception extends \Exception
             // using is_object allows both Exception and Error
             if (is_object($p2) && !($p2 instanceof \Exception)) {
                 if (!class_exists(Error::class) || !($p2 instanceof Error)) {
-                    throw new self('exception cause must be \Exception, ' .
-                        'array, or Error');
+                    throw new self(
+                        'exception cause must be \Exception, array, or Error'
+                    );
                 }
             }
             $code = $p3;
@@ -141,7 +142,7 @@ class Exception extends \Exception
             $this->cause = null;
         }
 
-        parent::__construct($message, $code);
+        call_user_func_array('parent::__construct', $code === null ? [$message] : [$message, $code]);
         $this->signal();
     }
 
@@ -246,7 +247,10 @@ class Exception extends \Exception
 
     /**
      * Function must be public to call on caused exceptions
-     * @param array
+     *
+     * @param array $causes A pass-by-reference array to add causes to
+     *
+     * @return void
      */
     public function getCauseMessage(&$causes)
     {
