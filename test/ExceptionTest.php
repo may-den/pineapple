@@ -292,15 +292,15 @@ class ExceptionTest extends TestCase
         unset($_SERVER['REQUEST_URI']); // we want to avoid any possibly html output
         $e = new Exception('garg. i am saying garg.');
         $exceptionString = $e->__toString();
-        $this->assertRegExp('/^' . preg_quote(Exception::class) . ': garg. i am saying garg. in/', $exceptionString);
+        $this->assertStringStartsWith(Exception::class . ': garg. i am saying garg. in', $exceptionString);
     }
 
     public function testToText()
     {
         $e = new Exception('i have powers pinto beans can only dream of.');
         $exceptionString = $e->toText();
-        $this->assertRegExp(
-            '/^' . preg_quote(Exception::class) . ': i have powers pinto beans can only dream of. in/',
+        $this->assertStringStartsWith(
+            Exception::class . ': i have powers pinto beans can only dream of. in',
             $exceptionString
         );
     }
@@ -310,7 +310,7 @@ class ExceptionTest extends TestCase
         unset($_SERVER['REQUEST_URI']); // we want to avoid any possibly html output
         $e = new Exception('you fried cyclops.');
         $exceptionString = (string) $e;
-        $this->assertRegExp('/^' . preg_quote(Exception::class) . ': you fried cyclops. in/', $exceptionString);
+        $this->assertStringStartsWith(Exception::class . ': you fried cyclops. in', $exceptionString);
     }
 
     public function backtraceFodder($fodder, $food)
@@ -352,13 +352,10 @@ class ExceptionTest extends TestCase
         $exceptionString = $e->__toString();
 
         // ensure the output is a table
-        $this->assertRegExp('/^\<table/', $exceptionString);
+        $this->assertStringStartsWith('<table', $exceptionString);
 
         // look for our exception message and class
-        $this->assertRegExp(
-            '#' . preg_quote('<b>' . Exception::class . '</b>: i have no kiwis. in') . '#',
-            $exceptionString
-        );
+        $this->assertTrue(strpos($exceptionString, '<b>' . Exception::class . '</b>: i have no kiwis. in') !== false);
 
         // method backtraceFodder should have been called number_of_elements_in_array + 1
         $this->assertEquals(10, substr_count($exceptionString, 'backtraceFodder'));

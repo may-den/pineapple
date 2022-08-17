@@ -134,7 +134,7 @@ class ResultTest extends TestCase
 
         for ($i = 0; $i < 5; $i++) {
             $row = $result->fetchRow(); // rip out the first five rows
-            $this->assertInternalType('array', $row);
+            $this->assertEquals('array', gettype($row));
         }
 
         $row = $result->fetchRow();
@@ -158,7 +158,7 @@ class ResultTest extends TestCase
         $this->assertFalse($dbh->getFreeFlag());
         $row = $result->fetchRow();
         $this->assertFalse($dbh->getFreeFlag());
-        $this->assertInternalType('array', $row);
+        $this->assertEquals('array', gettype($row));
         $row = $result->fetchRow();
         $this->assertTrue($dbh->getFreeFlag());
         $this->assertNull($row);
@@ -178,7 +178,7 @@ class ResultTest extends TestCase
         $this->assertFalse($dbh->getFreeFlag());
         for ($i = 0; $i < 20; $i++) {
             $row = $result->fetchRow();
-            $this->assertInternalType('array', $row);
+            $this->assertEquals('array', gettype($row));
         }
         $this->assertFalse($dbh->getFreeFlag());
         $row = $result->fetchRow();
@@ -274,7 +274,7 @@ class ResultTest extends TestCase
 
         for ($i = 0; $i < 5; $i++) {
             $row = $result->fetchRow(); // rip out the first five rows
-            $this->assertInternalType('array', $row);
+            $this->assertEquals('array', gettype($row));
         }
 
         $row = null;
@@ -300,7 +300,7 @@ class ResultTest extends TestCase
         $row = null;
         $fetchResult = $result->fetchInto($row);
         $this->assertFalse($dbh->getFreeFlag());
-        $this->assertInternalType('array', $row);
+        $this->assertEquals('array', gettype($row));
         $row = null;
         $fetchResult = $result->fetchInto($row);
         $this->assertTrue($dbh->getFreeFlag());
@@ -321,7 +321,7 @@ class ResultTest extends TestCase
         $this->assertFalse($dbh->getFreeFlag());
         for ($i = 0; $i < 20; $i++) {
             $row = $result->fetchRow();
-            $this->assertInternalType('array', $row);
+            $this->assertEquals('array', gettype($row));
         }
         $this->assertFalse($dbh->getFreeFlag());
         $row = null;
