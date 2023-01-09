@@ -52,7 +52,7 @@ class Error
         $this->mode = $mode;
         $this->userInfo = $userInfo;
 
-        $this->backtrace = debug_backtrace();
+        $this->backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
         if (isset($this->backtrace[0]) && isset($this->backtrace[0]['object'])) {
             unset($this->backtrace[0]['object']);
         }
