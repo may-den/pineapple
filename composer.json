@@ -15,7 +15,7 @@
     },
     "scripts": {
         "test": "phpunit --colors=auto",
-        "sniffer:php8": "phpcs -p . --ignore=vendor/* --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --extensions=php --report-full=Php8SniffReport.txt --runtime-set testVersion 8.2"
+        "sniffer:php82": "phpcs -p . --ignore=vendor/* --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --extensions=php --report-full=Php8SniffReport.txt --runtime-set testVersion 8.2"
     },
     "autoload": {
         "psr-4": {
