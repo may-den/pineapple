@@ -1,14 +1,15 @@
-dist: xenial
+dist: focal
 
 language: php
 php:
+  - 8.2
   - 8.1
   - 7.4
-  - 7.2
 
 before_script:
+  - sudo apt-get install libonig5
   - composer self-update
-  - composer install --dev
+  - composer install
   - composer require doctrine/dbal ^2.5
   - echo -e "[xdebug]\nxdebug.mode = coverage" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug-cov.ini
 

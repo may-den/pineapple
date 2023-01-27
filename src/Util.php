@@ -189,7 +189,6 @@ class Util
             $code = $message->getCode();
             $userInfo = $message->getUserInfo();
             $errorClass = $message->getType();
-            $message->error_message_prefix = '';
             $message = $message->getMessage();
         }
 
