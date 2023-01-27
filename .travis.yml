@@ -1,12 +1,13 @@
-dist: xenial
+dist: focal
 
 language: php
 php:
+  - 8.2
   - 8.1
   - 7.4
-  - 7.2
 
 before_script:
+  - sudo apt-get install libonig5
   - composer self-update
   - composer install --dev
   - composer require doctrine/dbal ^2.5
