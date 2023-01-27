@@ -142,7 +142,7 @@ class Exception extends \Exception
             $this->cause = null;
         }
 
-        call_user_func_array(parent::class, $code === null ? [$message] : [$message, $code]);
+        call_user_func_array(parent::class . '::__construct', $code === null ? [$message] : [$message, $code]);
         $this->signal();
     }
 
