@@ -1,25 +1,21 @@
-dist: xenial
+dist: focal
 
 language: php
 php:
+  - 8.2
   - 8.1
-  - 8.0
   - 7.4
-  - 7.3
-  - 7.2
-  - 7.1
-  - 7.0
-  - 5.6
-# - hhvm
 
 before_script:
+  - sudo apt-get install libonig5
   - composer self-update
-  - composer install --dev
+  - composer install
   - composer require doctrine/dbal ^2.5
   - echo -e "[xdebug]\nxdebug.mode = coverage" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug-cov.ini
 
 script:
   - ./vendor/bin/phpunit --verbose --colors=auto --coverage-text='php://stdout'
+  - composer sniffer:php82
 
 matrix:
   fast_finish: true
