@@ -44,20 +44,18 @@ class Error
      */
     public function __construct($message = null, $code = null, $mode = null, $options = null, $userInfo = null)
     {
-        if ($mode === null) {
-            $mode = Util::PEAR_ERROR_RETURN;
-        }
         $this->message = isset($message) ? $message : 'unknown error';
         $this->code = $code;
-        $this->mode = $mode;
+        $this->mode = is_null($mode) ? Util::PEAR_ERROR_RETURN : $mode;
         $this->userInfo = $userInfo;
 
+        // phpcs:ignore
         $this->backtrace = debug_backtrace();
         if (isset($this->backtrace[0]) && isset($this->backtrace[0]['object'])) {
             unset($this->backtrace[0]['object']);
         }
 
-        if ($mode & Util::PEAR_ERROR_CALLBACK) {
+        if ($this->mode & Util::PEAR_ERROR_CALLBACK) {
             $this->level = E_USER_NOTICE;
             $this->callback = $options;
         } else {
